@@ -1,0 +1,143 @@
+<!-- pages/components/uab/parametres/structures/structures.component.html -->
+<div class="structures-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-building"></i>
+                <div>
+                    <h2>Gestion des structures</h2>
+                    <p>Créez et gérez les structures (hôpitaux, pharmacies, laboratoires)</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button pButton label="Nouvelle structure" icon="pi pi-plus" class="p-button-primary" (click)="openNew()"></button>
+            </div>
+        </div>
+
+        <p-table [value]="structures" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Code</th>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Statut</th>
+                    <th>Créé le</th>
+                    <th style="width: 120px">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-structure>
+                <tr>
+                    <td><strong>{{ structure.codeStructure }}</strong></td>
+                    <td>{{ structure.nom }}</td>
+                    <td>
+                        <span class="type-badge" [ngClass]="'type-' + structure.type">
+                            {{ getTypeLabel(structure.type) }}
+                        </span>
+                    </td>
+                    <td>{{ structure.telephone || '-' }}</td>
+                    <td>{{ structure.email || '-' }}</td>
+                    <td>
+                        <span class="status-badge" [ngClass]="getStatutSeverity(structure.actif)">
+                            {{ getStatutLabel(structure.actif) }}
+                        </span>
+                    </td>
+                    <td>{{ structure.createdAt | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                        <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editStructure(structure)" pTooltip="Modifier"></button>
+                        <button *ngIf="structure.actif" pButton icon="pi pi-ban" class="p-button-rounded p-button-text p-button-danger" (click)="deleteStructure(structure)" pTooltip="Désactiver"></button>
+                        <button *ngIf="!structure.actif" pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success" (click)="activerStructure(structure)" pTooltip="Activer"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8" class="text-center">Aucune structure enregistrée</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-dialog
+        header="{{ isEditMode ? 'Modifier la structure' : 'Nouvelle structure' }}"
+        [(visible)]="displayDialog"
+        [modal]="true"
+        [style]="{width: '550px'}"
+        [draggable]="false">
+    <form [formGroup]="structureForm">
+        <div class="p-fluid">
+            <div class="form-row">
+                <div class="field">
+                    <label for="type">Type de structure *</label>
+                    <p-dropdown
+                            id="type"
+                            formControlName="type"
+                            [options]="structureTypes"
+                            optionLabel="label"
+                            optionValue="code"
+                            placeholder="Sélectionner un type"
+                            [style]="{'width': '100%'}">
+                    </p-dropdown>
+                    <small class="p-error" *ngIf="structureForm.get('type')?.invalid && structureForm.get('type')?.touched">
+                        Type requis
+                    </small>
+                </div>
+                <div class="field">
+                    <label for="codeStructure">Code structure *</label>
+                    <input id="codeStructure" type="text" pInputText formControlName="codeStructure" placeholder="Ex: HOP001">
+                    <small class="p-error" *ngIf="structureForm.get('codeStructure')?.invalid && structureForm.get('codeStructure')?.touched">
+                        Code requis
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="nom">Nom *</label>
+                    <input id="nom" type="text" pInputText formControlName="nom" placeholder="Nom de la structure">
+                    <small class="p-error" *ngIf="structureForm.get('nom')?.invalid && structureForm.get('nom')?.touched">
+                        Nom requis
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="adresse">Adresse</label>
+                    <textarea id="adresse" rows="2" pInputTextarea formControlName="adresse" placeholder="Adresse complète"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="telephone">Téléphone</label>
+                    <input id="telephone" type="tel" pInputText formControlName="telephone" placeholder="Ex: 27 20 20 20 20">
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" pInputText formControlName="email" placeholder="contact@structure.ci">
+                    <small class="p-error" *ngIf="structureForm.get('email')?.invalid && structureForm.get('email')?.touched">
+                        Email invalide
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="agrement">Agrément</label>
+                    <input id="agrement" type="text" pInputText formControlName="agrement" placeholder="Numéro d'agrément">
+                </div>
+                <div class="field">
+                    <label for="compteBancaire">Compte bancaire</label>
+                    <input id="compteBancaire" type="text" pInputText formControlName="compteBancaire" placeholder="RIB / IBAN">
+                </div>
+            </div>
+        </div>
+    </form>
+    <ng-template pTemplate="footer">
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false"></button>
+        <button pButton label="Enregistrer" icon="pi pi-save" class="p-button-primary" (click)="saveStructure()" [loading]="loading"></button>
+    </ng-template>
+</p-dialog>

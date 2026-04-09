@@ -1,0 +1,193 @@
+<!-- pages/components/uab/dashboard/dashboard.component.html -->
+<div class="uab-container">
+    <div class="dashboard-header">
+        <h1>Tableau de bord UAB</h1>
+        <p>Gestion des dossiers de tiers payant</p>
+    </div>
+
+    <div *ngIf="loading" class="loading-container">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+
+    <div *ngIf="!loading && stats" class="dashboard-content">
+        <!-- Cartes statistiques générales -->
+        <div class="stats-grid">
+            <div class="stat-card" (click)="voirDossiersStructure(null)">
+                <div class="stat-icon blue"><i class="pi pi-folder-open"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.totalDossiers | number }}</div>
+                    <div class="stat-label">Total dossiers</div>
+                </div>
+            </div>
+            <div class="stat-card warning" (click)="voirDossiersEnAttente()">
+                <div class="stat-icon orange"><i class="pi pi-clock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.enAttente | number }}</div>
+                    <div class="stat-label">En attente</div>
+                </div>
+            </div>
+            <div class="stat-card success" (click)="voirDossiersValides()">
+                <div class="stat-icon green"><i class="pi pi-check-circle"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.valides | number }}</div>
+                    <div class="stat-label">Validés</div>
+                </div>
+            </div>
+            <div class="stat-card danger" (click)="voirDossiersRejetes()">
+                <div class="stat-icon red"><i class="pi pi-times-circle"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.rejetes | number }}</div>
+                    <div class="stat-label">Rejetés</div>
+                </div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-icon purple"><i class="pi pi-money-bill"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.montantTotalPrisEnCharge | number }} FCFA</div>
+                    <div class="stat-label">Montant total pris en charge</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de recherche par structure -->
+        <div class="search-structure-card">
+            <div class="search-header">
+                <i class="pi pi-search"></i>
+                <span>Rechercher une structure</span>
+            </div>
+            <div class="search-input-wrapper">
+                <i class="pi pi-building search-icon"></i>
+                <input
+                        type="text"
+                        pInputText
+                        [(ngModel)]="searchStructureTerm"
+                        (input)="filterStructures()"
+                        placeholder="Rechercher par nom de structure..."
+                        class="search-input">
+                <button *ngIf="searchStructureTerm"
+                        pButton
+                        icon="pi pi-times"
+                        class="p-button-text p-button-sm clear-btn"
+                        (click)="clearSearch()"></button>
+            </div>
+            <div class="search-result-info" *ngIf="searchStructureTerm">
+                <span>{{ filteredGroupedStructures.length }} structure(s) trouvée(s)</span>
+            </div>
+        </div>
+
+        <!-- Graphique d'évolution mensuelle -->
+        <div class="card chart-card">
+            <div class="card-header">
+                <h3>Évolution mensuelle des dossiers</h3>
+            </div>
+            <div class="chart-container">
+                <canvas *ngIf="chartData" baseChart
+                        [data]="chartData"
+                        [options]="chartOptions"
+                        type="line">
+                </canvas>
+            </div>
+        </div>
+
+        <!-- Liste des structures regroupées par type -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Dossiers par structure</h3>
+                <div class="header-actions">
+                    <span class="total-structures">Total: {{ getTotalStructuresCount() }} structures</span>
+                </div>
+            </div>
+
+            <!-- Message si aucun résultat -->
+            <div *ngIf="filteredGroupedStructures.length === 0" class="no-results">
+                <i class="pi pi-inbox"></i>
+                <p>Aucune structure trouvée pour "{{ searchStructureTerm }}"</p>
+                <button pButton label="Effacer la recherche" icon="pi pi-times" class="p-button-outlined" (click)="clearSearch()"></button>
+            </div>
+
+            <!-- Regroupement par type de structure -->
+            <div *ngFor="let group of filteredGroupedStructures" class="structure-group">
+                <div class="group-header">
+                    <div class="group-icon" [style.background]="group.color">
+                        <i [class]="group.icon"></i>
+                    </div>
+                    <div class="group-info">
+                        <h3>{{ group.label }}</h3>
+                        <span class="group-count">{{ group.structures.length }} structures</span>
+                    </div>
+                    <div class="group-stats">
+                        <div class="group-stat">
+                            <span class="stat-label">Total dossiers</span>
+                            <span class="stat-value">{{ getGroupTotalDossiers(group.structures) }}</span>
+                        </div>
+                        <div class="group-stat">
+                            <span class="stat-label">Montant total</span>
+                            <span class="stat-value">{{ getGroupMontantTotal(group.structures) | number }} FCFA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="structures-list">
+                    <div *ngFor="let structure of group.structures" class="structure-card">
+                        <div class="structure-header" (click)="selectedStructure = selectedStructure === structure.structureNom ? null : structure.structureNom">
+                            <div class="structure-info">
+                                <div class="structure-icon" [style.background]="group.color">
+                                    <i [class]="group.icon"></i>
+                                </div>
+                                <div class="structure-details">
+                                    <h4>{{ structure.structureNom }}</h4>
+                                    <span class="structure-type">{{ structure.structureType }}</span>
+                                </div>
+                            </div>
+                            <div class="structure-stats">
+                                <div class="stat" (click)="$event.stopPropagation(); voirDossiersStructure(structure)">
+                                    <span class="stat-number">{{ structure.totalDossiers }}</span>
+                                    <span class="stat-label">dossiers</span>
+                                    <i class="pi pi-external-link" style="font-size: 0.7rem; margin-left: 0.25rem;"></i>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-number">{{ structure.montantTotal | number }}</span>
+                                    <span class="stat-label">FCFA</span>
+                                </div>
+                                <i class="pi pi-chevron-down" [class.rotated]="selectedStructure === structure.structureNom"></i>
+                            </div>
+                        </div>
+
+                        <div class="structure-content" *ngIf="selectedStructure === structure.structureNom">
+                            <div *ngFor="let annee of structure.annees" class="annee-section">
+                                <div class="annee-header" (click)="selectedAnnee = selectedAnnee === annee.annee ? null : annee.annee">
+                                    <span class="annee-title" (click)="$event.stopPropagation(); voirDossiersParAnnee(structure, annee.annee)">
+                                        {{ annee.annee }}
+                                        <i class="pi pi-external-link" style="font-size: 0.7rem; margin-left: 0.5rem; opacity: 0.6;"></i>
+                                    </span>
+                                    <div class="annee-stats">
+                                        <span>{{ annee.totalDossiers }} dossiers</span>
+                                        <span>{{ annee.montantTotal | number }} FCFA</span>
+                                        <i class="pi pi-chevron-down" [class.rotated]="selectedAnnee === annee.annee"></i>
+                                    </div>
+                                </div>
+
+                                <div class="mois-grid" *ngIf="selectedAnnee === annee.annee">
+                                    <div *ngFor="let mois of annee.mois" class="mois-card" (click)="voirDossiersParMois(structure, annee.annee, mois.mois)">
+                                        <div class="mois-name">{{ mois.nomMois }}</div>
+                                        <div class="mois-stats">
+                                            <span class="mois-count">{{ mois.totalDossiers }} dossiers</span>
+                                            <span class="mois-amount">{{ mois.montantTotal | number }} FCFA</span>
+                                        </div>
+                                        <div class="mois-progress" *ngIf="mois.totalDossiers > 0">
+                                            <div class="progress-bar" [style.width.%]="(mois.totalDossiers / annee.totalDossiers * 100)"></div>
+                                        </div>
+                                        <div class="mois-action">
+                                            <i class="pi pi-search"></i>
+                                            <span>Voir les dossiers</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

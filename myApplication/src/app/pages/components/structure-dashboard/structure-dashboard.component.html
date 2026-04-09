@@ -1,0 +1,159 @@
+<!-- structure-dashboard.component.html -->
+<div class="structure-dashboard" *ngIf="dashboard">
+    <div class="dashboard-header">
+        <div class="header-info">
+            <div class="structure-icon" [style.background]="getCouleurParType(dashboard.structureType)">
+                <i [class]="getIconeParType(dashboard.structureType)"></i>
+            </div>
+            <div>
+                <h1>{{ dashboard.structureNom }}</h1>
+                <p>{{ dashboard.structureType }} - Tableau de bord</p>
+            </div>
+        </div>
+        <div class="header-date">
+            <i class="pi pi-calendar"></i>
+            <span>Données mises à jour en temps réel</span>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="pi pi-folder-open"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.totalDossiers | number }}</div>
+                <div class="stat-label">Total dossiers</div>
+            </div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-icon orange"><i class="pi pi-clock"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.enAttente | number }}</div>
+                <div class="stat-label">En attente validation</div>
+            </div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-icon green"><i class="pi pi-check-circle"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.valides | number }}</div>
+                <div class="stat-label">Validés</div>
+            </div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-icon red"><i class="pi pi-times-circle"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.rejetes | number }}</div>
+                <div class="stat-label">Rejetés</div>
+            </div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-icon purple"><i class="pi pi-users"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.totalPatients | number }}</div>
+                <div class="stat-label">Patients uniques</div>
+            </div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-icon teal"><i class="pi pi-chart-line"></i></div>
+            <div class="stat-info">
+                <div class="stat-value">{{ dashboard.statsGenerales.montantMoyenParDossier | number }} FCFA</div>
+                <div class="stat-label">Moyenne par dossier</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique d'évolution -->
+    <div class="card chart-card" *ngIf="chartData">
+        <div class="card-header">
+            <h3>Évolution mensuelle</h3>
+        </div>
+        <div class="chart-container">
+            <canvas baseChart
+                    [data]="chartData"
+                    [options]="chartOptions"
+                    type="line">
+            </canvas>
+        </div>
+    </div>
+
+    <!-- Détail par année et mois -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Détail par période</h3>
+        </div>
+        <div class="periods-list">
+            <div *ngFor="let annee of dashboard.detailParAnnee | keyvalue" class="annee-section">
+                <div class="annee-header" (click)="selectedAnnee = selectedAnnee === annee.key ? null : annee.key">
+                    <span class="annee-title">{{ annee.key }}</span>
+                    <div class="annee-stats">
+                        <span>{{ annee.value.totalDossiers }} dossiers</span>
+                        <span>{{ annee.value.montantTotal | number }} FCFA</span>
+                        <i class="pi pi-chevron-down" [class.rotated]="selectedAnnee === annee.key"></i>
+                    </div>
+                </div>
+
+                <div class="mois-grid" *ngIf="selectedAnnee === annee.key">
+                    <div *ngFor="let mois of annee.value.mois | keyvalue" class="mois-card" (click)="selectedMois = selectedMois === mois.key ? null : mois.key">
+                        <div class="mois-name">{{ mois.value.nomMois }}</div>
+                        <div class="mois-stats">
+                            <span>{{ mois.value.totalDossiers }} dossiers</span>
+                            <span>{{ mois.value.montantTotal | number }} FCFA</span>
+                        </div>
+                        <div class="mois-progress" *ngIf="mois.value.totalDossiers > 0">
+                            <div class="progress-bar" [style.width.%]="(mois.value.totalDossiers / annee.value.totalDossiers * 100)"></div>
+                        </div>
+
+                        <!-- Liste des consultations du mois -->
+                        <div class="consultations-list" *ngIf="selectedMois === mois.key">
+                            <div *ngFor="let consultation of mois.value.consultations" class="consultation-item" (click)="voirDetailConsultation(consultation.id)">
+                                <div class="consultation-info">
+                                    <span class="consultation-date">{{ consultation.dateConsultation | date:'dd/MM/yyyy' }}</span>
+                                    <span class="consultation-patient">{{ consultation.patientPrenom }} {{ consultation.patientNom }}</span>
+                                    <span class="consultation-police">{{ consultation.numeroPolice }}</span>
+                                </div>
+                                <div class="consultation-amount">
+                                    <span>{{ consultation.montant | number }} FCFA</span>
+                                    <span class="status-badge" [style.background]="getCouleurStatut(consultation.statut)">
+                                        {{ consultation.statut }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières activités -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Dernières activités</h3>
+        </div>
+        <div class="activities-list">
+            <div *ngFor="let activite of dashboard.dernieresActivites" class="activity-item">
+                <div class="activity-icon" [ngClass]="activite.type">
+                    <i [class]="activite.type === 'CONSULTATION' ? 'pi pi-file' :
+                                 activite.type === 'DELIVRANCE' ? 'pi pi-shopping-cart' : 'pi pi-flask'"></i>
+                </div>
+                <div class="activity-info">
+                    <div class="activity-description">{{ activite.description }}</div>
+                    <div class="activity-meta">
+                        <span>{{ activite.date | date:'dd/MM/yyyy HH:mm' }}</span>
+                        <span class="activity-amount">{{ activite.montant | number }} FCFA</span>
+                    </div>
+                </div>
+                <div class="activity-status" [style.background]="getCouleurStatut(activite.statut)">
+                    {{ activite.statut }}
+                </div>
+            </div>
+            <div *ngIf="dashboard.dernieresActivites.length === 0" class="empty-activities">
+                Aucune activité récente
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="loading" class="loading-container">
+    <p-progressSpinner></p-progressSpinner>
+</div>

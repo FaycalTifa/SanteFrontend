@@ -1,0 +1,257 @@
+<!-- pages/components/medecin/interpretation-resultats/interpretation-resultats.component.html -->
+<div class="medecin-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-file"></i>
+                <div>
+                    <h2>Interprétation des résultats</h2>
+                    <p>Consultez les résultats d'analyses et ajoutez votre interprétation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="search-section">
+            <div class="search-bar">
+                <div class="p-inputgroup">
+                    <input type="text" pInputText placeholder="Rechercher par numéro de police" [(ngModel)]="searchPolice" (keyup.enter)="rechercher()">
+                    <button pButton icon="pi pi-search" class="p-button-primary" (click)="rechercher()"></button>
+                    <button pButton label="Réinitialiser" icon="pi pi-refresh" class="p-button-secondary" (click)="resetSearch()"></button>
+                </div>
+            </div>
+
+            <!-- Filtre par statut d'interprétation -->
+            <div class="filter-bar">
+                <div class="filter-options">
+                    <button
+                            *ngFor="let option of filterOptions"
+                            pButton
+                            [label]="option.label"
+                            [class.active]="currentFilter === option.value"
+                            class="filter-btn"
+                            (click)="onFilterChange(option.value)">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p-table
+                [value]="filteredExamens"
+                [loading]="loading"
+                responsiveLayout="scroll"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5,10,20]">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Date réalisation</th>
+                    <th>Patient</th>
+                    <th>N° Police</th>
+                    <th>Examen</th>
+                    <th>Résultats</th>
+                    <th>Statut interprétation</th>
+                    <th style="width: 140px">Action</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-examen>
+                <tr>
+                    <td>{{ examen.dateRealisation | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                        <div class="patient-info">
+                            <i class="pi pi-user"></i>
+                            <span>{{ examen.patientPrenom }} {{ examen.patientNom }}</span>
+                        </div>
+                    </td>
+                    <td><strong class="police-number">{{ examen.patientPolice }}</strong></td>
+                    <td>{{ examen.examenNom }}</td>
+                    <td>
+                        <div class="resultats-list">
+                            <div *ngFor="let resultat of examen.resultats" class="resultat-item" [class.anormal]="resultat.anormal">
+                                <span class="resultat-param">{{ resultat.parametre }}:</span>
+                                <span class="resultat-value">{{ resultat.valeur }} {{ resultat.unite }}</span>
+                                <span *ngIf="resultat.anormal" class="anormal-badge">Anormal</span>
+                            </div>
+                            <div *ngIf="!examen.resultats?.length" class="no-resultats">
+                                Aucun résultat
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <!-- Statut interprétation -->
+                        <div *ngIf="estDejaInterprete(examen)" class="status-interpreted">
+                            <i class="pi pi-check-circle"></i>
+                            <span>Interprété</span>
+                            <small *ngIf="examen.dateInterpretation" class="status-date">
+                                le {{ examen.dateInterpretation | date:'dd/MM/yyyy' }}
+                            </small>
+                        </div>
+                        <div *ngIf="!estDejaInterprete(examen)" class="status-pending">
+                            <i class="pi pi-clock"></i>
+                            <span>En attente d'interprétation</span>
+                        </div>
+                    </td>
+                    <td>
+                        <!-- ✅ Bouton grisé si déjà interprété -->
+                        <button pButton
+                                icon="pi pi-pencil"
+                                label="Interpréter"
+                                class="p-button-sm"
+                                [ngClass]="estDejaInterprete(examen) ? 'p-button-secondary' : 'p-button-primary'"
+                                [disabled]="estDejaInterprete(examen)"
+                                (click)="ouvrirInterpretation(examen)">
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="text-center">
+                        <i class="pi pi-inbox" style="font-size: 2rem; color: #ccc; display: block; margin-bottom: 0.5rem;"></i>
+                        Aucun examen réalisé trouvé
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Dialogue d'interprétation amélioré -->
+<p-dialog
+        [header]="selectedExamen?.interpretation ? 'Modifier l\'interprétation' : 'Ajouter une interprétation'"
+        [(visible)]="displayInterpretationDialog"
+        [modal]="true"
+        [style]="{width: '700px', maxWidth: '90vw'}"
+        [draggable]="false">
+
+    <div *ngIf="selectedExamen">
+        <div class="examen-detail">
+            <!-- En-tête examen -->
+            <div class="examen-header">
+                <div class="examen-title">
+                    <i class="pi pi-microscope"></i>
+                    <span>{{ selectedExamen.examenNom }}</span>
+                </div>
+                <div class="examen-code" *ngIf="selectedExamen.codeActe">
+                    Code: {{ selectedExamen.codeActe }}
+                </div>
+            </div>
+
+            <!-- Informations patient -->
+            <div class="patient-card">
+                <div class="patient-info-item">
+                    <div class="label">Patient</div>
+                    <div class="value">
+                        <i class="pi pi-user"></i>
+                        {{ selectedExamen.patientPrenom }} {{ selectedExamen.patientNom }}
+                    </div>
+                </div>
+                <div class="patient-info-item">
+                    <div class="label">N° Police</div>
+                    <div class="value highlight">{{ selectedExamen.patientPolice }}</div>
+                </div>
+                <div class="patient-info-item">
+                    <div class="label">Date réalisation</div>
+                    <div class="value">{{ selectedExamen.dateRealisation | date:'dd/MM/yyyy' }}</div>
+                </div>
+            </div>
+
+            <!-- Résultats d'analyses -->
+            <div class="resultats-section">
+                <div class="section-title">
+                    <i class="pi pi-chart-line"></i>
+                    <span>Résultats d'analyses</span>
+                    <span class="resultats-count" *ngIf="selectedExamen.resultats?.length">
+                        ({{ selectedExamen.resultats.length }} paramètres)
+                    </span>
+                </div>
+
+                <div class="resultats-table">
+                    <div class="resultats-header">
+                        <div>Paramètre</div>
+                        <div>Résultat</div>
+                        <div>Valeurs normales</div>
+                        <div>Statut</div>
+                    </div>
+                    <div *ngFor="let resultat of selectedExamen.resultats" class="resultat-row" [class.anormal]="resultat.anormal">
+                        <div class="resultat-param">{{ resultat.parametre }}</div>
+                        <div class="resultat-value">
+                            <strong>{{ resultat.valeur }}</strong> {{ resultat.unite }}
+                        </div>
+                        <div class="resultat-normal" *ngIf="resultat.valeurNormaleMin && resultat.valeurNormaleMax">
+                            {{ resultat.valeurNormaleMin }} - {{ resultat.valeurNormaleMax }}
+                        </div>
+                        <div class="resultat-normal" *ngIf="!resultat.valeurNormaleMin && !resultat.valeurNormaleMax">
+                            -
+                        </div>
+                        <div class="resultat-status">
+                            <span *ngIf="resultat.anormal" class="status-anormal">
+                                <i class="pi pi-exclamation-triangle"></i> Anormal
+                            </span>
+                            <span *ngIf="!resultat.anormal" class="status-normal">
+                                <i class="pi pi-check"></i> Normal
+                            </span>
+                        </div>
+                    </div>
+                    <div *ngIf="!selectedExamen.resultats?.length" class="no-resultats-message">
+                        <i class="pi pi-info-circle"></i>
+                        Aucun résultat enregistré pour cet examen
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interprétation -->
+            <div class="interpretation-section">
+                <div class="section-title">
+                    <i class="pi pi-comment"></i>
+                    <span>Interprétation médicale</span>
+                    <span class="required-badge" *ngIf="!selectedExamen.interpretation">Obligatoire</span>
+                </div>
+
+                <textarea
+                        rows="6"
+                        pInputTextarea
+                        [(ngModel)]="interpretation"
+                        placeholder="Saisissez votre interprétation des résultats d'analyses..."
+                        [class.has-value]="interpretation">
+                </textarea>
+
+                <div class="char-count" *ngIf="interpretation">
+                    {{ interpretation.length }} caractères
+                </div>
+
+                <div *ngIf="selectedExamen.interpretation" class="existing-interpretation">
+                    <div class="existing-header">
+                        <i class="pi pi-history"></i>
+                        <span>Interprétation existante</span>
+                    </div>
+                    <div class="existing-content">
+                        <p>{{ selectedExamen.interpretation }}</p>
+                        <small>Ajoutée le {{ selectedExamen.dateInterpretation | date:'dd/MM/yyyy à HH:mm' }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <button pButton
+                    icon="pi pi-times"
+                    label="Annuler"
+                    class="p-button-text"
+                    (click)="fermerDialogue()">
+            </button>
+            <button pButton
+                    icon="pi pi-save"
+                    [label]="selectedExamen?.interpretation ? 'Modifier l\'interprétation' : 'Enregistrer l\'interprétation'"
+                    class="p-button-primary"
+                    [disabled]="!interpretation.trim()"
+                    (click)="sauvegarderInterpretation()">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>

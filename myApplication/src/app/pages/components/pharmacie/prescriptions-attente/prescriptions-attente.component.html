@@ -1,0 +1,117 @@
+<div class="pharmacie-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-shopping-cart"></i>
+                <div>
+                    <h2>Prescriptions</h2>
+                    <p>Consultez toutes les prescriptions et gérez les délivrances</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <div class="p-inputgroup">
+                    <input type="text" pInputText placeholder="Rechercher par numéro de police" [(ngModel)]="searchPolice" (keyup.enter)="searchByPolice()">
+                    <button pButton type="button" icon="pi pi-search" class="p-button-primary" (click)="searchByPolice()"></button>
+                    <button pButton type="button" label="Réinitialiser" class="p-button-secondary" icon="pi pi-refresh" (click)="resetSearch()"></button>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="filter-options">
+                    <button *ngFor="let option of filterOptions" pButton [label]="option.label" [class.active]="currentFilter === option.value" class="filter-btn" (click)="onFilterChange(option.value)"></button>
+                </div>
+            </div>
+        </div>
+
+        <p-table [value]="filteredPrescriptions" [loading]="loading" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,20]" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Ordonnance</th>
+                    <th>Patient</th>
+                    <th>N° Police</th>
+                    <th>Médicament</th>
+                    <th>Dosage</th>
+                    <th>Quantité</th>
+                    <th>Instructions</th>
+                    <th>Statut délivrance</th>
+                    <th>Date délivrance</th>
+                    <th style="width: 120px">Action</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-prescription>
+                <tr>
+                    <td>{{ prescription.numeroOrdonnance }}</td>
+                    <td>{{ prescription.patientPrenom }} {{ prescription.patientNom }}</td>
+                    <td>{{ prescription.patientPolice }}</td>
+                    <td>{{ prescription.medicamentNom }}</td>
+                    <td>{{ prescription.medicamentDosage || '-' }}</td>
+                    <td>{{ prescription.quantitePrescitee }}</td>
+                    <td>{{ prescription.instructions || '-' }}</td>
+                    <td>
+                        <div *ngIf="prescription.delivre" class="status-delivered"><i class="pi pi-check-circle"></i> Délivré</div>
+                        <div *ngIf="!prescription.delivre" class="status-pending"><i class="pi pi-clock"></i> En attente</div>
+                    </td>
+                    <td>
+                        <div *ngIf="prescription.delivre" class="delivery-date"><i class="pi pi-calendar"></i> {{ prescription.dateDelivrance | date:'dd/MM/yyyy' }}</div>
+                        <div *ngIf="!prescription.delivre" class="no-date">-</div>
+                    </td>
+                    <td>
+                        <button pButton icon="pi pi-check" label="Délivrer" class="p-button-sm" [ngClass]="prescription.delivre ? 'p-button-secondary' : 'p-button-success'" [disabled]="prescription.delivre" (click)="delivrer(prescription)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr><td colspan="10" class="text-center"><i class="pi pi-inbox"></i><p>Aucune prescription trouvée</p></td></tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Dialogue de délivrance -->
+<p-dialog header="Délivrance du médicament" [(visible)]="displayDialog" [modal]="true" [style]="{width: '500px', maxWidth: '90vw'}" [draggable]="false">
+    <div *ngIf="selectedPrescription">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <div class="medicament-icon"><i class="pi pi-tablets"></i></div>
+                <div class="medicament-info">
+                    <h3>{{ selectedPrescription.medicamentNom }}</h3>
+                    <p *ngIf="selectedPrescription.medicamentDosage">{{ selectedPrescription.medicamentDosage }}</p>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-item"><span class="label">Patient</span><span class="value">{{ selectedPrescription.patientPrenom }} {{ selectedPrescription.patientNom }}</span></div>
+                <div class="info-item"><span class="label">N° Police</span><span class="value highlight">{{ selectedPrescription.patientPolice }}</span></div>
+                <div class="info-item"><span class="label">Taux couverture</span><span class="value highlight">{{ getTauxCouverture() }}%</span></div>
+                <div class="info-item"><span class="label">Quantité prescrite</span><span class="value">{{ selectedPrescription.quantitePrescitee }}</span></div>
+                <div class="info-item"><span class="label">Statut</span><span class="value" [class.delivered]="selectedPrescription.delivre">{{ selectedPrescription.delivre ? 'Déjà délivré' : 'En attente de délivrance' }}</span></div>
+            </div>
+
+            <div *ngIf="!selectedPrescription.delivre" class="delivery-section">
+                <div class="section-title"><i class="pi pi-money-bill"></i><span>Informations de délivrance</span></div>
+                <div class="field"><label>Prix unitaire (FCFA) *</label><div class="input-icon"><i class="pi pi-tag"></i><input type="number" pInputText [(ngModel)]="prixUnitaire" placeholder="Ex: 500"></div></div>
+                <div class="field"><label>Quantité délivrée</label><div class="input-icon"><i class="pi pi-box"></i><input type="number" pInputText [(ngModel)]="quantiteDelivree" placeholder="Quantité à délivrer"></div><small class="field-hint">Maximum: {{ selectedPrescription.quantitePrescitee }}</small></div>
+
+                <div class="payment-preview" *ngIf="prixUnitaire > 0">
+                    <div class="preview-title"><i class="pi pi-calculator"></i><span>Récapitulatif du paiement</span></div>
+                    <div class="preview-row"><span>Sous-total :</span><strong>{{ getPrixTotal() | number }} FCFA</strong></div>
+                    <div class="preview-row uab"><span>Prise en charge UAB ({{ getTauxCouverture() }}%) :</span><strong>{{ getMontantUAB() | number }} FCFA</strong></div>
+                    <div class="preview-row patient"><span>Ticket modérateur (patient) :</span><strong>{{ getMontantPatient() | number }} FCFA</strong></div>
+                    <div class="preview-divider"></div>
+                    <div class="preview-row total"><span>Total à payer :</span><strong>{{ getMontantPatient() | number }} FCFA</strong></div>
+                </div>
+            </div>
+
+            <div *ngIf="selectedPrescription.delivre" class="already-delivered"><i class="pi pi-info-circle"></i><div><strong>Déjà délivré</strong><p>Le {{ selectedPrescription.dateDelivrance | date:'dd/MM/yyyy' }}</p></div></div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <button pButton icon="pi pi-times" label="Annuler" class="p-button-text" (click)="fermerDialogue()"></button>
+            <button pButton icon="pi pi-check" label="Confirmer la délivrance" class="p-button-success" [disabled]="selectedPrescription?.delivre || !prixUnitaire || prixUnitaire <= 0" (click)="confirmerDelivrance()"></button>
+        </div>
+    </ng-template>
+</p-dialog>

@@ -1,0 +1,97 @@
+<!-- pages/components/medecin/consultations-attente/consultations-attente.component.html -->
+<div class="p-grid">
+    <div class="p-col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="header-title">
+                    <i class="pi pi-clock" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+                    <div>
+                        <h2>Consultations en attente de prescription</h2>
+                        <p>Cliquez sur une consultation pour ajouter le diagnostic et les prescriptions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barre de recherche et filtres -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <div class="p-inputgroup">
+                        <input type="text" pInputText placeholder="Rechercher par numéro de police" [(ngModel)]="searchPolice" (keyup.enter)="searchByPolice()">
+                        <button pButton type="button" icon="pi pi-search" class="p-button-primary" (click)="searchByPolice()"></button>
+                        <button pButton type="button" label="Réinitialiser" class="p-button-secondary" icon="pi pi-refresh" (click)="resetSearch()"></button>
+                    </div>
+                </div>
+
+                <!-- Filtre par statut -->
+                <div class="filter-bar">
+                    <div class="filter-options">
+                        <button
+                                *ngFor="let option of filterOptions"
+                                pButton
+                                [label]="option.label"
+                                [class.active]="currentFilter === option.value"
+                                class="filter-btn"
+                                (click)="onFilterChange(option.value)">
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <p-table
+                    [value]="filteredConsultations"
+                    [loading]="loading"
+                    [paginator]="true"
+                    [rows]="10"
+                    [rowsPerPageOptions]="[5,10,20]"
+                    responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>N° Feuille</th>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>N° Police</th>
+                        <th>Montant total</th>
+                        <th>Ticket modérateur</th>
+                        <th>Statut</th>
+                        <th style="width: 120px">Action</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-consultation>
+                    <tr>
+                        <td>{{ consultation.numeroFeuille }}</td>
+                        <td>{{ consultation.dateConsultation | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ consultation.prenomPatient }} {{ consultation.nomPatient }}</td>
+                        <td>{{ consultation.numeroPolice }}</td>
+                        <td>{{ consultation.montantTotalHospitalier | number }} FCFA</td>
+                        <td>{{ consultation.montantTicketModerateur | number }} FCFA</td>
+                        <td>
+                            <!-- ✅ Affichage du statut de prescription -->
+                            <span *ngIf="consultation.prescriptionsValidees" class="status-done">
+                                <i class="pi pi-check-circle"></i>
+                                Prescrite
+                            </span>
+                            <span *ngIf="!consultation.prescriptionsValidees" class="status-pending">
+                                <i class="pi pi-clock"></i>
+                                En attente
+                            </span>
+                        </td>
+                        <td>
+                            <button pButton
+                                    icon="pi pi-pencil"
+                                    label="Prescrire"
+                                    class="p-button-sm p-button-primary"
+                                    [disabled]="consultation.prescriptionsValidees"
+                                    (click)="prescrire(consultation)">
+                            </button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8" class="text-center">Aucune consultation en attente</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

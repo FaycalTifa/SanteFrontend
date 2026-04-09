@@ -1,0 +1,321 @@
+// pages/components/structure/dashboard/structure-dashboard.component.scss
+.structure-dashboard {
+  padding: 1.5rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  .header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .structure-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i { font-size: 2rem; color: white; }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a2c3e;
+    }
+
+    p {
+      margin: 0.25rem 0 0;
+      color: #6c757d;
+    }
+  }
+
+  .header-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+    font-size: 0.8rem;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i { font-size: 1.5rem; color: white; }
+
+    &.blue { background: #3b82f6; }
+    &.orange { background: #f59e0b; }
+    &.green { background: #10b981; }
+    &.red { background: #ef4444; }
+    &.purple { background: #8b5cf6; }
+    &.teal { background: #14b8a6; }
+  }
+
+  .stat-info {
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a2c3e;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #6c757d;
+    }
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+
+  .card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a2c3e;
+    }
+  }
+}
+
+.chart-card .chart-container {
+  padding: 1rem;
+  height: 350px;
+}
+
+.periods-list {
+  .annee-section {
+    border-bottom: 1px solid #e9ecef;
+
+    .annee-header {
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+
+      &:hover { background: #f8f9fa; }
+
+      .annee-title {
+        font-weight: 600;
+        color: #3b82f6;
+      }
+
+      .annee-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+
+        i {
+          transition: transform 0.2s;
+          &.rotated { transform: rotate(180deg); }
+        }
+      }
+    }
+
+    .mois-grid {
+      padding: 0 1.25rem 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+
+      .mois-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem;
+        cursor: pointer;
+
+        &:hover {
+          background: #f1f3f5;
+        }
+
+        .mois-name {
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+
+        .mois-stats {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.75rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .mois-progress {
+          height: 4px;
+          background: #e9ecef;
+          border-radius: 2px;
+          overflow: hidden;
+
+          .progress-bar {
+            height: 100%;
+            background: #3b82f6;
+          }
+        }
+
+        .consultations-list {
+          margin-top: 0.75rem;
+          border-top: 1px solid #e9ecef;
+          padding-top: 0.75rem;
+
+          .consultation-item {
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+
+            &:hover {
+              background: white;
+            }
+
+            .consultation-info {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+
+              .consultation-date {
+                font-size: 0.7rem;
+                color: #6c757d;
+              }
+
+              .consultation-patient {
+                font-weight: 500;
+              }
+
+              .consultation-police {
+                font-size: 0.7rem;
+                color: #3b82f6;
+              }
+            }
+
+            .consultation-amount {
+              text-align: right;
+
+              .status-badge {
+                display: block;
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+                border-radius: 4px;
+                color: white;
+                margin-top: 0.25rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.activities-list {
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+
+    &:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i { font-size: 1.2rem; }
+
+      &.CONSULTATION {
+        background: #dbeafe;
+        color: #3b82f6;
+      }
+      &.DELIVRANCE {
+        background: #fed7aa;
+        color: #f59e0b;
+      }
+      &.EXAMEN {
+        background: #cffafe;
+        color: #06b6d4;
+      }
+    }
+
+    .activity-info {
+      flex: 1;
+
+      .activity-description {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+      }
+
+      .activity-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.7rem;
+        color: #6c757d;
+      }
+    }
+
+    .activity-status {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      color: white;
+    }
+  }
+}
+
+.empty-activities {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}

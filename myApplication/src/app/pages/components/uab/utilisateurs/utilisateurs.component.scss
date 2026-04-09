@@ -1,0 +1,202 @@
+// pages/components/uab/parametres/utilisateurs/utilisateurs.component.scss
+.utilisateurs-container {
+  padding: 1.5rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      i {
+        font-size: 1.5rem;
+        color: #3b82f6;
+        background: #eff6ff;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+      }
+
+      div h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a2c3e;
+      }
+
+      div p {
+        margin: 0.25rem 0 0;
+        font-size: 0.75rem;
+        color: #6c757d;
+      }
+    }
+  }
+}
+
+// ✅ Styles pour les badges de rôles
+.roles-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+
+  &.role-CAISSIER_HOPITAL { background: #dbeafe; color: #1e40af; }
+  &.role-MEDECIN { background: #dcfce7; color: #166534; }
+  &.role-PHARMACIEN { background: #fed7aa; color: #9a3412; }
+  &.role-CAISSIER_PHARMACIE { background: #fed7aa; color: #9a3412; }
+  &.role-BIOLOGISTE { background: #cffafe; color: #0e7490; }
+  &.role-CAISSIER_LABORATOIRE { background: #cffafe; color: #0e7490; }
+  &.role-ADMIN_STRUCTURE { background: #e9ecef; color: #495057; }
+  &.role-UAB_ADMIN { background: #fae8ff; color: #a21caf; }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+
+  &.success { background: #dcfce7; color: #166534; }
+  &.danger { background: #fee2e2; color: #991b1b; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.375rem;
+  }
+
+  input, .p-dropdown {
+    width: 100%;
+  }
+
+  input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+  }
+
+  .p-error {
+    font-size: 0.7rem;
+    color: #ef4444;
+    margin-top: 0.25rem;
+    display: block;
+  }
+
+  .p-help {
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    display: block;
+  }
+}
+
+// ✅ Styles pour les checkboxes de rôles
+.roles-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+
+  .role-checkbox {
+    flex: 0 0 calc(33.33% - 1rem);
+
+    @media (max-width: 768px) {
+      flex: 0 0 calc(50% - 1rem);
+    }
+
+    @media (max-width: 480px) {
+      flex: 0 0 100%;
+    }
+  }
+}
+
+.structure-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .structure-name {
+    font-weight: 500;
+  }
+
+  .structure-type {
+    font-size: 0.7rem;
+    color: #6c757d;
+  }
+}
+
+.text-center {
+  text-align: center;
+}
+
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #f8fafc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+    }
+
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  .p-dropdown {
+    width: 100%;
+  }
+
+  // ✅ Style pour les checkboxes
+  .p-checkbox {
+    .p-checkbox-box {
+      border-radius: 0.25rem;
+    }
+  }
+}

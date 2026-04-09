@@ -1,0 +1,149 @@
+<!-- pages/components/laboratoire/examens-attente/examens-attente.component.html -->
+<div class="laboratoire-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <div class="header-icon">
+                    <i class="pi pi-flask"></i>
+                </div>
+                <div>
+                    <h2>Examens en attente</h2>
+                    <p>Liste des examens prescrits en attente de traitement</p>
+                </div>
+            </div>
+            <div class="stats-badge" *ngIf="filteredExamens.length > 0">
+                <div class="stat-item">
+                    <span class="stat-label">Total</span>
+                    <span class="stat-value">{{ filteredExamens.length }}</span>
+                </div>
+                <div class="stat-item warning">
+                    <span class="stat-label">En attente</span>
+                    <span class="stat-value">{{ getPendingCount() }}</span>
+                </div>
+                <div class="stat-item success">
+                    <span class="stat-label">Réglés</span>
+                    <span class="stat-value">{{ getPaidCount() }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de recherche et filtres -->
+        <div class="search-section">
+            <div class="search-bar">
+                <div class="p-inputgroup">
+                    <input type="text" pInputText placeholder="Rechercher par numéro de police" [(ngModel)]="searchPolice" (keyup.enter)="rechercher()">
+                    <button pButton icon="pi pi-search" class="p-button-primary" (click)="rechercher()"></button>
+                    <button pButton label="Réinitialiser" icon="pi pi-refresh" class="p-button-secondary" (click)="resetSearch()"></button>
+                </div>
+            </div>
+
+            <!-- Filtre par statut -->
+            <div class="filter-bar">
+                <div class="filter-options">
+                    <button
+                            *ngFor="let option of filterOptions"
+                            pButton
+                            [label]="option.label"
+                            [class.active]="currentFilter === option.value"
+                            class="filter-btn"
+                            (click)="onFilterChange(option.value)">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p-table
+                [value]="filteredExamens"
+                [loading]="loading"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5,10,20,50]"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-sm">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 50px">#</th>
+                    <th>N° Bulletin</th>
+                    <th>Patient</th>
+                    <th>N° Police</th>
+                    <th>Examen</th>
+                    <th>Code</th>
+                    <th>Instructions</th>
+                    <th>Statut paiement</th>
+                    <th style="width: 120px">Action</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-examen let-i="rowIndex">
+                <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td><span class="numero-bulletin">{{ examen.numeroBulletin }}</span></td>
+                    <td>
+                        <div class="patient-cell">
+                            <i class="pi pi-user"></i>
+                            <span>{{ examen.patientPrenom }} {{ examen.patientNom }}</span>
+                        </div>
+                    </td>
+                    <td><strong class="police-number">{{ examen.patientPolice }}</strong></td>
+                    <td>{{ examen.examenNom }}</td>
+                    <td>{{ examen.codeActe }}</td>
+                    <td>{{ examen.instructions || '-' }}</td>
+                    <td>
+                        <span *ngIf="examen.paye" class="status-paid">
+                            <i class="pi pi-check-circle"></i>
+                            Réglé
+                        </span>
+                        <span *ngIf="!examen.paye" class="status-unpaid">
+                            <i class="pi pi-clock"></i>
+                            En attente
+                        </span>
+                    </td>
+                    <td>
+                        <!-- Bouton pour caissier -->
+                        <button
+                                *ngIf="isCaissier"
+                                pButton
+                                label="Encaisser"
+                                icon="pi pi-credit-card"
+                                class="p-button-success p-button-sm"
+                                [disabled]="examen.paye"
+                                (click)="action(examen)">
+                        </button>
+
+                        <!-- Bouton pour biologiste -->
+                        <button
+                                *ngIf="isBiologiste"
+                                pButton
+                                label="Réaliser"
+                                icon="pi pi-play"
+                                class="p-button-primary p-button-sm"
+                                [disabled]="!examen.paye"
+                                (click)="action(examen)">
+                        </button>
+
+                        <!-- Bouton pour les autres rôles -->
+                        <button
+                                *ngIf="!isCaissier && !isBiologiste"
+                                pButton
+                                label="Voir"
+                                icon="pi pi-eye"
+                                class="p-button-secondary p-button-sm"
+                                (click)="action(examen)">
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9" class="empty-message">
+                        <i class="pi pi-inbox"></i>
+                        <p>Aucun examen trouvé</p>
+                        <small>Modifiez vos critères de recherche ou réinitialisez les filtres</small>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

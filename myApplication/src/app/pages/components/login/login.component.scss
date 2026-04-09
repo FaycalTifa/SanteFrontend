@@ -1,0 +1,64 @@
+// pages/components/auth/login/login.component.scss
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  .logo {
+    height: 80px;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    color: #333;
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  p {
+    color: #666;
+    margin: 0.5rem 0 0;
+  }
+}
+
+.field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+:host ::ng-deep {
+  .p-button {
+    width: 100%;
+    margin-top: 0.5rem;
+
+    .p-button-label {
+      font-weight: 600;
+    }
+  }
+
+  .p-inputtext {
+    width: 100%;
+  }
+}

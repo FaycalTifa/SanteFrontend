@@ -1,0 +1,39 @@
+.centerClass {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.text_red{
+    color: orangered;
+    font-weight: bold;
+}.text_gren{
+     color: darkgreen;
+     font-weight: bold;
+ }
+.text_green{
+    color: darkgreen;
+    font-weight: bold;
+}
+
+.text_center {
+
+    text-align: center;
+}
+.color_css{
+    color: darkgreen;
+    font-weight: bold;
+    width: 10rem;
+}
+.border_table{
+    border: 0.02rem solid black;
+}
+.header_css_image{
+    display: flex;
+    width: 100%;
+    margin: auto;
+}
+.text_info{
+    color: blue;
+    font-weight: bold;
+}

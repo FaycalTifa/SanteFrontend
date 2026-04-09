@@ -1,0 +1,153 @@
+<!-- pages/components/uab/validation/validation.component.html -->
+<p-confirmDialog></p-confirmDialog>
+<div class="p-grid">
+    <div class="p-col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="header-title">
+                    <i class="pi pi-check-square" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+                    <div>
+                        <h2>Validation du dossier</h2>
+                        <p>Vérifiez les informations et validez ou rejetez le dossier</p>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="consultation && !loading" class="dossier-detail">
+                <!-- Informations générales -->
+                <div class="section">
+                    <h3><i class="pi pi-info-circle"></i> Informations générales</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="label">N° Feuille :</span><span class="value">{{ consultation.numeroFeuille }}</span></div>
+                        <div class="info-item"><span class="label">N° Police :</span><span class="value">{{ consultation.numeroPolice }}</span></div>
+                        <div class="info-item"><span class="label">Patient :</span><span class="value">{{ consultation.prenomPatient }} {{ consultation.nomPatient }}</span></div>
+                        <div class="info-item"><span class="label">Date consultation :</span><span class="value">{{ consultation.dateConsultation | date:'dd/MM/yyyy' }}</span></div>
+                        <div class="info-item"><span class="label">Structure :</span><span class="value">{{ consultation.structureNom }}</span></div>
+                        <div class="info-item"><span class="label">Médecin :</span><span class="value">{{ consultation.medecinNom }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Diagnostic -->
+                <div class="section">
+                    <h3><i class="pi pi-stethoscope"></i> Diagnostic</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="label">Nature maladie :</span><span class="value">{{ consultation.natureMaladie }}</span></div>
+                        <div class="info-item"><span class="label">Diagnostic :</span><span class="value">{{ consultation.diagnostic }}</span></div>
+                        <div class="info-item"><span class="label">Actes médicaux :</span><span class="value">{{ consultation.actesMedicaux }}</span></div>
+                    </div>
+                </div>
+
+                <!-- Facturation Hôpital -->
+                <div class="section">
+                    <h3><i class="pi pi-money-bill"></i> Facturation Hôpital</h3>
+                    <div class="info-grid">
+                        <div class="info-item"><span class="label">Prix consultation :</span><span class="value">{{ consultation.prixConsultation | number }} FCFA</span></div>
+                        <div class="info-item"><span class="label">Prix des actes :</span><span class="value">{{ consultation.prixActes | number }} FCFA</span></div>
+                        <div class="info-item"><span class="label">Total :</span><span class="value">{{ consultation.montantTotalHospitalier | number }} FCFA</span></div>
+                        <div class="info-item"><span class="label">Ticket modérateur patient :</span><span class="value">{{ consultation.montantTicketModerateur | number }} FCFA</span></div>
+                        <div class="info-item"><span class="label">UAB prend en charge :</span><span class="value">{{ consultation.montantPrisEnCharge | number }} FCFA</span></div>
+                    </div>
+                </div>
+
+                <!-- Prescriptions Médicaments -->
+                <div class="section" *ngIf="consultation.prescriptionsMedicaments?.length">
+                    <h3><i class="pi pi-tablets"></i> Prescriptions Médicaments</h3>
+                    <p-table [value]="consultation.prescriptionsMedicaments" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Médicament</th>
+                                <th>Dosage</th>
+                                <th>Quantité</th>
+                                <th>Prix total</th>
+                                <th>Statut</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-med>
+                            <tr>
+                                <td>{{ med.medicamentNom }}</td>
+                                <td>{{ med.medicamentDosage }}</td>
+                                <td>{{ med.quantitePrescitee }}</td>
+                                <td>{{ med.prixTotal | number }} FCFA</td>
+                                <td>
+                                    <span class="status-badge" [ngClass]="med.delivre ? 'status-success' : 'status-warning'">
+                                        {{ med.delivre ? 'Délivré' : 'En attente' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+
+                <!-- Prescriptions Examens -->
+                <div class="section" *ngIf="consultation.prescriptionsExamens?.length">
+                    <h3><i class="pi pi-microscope"></i> Prescriptions Examens</h3>
+                    <p-table [value]="consultation.prescriptionsExamens" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Examen</th>
+                                <th>Code</th>
+                                <th>Prix total</th>
+                                <th>Statut</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-exam>
+                            <tr>
+                                <td>{{ exam.examenNom }}</td>
+                                <td>{{ exam.codeActe }}</td>
+                                <td>{{ exam.prixTotal | number }} FCFA</td>
+                                <td>
+                                    <span class="status-badge" [ngClass]="exam.realise ? 'status-success' : 'status-warning'">
+                                        {{ exam.realise ? 'Réalisé' : 'En attente' }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+
+                <!-- Résumé -->
+                <div class="section summary">
+                    <h3><i class="pi pi-calculator"></i> Résumé des remboursements</h3>
+                    <div class="summary-card">
+                        <div class="summary-item">
+                            <span>Hôpital :</span>
+                            <strong>{{ consultation.montantPrisEnCharge | number }} FCFA</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Pharmacie :</span>
+                            <strong>{{ getTotalPharmacie() | number }} FCFA</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Laboratoire :</span>
+                            <strong>{{ getTotalLaboratoire() | number }} FCFA</strong>
+                        </div>
+                        <div class="summary-item total">
+                            <span>TOTAL UAB :</span>
+                            <strong>{{ getTotalGeneral() | number }} FCFA</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button pButton icon="pi pi-times" label="Rejeter" class="p-button-danger" (click)="rejeter()"></button>
+                    <button pButton icon="pi pi-check" label="Valider et rembourser" class="p-button-success" (click)="valider()"></button>
+                </div>
+            </div>
+
+            <div *ngIf="loading" class="loading-container">
+                <p-progressSpinner></p-progressSpinner>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-dialog header="Motif de rejet" [(visible)]="displayRejetDialog" [modal]="true" [style]="{width: '450px'}">
+    <div class="field">
+        <label for="motif">Motif du rejet *</label>
+        <textarea id="motif" rows="3" pInputTextarea [(ngModel)]="motifRejet" placeholder="Expliquez pourquoi ce dossier est rejeté..."></textarea>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton icon="pi pi-times" label="Annuler" class="p-button-text" (click)="displayRejetDialog = false"></button>
+        <button pButton icon="pi pi-check" label="Confirmer le rejet" class="p-button-danger" (click)="confirmerRejet()"></button>
+    </ng-template>
+</p-dialog>

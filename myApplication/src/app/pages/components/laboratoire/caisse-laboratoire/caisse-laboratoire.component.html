@@ -1,0 +1,192 @@
+<!-- pages/components/laboratoire/caisse/caisse-laboratoire.component.html -->
+<div class="laboratoire-caisse-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <div class="header-icon">
+                    <i class="pi pi-credit-card"></i>
+                </div>
+                <div>
+                    <h2>Paiement - Laboratoire</h2>
+                    <p *ngIf="examen">Examen: {{ examen.examenNom }}</p>
+                </div>
+            </div>
+            <div class="status-badge" *ngIf="examen?.paye">
+                <i class="pi pi-check-circle"></i>
+                Déjà payé
+            </div>
+        </div>
+
+        <!-- Informations examen -->
+        <div *ngIf="examen" class="examen-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Patient</span>
+                    <div class="value">
+                        <i class="pi pi-user"></i>
+                        {{ examen.patientPrenom }} {{ examen.patientNom }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">N° Police</span>
+                    <div class="value highlight">
+                        <i class="pi pi-id-card"></i>
+                        {{ examen.patientPolice }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Taux couverture</span>
+                    <div class="value">
+                        <i class="pi pi-percentage"></i>
+                        {{ examen.tauxCouverture || 80 }}%
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Examen</span>
+                    <div class="value">
+                        <i class="pi pi-flask"></i>
+                        {{ examen.examenNom }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Code acte</span>
+                    <div class="value">{{ examen.codeActe || '-' }}</div>
+                </div>
+                <div class="info-item full-width" *ngIf="examen.instructions">
+                    <span class="label">Instructions</span>
+                    <div class="value instructions">
+                        <i class="pi pi-comment"></i>
+                        {{ examen.instructions }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si déjà payé -->
+        <div *ngIf="examen?.paye" class="already-paid">
+            <div class="already-paid-icon">
+                <i class="pi pi-info-circle"></i>
+            </div>
+            <div class="already-paid-content">
+                <h4>Cet examen a déjà été payé</h4>
+                <p>Payé le {{ examen.datePaiement | date:'dd/MM/yyyy' }}</p>
+                <p *ngIf="examen.montantTicketModerateur">Montant: {{ examen.montantTicketModerateur | number }} FCFA</p>
+                <p *ngIf="examen.modePaiement">Mode: {{ examen.modePaiement }}</p>
+            </div>
+        </div>
+
+        <!-- Formulaire de paiement -->
+        <form [formGroup]="paiementForm" (ngSubmit)="onSubmit()" *ngIf="!examen?.paye">
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-money-bill"></i>
+                    <span>Informations de paiement</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="prixTotal">Prix total de l'examen <span class="required">*</span></label>
+                    <div class="input-icon">
+                        <i class="pi pi-tag"></i>
+                        <input id="prixTotal" type="number" pInputText formControlName="prixTotal" placeholder="Ex: 15000">
+                        <span class="currency">FCFA</span>
+                    </div>
+                    <small class="info-text" *ngIf="examen">
+                        <i class="pi pi-info-circle"></i>
+                        Saisissez le prix total de l'examen
+                    </small>
+                </div>
+
+                <!-- Récapitulatif paiement avec calcul temps réel -->
+                <div class="recap-paiement" *ngIf="prixTotal > 0">
+                    <div class="recap-header">
+                        <i class="pi pi-calculator"></i>
+                        <span>Récapitulatif du paiement</span>
+                    </div>
+
+                    <div class="recap-body">
+                        <div class="recap-row">
+                            <div class="recap-label">
+                                <i class="pi pi-tag"></i>
+                                <span>Prix total</span>
+                            </div>
+                            <div class="recap-value">{{ prixTotal | number }} FCFA</div>
+                        </div>
+                        <div class="recap-row uab">
+                            <div class="recap-label">
+                                <i class="pi pi-shield"></i>
+                                <span>Prise en charge UAB ({{ examen?.tauxCouverture || 80 }}%)</span>
+                            </div>
+                            <div class="recap-value">{{ montantPrisEnCharge | number }} FCFA</div>
+                        </div>
+                        <div class="recap-row patient">
+                            <div class="recap-label">
+                                <i class="pi pi-user"></i>
+                                <span>Ticket modérateur (patient)</span>
+                            </div>
+                            <div class="recap-value">{{ montantTicketModerateur | number }} FCFA</div>
+                        </div>
+                        <div class="recap-divider"></div>
+                        <div class="recap-row total">
+                            <div class="recap-label">Total à payer</div>
+                            <div class="recap-value">{{ montantTicketModerateur | number }} FCFA</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode de paiement -->
+                <div class="form-field">
+                    <label>Mode de paiement <span class="required">*</span></label>
+                    <div class="payment-methods">
+                        <div class="payment-method"
+                             [class.active]="paiementForm.get('modePaiement')?.value === 'ESPECES'"
+                             (click)="setPaymentMethod('ESPECES')">
+                            <i class="pi pi-money-bill"></i>
+                            <span>Espèces</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="paiementForm.get('modePaiement')?.value === 'CARTE'"
+                             (click)="setPaymentMethod('CARTE')">
+                            <i class="pi pi-credit-card"></i>
+                            <span>Carte bancaire</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="paiementForm.get('modePaiement')?.value === 'CHEQUE'"
+                             (click)="setPaymentMethod('CHEQUE')">
+                            <i class="pi pi-file"></i>
+                            <span>Chèque</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="paiementForm.get('modePaiement')?.value === 'MOBILE_MONEY'"
+                             (click)="setPaymentMethod('MOBILE_MONEY')">
+                            <i class="pi pi-mobile"></i>
+                            <span>Mobile Money</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Référence pour paiement autre qu'espèces -->
+                <div class="form-field" *ngIf="paiementForm.get('modePaiement')?.value && paiementForm.get('modePaiement')?.value !== 'ESPECES'">
+                    <label for="referencePaiement">
+                        {{ getReferenceLabel() }} <span class="required">*</span>
+                    </label>
+                    <div class="input-icon">
+                        <i class="pi pi-hashtag"></i>
+                        <input id="referencePaiement" type="text" pInputText formControlName="referencePaiement"
+                               [placeholder]="getReferencePlaceholder()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="annuler()">
+                    <i class="pi pi-times"></i>
+                    Annuler
+                </button>
+                <button type="submit" class="btn-pay" [disabled]="loading || prixTotal <= 0 || paiementForm.invalid">
+                    <i class="pi pi-credit-card"></i>
+                    {{ loading ? 'Enregistrement en cours...' : 'Encaisser et continuer' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

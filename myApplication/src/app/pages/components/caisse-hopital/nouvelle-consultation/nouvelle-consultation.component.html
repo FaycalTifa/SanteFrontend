@@ -1,0 +1,203 @@
+<!-- pages/components/caisse-hopital/nouvelle-consultation/nouvelle-consultation.component.html -->
+<div class="consultation-container">
+    <div class="consultation-card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-plus-circle"></i>
+            </div>
+            <div class="header-content">
+                <h2>Nouvelle Consultation</h2>
+                <p>Saisie par la caisse de l'hôpital</p>
+            </div>
+        </div>
+
+        <form [formGroup]="consultationForm" (ngSubmit)="onSubmit()">
+            <!-- Informations Patient -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-user"></i>
+                    <span>Informations Patient</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="numeroPolice">N° Police <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-id-card"></i>
+                            <input
+                                    id="numeroPolice"
+                                    type="text"
+                                    formControlName="numeroPolice"
+                                    placeholder="Ex: 12000000"
+                                    (blur)="rechercherPatientParPolice()">
+                        </div>
+                        <small class="info-text">
+                            <i class="pi pi-info-circle"></i>
+                            Saisissez le numéro de police pour rechercher un patient existant
+                        </small>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="nomPatient">Nom <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-user"></i>
+                            <input id="nomPatient" type="text" formControlName="nomPatient" placeholder="Ex: KONE">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="prenomPatient">Prénom <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-user"></i>
+                            <input id="prenomPatient" type="text" formControlName="prenomPatient" placeholder="Ex: Moussa">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="telephonePatient">Téléphone</label>
+                        <div class="input-icon">
+                            <i class="pi pi-phone"></i>
+                            <input id="telephonePatient" type="tel" formControlName="telephonePatient" placeholder="XX XX XX XX XX">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="dateNaissance">Date de naissance</label>
+                        <p-calendar id="dateNaissance" formControlName="dateNaissance" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="dateConsultation">Date consultation <span class="required">*</span></label>
+                        <p-calendar id="dateConsultation" formControlName="dateConsultation" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
+                    </div>
+                </div>
+
+                <!-- Message si patient trouvé -->
+                <div *ngIf="patientTrouve" class="patient-found-message">
+                    <i class="pi pi-check-circle"></i>
+                    <div class="patient-info">
+                        <strong>Patient trouvé :</strong> {{ patientTrouve.prenom }} {{ patientTrouve.nom }}
+                        <span class="patient-phone">Tél: {{ patientTrouve.telephone }}</span>
+                        <span class="patient-dob" *ngIf="patientTrouve.dateNaissance">Né le: {{ patientTrouve.dateNaissance | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                </div>
+
+                <!-- Message de recherche en cours -->
+                <div *ngIf="recherchePatientEnCours" class="patient-searching">
+                    <i class="pi pi-spin pi-spinner"></i>
+                    Recherche du patient par numéro de police...
+                </div>
+
+                <!-- Message si patient non trouvé -->
+                <div *ngIf="patientNonTrouve && !recherchePatientEnCours" class="patient-not-found">
+                    <i class="pi pi-info-circle"></i>
+                    Aucun patient trouvé avec ce numéro de police. Vous pouvez créer un nouveau patient.
+                </div>
+            </div>
+
+            <!-- Sélection du taux de couverture -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-percentage"></i>
+                    <span>Taux de couverture</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="tauxId">Sélectionnez le taux <span class="required">*</span></label>
+                        <p-dropdown
+                                id="tauxId"
+                                formControlName="tauxId"
+                                [options]="tauxDisponibles"
+                                optionLabel="libelle"
+                                optionValue="id"
+                                placeholder="Choisissez un taux"
+                                [style]="{'width': '100%'}"
+                                [filter]="true">
+                            <ng-template let-taux pTemplate="item">
+                                <div class="taux-option">
+                                    <span class="taux-value">{{ taux.tauxPourcentage }}%</span>
+                                    <span class="taux-label"> - {{ taux.libelle }}</span>
+                                </div>
+                            </ng-template>
+                        </p-dropdown>
+                        <small class="info-text">
+                            <i class="pi pi-info-circle"></i>
+                            Sélectionnez le taux applicable pour cette police
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facturation -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-money-bill"></i>
+                    <span>Facturation</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="prixConsultation">Prix consultation (FCFA) <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-tag"></i>
+                            <input id="prixConsultation" type="number" formControlName="prixConsultation" placeholder="0" min="0">
+                            <span class="currency">FCFA</span>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="prixActes">Prix des actes (FCFA)</label>
+                        <div class="input-icon">
+                            <i class="pi pi-list"></i>
+                            <input id="prixActes" type="number" formControlName="prixActes" placeholder="0" min="0">
+                            <span class="currency">FCFA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Récapitulatif du paiement -->
+                <div class="total-card" *ngIf="tauxSelectionne">
+                    <div class="total-info">
+                        <div class="total-label">
+                            <i class="pi pi-calculator"></i>
+                            <span>Détail du remboursement</span>
+                        </div>
+                        <div class="total-detail">
+                            <div class="detail-row">
+                                <span>Total à payer :</span>
+                                <strong>{{ calculerTotal() | number }} FCFA</strong>
+                            </div>
+                            <div class="detail-row pris-en-charge">
+                                <span>UAB prend en charge ({{ tauxSelectionne.tauxPourcentage }}%) :</span>
+                                <strong>{{ montantPrisEnCharge | number }} FCFA</strong>
+                            </div>
+                            <div class="detail-row ticket">
+                                <span>Ticket modérateur (patient) :</span>
+                                <strong>{{ montantTicketModerateur | number }} FCFA</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="payment-info">
+                        <i class="pi pi-info-circle"></i>
+                        <span>Le patient paiera le ticket modérateur à l'hôpital</span>
+                    </div>
+                </div>
+
+                <!-- Message si aucun taux sélectionné -->
+                <div *ngIf="!tauxSelectionne && consultationForm.get('tauxId')?.touched" class="error-message">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    Veuillez sélectionner un taux de couverture
+                </div>
+            </div>
+
+            <!-- Actions du formulaire -->
+            <div class="form-actions">
+                <button type="button" pButton label="Annuler" icon="pi pi-times" class="p-button-secondary" (click)="resetForm()"></button>
+                <button type="submit" pButton label="Enregistrer consultation" [loading]="loading" icon="pi pi-save" class="p-button-primary" [disabled]="consultationForm.invalid || !tauxSelectionne || loading"></button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+<!-- pages/components/auth/login/login.component.html -->
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <img src="assets/images/uab-logo.png" alt="UAB Assurances" class="logo">
+            <h2>UAB Assurances</h2>
+            <p>Plateforme Tiers Payant</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="p-fluid">
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input
+                            type="email"
+                            id="email"
+                            formControlName="email"
+                            pInputText
+                            [ngClass]="{'ng-invalid ng-dirty': loginForm.get('email')?.invalid && loginForm.get('email')?.touched}">
+                    <small class="p-error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+                        Email valide requis
+                    </small>
+                </div>
+
+                <div class="field">
+                    <label for="password">Mot de passe</label>
+                    <input
+                            type="password"
+                            id="password"
+                            formControlName="password"
+                            pInputText
+                            [ngClass]="{'ng-invalid ng-dirty': loginForm.get('password')?.invalid && loginForm.get('password')?.touched}">
+                    <small class="p-error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                        Mot de passe requis
+                    </small>
+                </div>
+
+                <button
+                        type="submit"
+                        pButton
+                        label="Se connecter"
+                        [loading]="loading"
+                        class="p-button-primary p-button-raised p-button-lg">
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

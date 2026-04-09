@@ -1,0 +1,222 @@
+<!-- pages/components/pharmacie/delivrance/delivrance.component.html -->
+<div class="pharmacie-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-shopping-cart"></i>
+                <div>
+                    <h2>Délivrance de médicament</h2>
+                    <p *ngIf="prescription">Ordonnance N° {{ prescription.numeroOrdonnance }}</p>
+                </div>
+            </div>
+            <div class="status-badge" *ngIf="prescription?.delivre">
+                <i class="pi pi-check-circle"></i>
+                Déjà délivré
+            </div>
+        </div>
+
+        <!-- Informations prescription -->
+        <div *ngIf="prescription" class="prescription-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Patient</span>
+                    <div class="value">
+                        <i class="pi pi-user"></i>
+                        {{ prescription.patientPrenom }} {{ prescription.patientNom }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">N° Police</span>
+                    <div class="value highlight">
+                        <i class="pi pi-id-card"></i>
+                        {{ prescription.patientPolice }}
+                    </div>
+                </div>
+                <!-- ✅ Ajout du taux de couverture -->
+                <div class="info-item">
+                    <span class="label">Taux couverture</span>
+                    <div class="value">
+                        <i class="pi pi-percentage"></i>
+                        {{ prescription.tauxCouverture || 80 }}%
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Médicament</span>
+                    <div class="value">
+                        <i class="pi pi-tablets"></i>
+                        {{ prescription.medicamentNom }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Dosage</span>
+                    <div class="value">{{ prescription.medicamentDosage || '-' }}</div>
+                </div>
+                <div class="info-item">
+                    <span class="label">Quantité prescrite</span>
+                    <div class="value quantite">
+                        <i class="pi pi-box"></i>
+                        {{ prescription.quantitePrescitee }}
+                    </div>
+                </div>
+                <div class="info-item full-width" *ngIf="prescription.instructions">
+                    <span class="label">Instructions</span>
+                    <div class="value instructions">
+                        <i class="pi pi-comment"></i>
+                        {{ prescription.instructions }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message si déjà délivré -->
+        <div *ngIf="prescription?.delivre" class="already-delivered">
+            <div class="already-delivered-icon">
+                <i class="pi pi-info-circle"></i>
+            </div>
+            <div class="already-delivered-content">
+                <h4>Ce médicament a déjà été délivré</h4>
+                <p>Délivré le {{ prescription.dateDelivrance | date:'dd/MM/yyyy' }}</p>
+                <p *ngIf="prescription.quantiteDelivree">Quantité délivrée: {{ prescription.quantiteDelivree }}</p>
+                <p *ngIf="prescription.prixTotal">Montant: {{ prescription.prixTotal | number }} FCFA</p>
+            </div>
+        </div>
+
+        <!-- Formulaire de délivrance -->
+        <form [formGroup]="delivranceForm" (ngSubmit)="onSubmit()" *ngIf="!prescription?.delivre">
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-box"></i>
+                    <span>Informations de délivrance</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="prixUnitaire">Prix unitaire <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-tag"></i>
+                            <input id="prixUnitaire" type="number" pInputText formControlName="prixUnitaire" placeholder="Ex: 250">
+                            <span class="currency">FCFA</span>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="quantiteDelivree">Quantité délivrée <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-box"></i>
+                            <input id="quantiteDelivree" type="number" pInputText formControlName="quantiteDelivree"
+                                   [max]="getQuantiteMax()" placeholder="Ex: 14">
+                        </div>
+                        <small class="info-text" *ngIf="prescription">
+                            <i class="pi pi-info-circle"></i>
+                            Maximum: {{ prescription.quantitePrescitee }} unités
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Récapitulatif paiement avec calcul temps réel -->
+                <div class="recap-paiement" *ngIf="prixTotal > 0">
+                    <div class="recap-header">
+                        <i class="pi pi-calculator"></i>
+                        <span>Récapitulatif du paiement</span>
+                    </div>
+
+                    <div class="recap-body">
+                        <div class="recap-row">
+                            <div class="recap-label">
+                                <i class="pi pi-tag"></i>
+                                <span>Prix unitaire</span>
+                            </div>
+                            <div class="recap-value">{{ delivranceForm.get('prixUnitaire')?.value | number }} FCFA</div>
+                        </div>
+                        <div class="recap-row">
+                            <div class="recap-label">
+                                <i class="pi pi-box"></i>
+                                <span>Quantité</span>
+                            </div>
+                            <div class="recap-value">{{ delivranceForm.get('quantiteDelivree')?.value }} x</div>
+                        </div>
+                        <div class="recap-divider"></div>
+                        <div class="recap-row">
+                            <div class="recap-label">Sous-total</div>
+                            <div class="recap-value">{{ prixTotal | number }} FCFA</div>
+                        </div>
+                        <!-- ✅ Utilisation du taux de couverture de la consultation -->
+                        <div class="recap-row uab">
+                            <div class="recap-label">
+                                <i class="pi pi-shield"></i>
+                                <span>Prise en charge UAB ({{ prescription?.tauxCouverture || 80 }}%)</span>
+                            </div>
+                            <div class="recap-value">{{ montantUAB | number }} FCFA</div>
+                        </div>
+                        <div class="recap-row patient">
+                            <div class="recap-label">
+                                <i class="pi pi-user"></i>
+                                <span>Ticket modérateur (patient)</span>
+                            </div>
+                            <div class="recap-value">{{ montantPatient | number }} FCFA</div>
+                        </div>
+                        <div class="recap-divider"></div>
+                        <div class="recap-row total">
+                            <div class="recap-label">Total à payer</div>
+                            <div class="recap-value">{{ montantPatient | number }} FCFA</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode de paiement -->
+                <div class="form-field">
+                    <label>Mode de paiement <span class="required">*</span></label>
+                    <div class="payment-methods">
+                        <div class="payment-method"
+                             [class.active]="delivranceForm.get('modePaiement')?.value === 'ESPECES'"
+                             (click)="setPaymentMethod('ESPECES')">
+                            <i class="pi pi-money-bill"></i>
+                            <span>Espèces</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="delivranceForm.get('modePaiement')?.value === 'CARTE'"
+                             (click)="setPaymentMethod('CARTE')">
+                            <i class="pi pi-credit-card"></i>
+                            <span>Carte bancaire</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="delivranceForm.get('modePaiement')?.value === 'CHEQUE'"
+                             (click)="setPaymentMethod('CHEQUE')">
+                            <i class="pi pi-file"></i>
+                            <span>Chèque</span>
+                        </div>
+                        <div class="payment-method"
+                             [class.active]="delivranceForm.get('modePaiement')?.value === 'MOBILE_MONEY'"
+                             (click)="setPaymentMethod('MOBILE_MONEY')">
+                            <i class="pi pi-mobile"></i>
+                            <span>Mobile Money</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Référence pour paiement autre qu'espèces -->
+                <div class="form-field" *ngIf="delivranceForm.get('modePaiement')?.value && delivranceForm.get('modePaiement')?.value !== 'ESPECES'">
+                    <label for="referencePaiement">
+                        {{ getReferenceLabel() }} <span class="required">*</span>
+                    </label>
+                    <div class="input-icon">
+                        <i class="pi pi-hashtag"></i>
+                        <input id="referencePaiement" type="text" pInputText formControlName="referencePaiement"
+                               [placeholder]="getReferencePlaceholder()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="annuler()">
+                    <i class="pi pi-times"></i>
+                    Annuler
+                </button>
+                <button type="submit" class="btn-deliver" [disabled]="loading || prixTotal <= 0 || delivranceForm.invalid">
+                    <i class="pi pi-check-circle"></i>
+                    {{ loading ? 'Délivrance en cours...' : 'Délivrer et encaisser' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

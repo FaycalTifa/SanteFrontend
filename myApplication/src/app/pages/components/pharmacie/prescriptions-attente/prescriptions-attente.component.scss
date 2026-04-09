@@ -1,0 +1,575 @@
+// pages/components/pharmacie/prescriptions-attente/prescriptions-attente.component.scss
+
+.pharmacie-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+
+  .card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      i {
+        font-size: 1.5rem;
+        color: #3b82f6;
+        background: #eff6ff;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+      }
+
+      div {
+        h2 {
+          margin: 0;
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #111827;
+        }
+
+        p {
+          margin: 0.25rem 0 0;
+          font-size: 0.75rem;
+          color: #6b7280;
+        }
+      }
+    }
+  }
+}
+
+// Search section
+.search-section {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .search-bar {
+    flex: 1;
+    min-width: 250px;
+
+    .p-inputgroup {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
+
+  .filter-bar {
+    .filter-options {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .filter-btn {
+        padding: 0.375rem 1rem;
+        border-radius: 2rem;
+        background: #f3f4f6;
+        border: none;
+        color: #6b7280;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #e5e7eb;
+        }
+
+        &.active {
+          background: #3b82f6;
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+// Table styles
+.patient-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  i {
+    color: #6b7280;
+    font-size: 0.8rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+  }
+}
+
+.police-number {
+  font-family: monospace;
+  font-size: 0.85rem;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.status-delivered {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+
+  i {
+    font-size: 0.7rem;
+  }
+}
+
+.status-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  background: #fed7aa;
+  color: #92400e;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+
+  i {
+    font-size: 0.7rem;
+  }
+}
+
+.delivery-date {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.7rem;
+  color: #6b7280;
+
+  i {
+    font-size: 0.7rem;
+  }
+}
+
+.no-date {
+  color: #9ca3af;
+  font-size: 0.7rem;
+}
+
+// ============================================
+// DIALOGUE DE DÉLIVRANCE - DESIGN AMÉLIORÉ
+// ============================================
+
+::ng-deep {
+  .p-dialog {
+    .p-dialog-header {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      color: white;
+      border-radius: 0.75rem 0.75rem 0 0;
+      padding: 1rem 1.5rem;
+
+      .p-dialog-title {
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .p-dialog-header-icon {
+        color: white;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+    }
+
+    .p-dialog-content {
+      padding: 1.5rem;
+    }
+
+    .p-dialog-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eef2ff;
+      background: #fafbff;
+    }
+  }
+}
+
+.dialog-content {
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid #eef2ff;
+
+    .medicament-icon {
+      i {
+        font-size: 2rem;
+        color: #3b82f6;
+        background: #eff6ff;
+        padding: 0.75rem;
+        border-radius: 1rem;
+      }
+    }
+
+    .medicament-info {
+      h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      p {
+        margin: 0.25rem 0 0;
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+    }
+  }
+
+  .info-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+
+    .info-item {
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e2e8f0;
+
+      .label {
+        display: block;
+        font-size: 0.6rem;
+        font-weight: 500;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+      }
+
+      .value {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #1e293b;
+
+        &.highlight {
+          color: #3b82f6;
+          font-family: monospace;
+        }
+
+        &.delivered {
+          color: #10b981;
+        }
+      }
+    }
+  }
+
+  .delivery-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #eef2ff;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+
+      i {
+        color: #3b82f6;
+      }
+
+      &::before {
+        content: '';
+        width: 3px;
+        height: 14px;
+        background: #3b82f6;
+        border-radius: 2px;
+      }
+    }
+
+    .field {
+      margin-bottom: 1rem;
+
+      label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: #475569;
+        margin-bottom: 0.375rem;
+      }
+
+      .input-icon {
+        position: relative;
+
+        i {
+          position: absolute;
+          left: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          font-size: 0.8rem;
+        }
+
+        input {
+          width: 100%;
+          padding: 0.5rem 0.75rem 0.5rem 2rem;
+          border: 1px solid #e2e8f0;
+          border-radius: 0.5rem;
+          font-size: 0.8rem;
+          transition: all 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+          }
+        }
+      }
+
+      .field-hint {
+        display: block;
+        font-size: 0.6rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .payment-preview {
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    margin-top: 1rem;
+    overflow: hidden;
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: #f1f5f9;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #1e293b;
+      border-bottom: 1px solid #e2e8f0;
+
+      i {
+        color: #3b82f6;
+      }
+    }
+
+    .preview-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.7rem;
+      border-bottom: 1px solid #eef2ff;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      strong {
+        font-weight: 600;
+      }
+
+      &.patient {
+        background: #fffbeb;
+        color: #d97706;
+        strong {
+          color: #d97706;
+        }
+      }
+
+      &.uab {
+        background: #ecfdf5;
+        color: #059669;
+        strong {
+          color: #059669;
+        }
+      }
+    }
+  }
+
+  .already-delivered {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #fef3c7;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    border-left: 3px solid #f59e0b;
+
+    i {
+      font-size: 1.25rem;
+      color: #f59e0b;
+    }
+
+    div {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-size: 0.75rem;
+        color: #92400e;
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        margin: 0.125rem 0;
+        font-size: 0.65rem;
+        color: #78350f;
+      }
+    }
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  .p-button-text {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+  }
+
+  .p-button-success {
+    background: #3b82f6;
+    border: none;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .pharmacie-container {
+    padding: 1rem;
+  }
+
+  .search-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .info-section {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dialog-footer {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+// Dans prescriptions-attente.component.scss
+
+.dialog-content {
+  .payment-preview {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1rem;
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+
+      i {
+        color: #3b82f6;
+      }
+    }
+
+    .preview-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.375rem 0;
+      font-size: 0.75rem;
+
+      strong {
+        font-weight: 600;
+      }
+
+      &.uab {
+        color: #10b981;
+        strong {
+          color: #10b981;
+        }
+      }
+
+      &.patient {
+        color: #f59e0b;
+        strong {
+          color: #f59e0b;
+        }
+      }
+
+      &.total {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+
+        strong {
+          color: #3b82f6;
+        }
+      }
+    }
+
+    .preview-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 0.5rem 0;
+    }
+  }
+}

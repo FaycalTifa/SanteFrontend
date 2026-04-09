@@ -1,0 +1,147 @@
+<!-- pages/components/laboratoire/realisation/realisation.component.html -->
+<div class="laboratoire-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-play"></i>
+                <div>
+                    <h2>Réalisation d'examen</h2>
+                    <p *ngIf="examen">Examen: {{ examen.examenNom }}</p>
+                </div>
+            </div>
+            <!-- ✅ Badge de statut -->
+            <div *ngIf="isAlreadyRealised" class="status-badge realised">
+                <i class="pi pi-check-circle"></i>
+                Déjà réalisé
+            </div>
+            <div *ngIf="!isAlreadyRealised && examen?.paye" class="status-badge paid">
+                <i class="pi pi-credit-card"></i>
+                Payé
+            </div>
+        </div>
+
+        <div *ngIf="examen" class="examen-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Patient</span>
+                    <span class="value">{{ examen.patientPrenom }} {{ examen.patientNom }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">N° Police</span>
+                    <span class="value highlight">{{ examen.patientPolice }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Examen</span>
+                    <span class="value">{{ examen.examenNom }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Code acte</span>
+                    <span class="value">{{ examen.codeActe }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Instructions</span>
+                    <span class="value">{{ examen.instructions || '-' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Section Paiement - Affichage du prix déjà payé -->
+        <div *ngIf="examen && examen.paye" class="payment-section">
+            <div class="payment-title">
+                <i class="pi pi-money-bill"></i>
+                <span>Informations de paiement</span>
+            </div>
+            <div class="payment-grid">
+                <div class="payment-item">
+                    <span class="label">Prix total de l'examen</span>
+                    <span class="value">{{ examen.prixTotal | number }} FCFA</span>
+                </div>
+                <div class="payment-item">
+                    <span class="label">Ticket modérateur (patient)</span>
+                    <span class="value patient">{{ examen.montantTicketModerateur | number }} FCFA</span>
+                </div>
+                <div class="payment-item">
+                    <span class="label">Pris en charge par UAB</span>
+                    <span class="value uab">{{ examen.montantPrisEnCharge | number }} FCFA</span>
+                </div>
+                <div class="payment-item">
+                    <span class="label">Date de paiement</span>
+                    <span class="value">{{ examen.datePaiement | date:'dd/MM/yyyy' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Message si examen non payé -->
+        <div *ngIf="examen && !examen.paye && !isAlreadyRealised" class="warning-section">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>Cet examen n'a pas encore été payé. Veuillez d'abord procéder au paiement.</span>
+        </div>
+
+        <!-- ✅ Formulaire de réalisation (désactivé si déjà réalisé) -->
+        <form [formGroup]="realisationForm" (ngSubmit)="onSubmit()" *ngIf="!isAlreadyRealised && examen?.paye">
+            <!-- Résultats -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h3>Résultats d'analyses</h3>
+                    <button type="button" class="add-button" (click)="addResultat()">
+                        <i class="pi pi-plus"></i> Ajouter un paramètre
+                    </button>
+                </div>
+
+                <div formArrayName="resultats">
+                    <div *ngFor="let res of resultatsArray.controls; let i = index" [formGroupName]="i" class="resultat-row">
+                        <div class="row-header">
+                            <span>Paramètre {{ i + 1 }}</span>
+                            <button type="button" class="remove-btn" (click)="removeResultat(i)">
+                                <i class="pi pi-trash"></i>
+                            </button>
+                        </div>
+                        <div class="resultat-fields">
+                            <div class="field">
+                                <label>Paramètre *</label>
+                                <input type="text" pInputText formControlName="parametre" placeholder="Ex: Globules blancs">
+                            </div>
+                            <div class="field">
+                                <label>Valeur *</label>
+                                <input type="text" pInputText formControlName="valeur" placeholder="Ex: 7.5">
+                            </div>
+                            <div class="field">
+                                <label>Unité</label>
+                                <input type="text" pInputText formControlName="unite" placeholder="Ex: g/L">
+                            </div>
+                            <div class="field">
+                                <label>Valeur normale min</label>
+                                <input type="text" pInputText formControlName="valeurNormaleMin" placeholder="Ex: 4.0">
+                            </div>
+                            <div class="field">
+                                <label>Valeur normale max</label>
+                                <input type="text" pInputText formControlName="valeurNormaleMax" placeholder="Ex: 10.0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" (click)="router.navigate(['/laboratoire/examens-attente'])">Annuler</button>
+                <button type="submit" class="btn-save" [disabled]="loading || resultatsArray.length === 0">
+                    <i class="pi pi-save"></i>
+                    {{ loading ? 'Enregistrement...' : 'Enregistrer la réalisation' }}
+                </button>
+            </div>
+        </form>
+
+        <!-- ✅ Message si déjà réalisé -->
+        <div *ngIf="isAlreadyRealised" class="realised-message">
+            <i class="pi pi-check-circle"></i>
+            <div>
+                <h4>Examen déjà réalisé</h4>
+                <p>Cet examen a été réalisé le {{ examen?.dateRealisation | date:'dd/MM/yyyy' }}</p>
+                <p *ngIf="examen?.biologisteNom">Par: {{ examen.biologisteNom }}</p>
+            </div>
+            <button class="btn-back" (click)="router.navigate(['/laboratoire/examens-attente'])">
+                Retour à la liste
+            </button>
+        </div>
+    </div>
+</div>

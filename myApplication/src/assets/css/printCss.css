@@ -1,0 +1,77 @@
+
+.justify_content{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+}
+#table{
+    margin: 0;
+}
+
+#para{
+    display: flex;
+    margin-top: 3%;
+}
+.row{
+    margin-left: 20%;
+    margin-top: 5%;
+    font-size: large;
+}
+#p{
+    display: flex;
+    justify-content: center;
+}
+.text_familly{
+    font-family: "Noelan";
+}
+.container{
+    display: block;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+.text_css{
+    display: flex;
+    justify-content: flex-end;
+
+}
+.text_margin{
+    margin-top: 5rem;
+}
+.margin_right{
+    margin-right: 10rem;
+}
+
+.text_decoration{
+    text-decoration: underline;
+    font-weight: bolder;
+}
+
+.text_center{
+    border: solid black 2px;
+    width: 50%;
+    margin: auto;
+}
+
+.header_css_image{
+    width: 100%;
+    margin: auto;
+}
+th,td {     border: 0.0001em solid black;
+            margin-right: -0.5px;
+            margin-top: -0.5px;
+        }
+.margin_col{
+    margin: 0px;
+;
+ }
+
+.footer_css{
+    display: flex;
+    margin-top: 500px;
+}
+
+.margin_bottom{
+    margin-top: 40%;
+}
+
+

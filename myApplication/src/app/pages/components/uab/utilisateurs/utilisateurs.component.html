@@ -1,0 +1,162 @@
+<!-- pages/components/uab/parametres/utilisateurs/utilisateurs.component.html -->
+<div class="utilisateurs-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-users"></i>
+                <div>
+                    <h2>Gestion des utilisateurs</h2>
+                    <p>Créez et gérez les utilisateurs de la plateforme</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button pButton label="Nouvel utilisateur" icon="pi pi-plus" class="p-button-primary" (click)="openNew()"></button>
+            </div>
+        </div>
+
+        <p-table [value]="utilisateurs" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Rôles</th>
+                    <th>Structure</th>
+                    <th>Téléphone</th>
+                    <th>Statut</th>
+                    <th>Dernier accès</th>
+                    <th style="width: 120px">Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-utilisateur>
+                <tr>
+                    <td>{{ utilisateur.id }}</td>
+                    <td><strong>{{ utilisateur.nom }}</strong></td>
+                    <td>{{ utilisateur.prenom }}</td>
+                    <td>{{ utilisateur.email }}</td>
+                    <td>
+                        <div class="roles-badges">
+                            <span *ngFor="let role of utilisateur.roles" class="role-badge" [ngClass]="'role-' + role">
+                                {{ getRoleLabel(role) }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>{{ utilisateur.structureNom || '-' }}</td>
+                    <td>{{ utilisateur.telephone || '-' }}</td>
+                    <td>
+                        <span class="status-badge" [ngClass]="getStatutSeverity(utilisateur.actif)">
+                            {{ getStatutLabel(utilisateur.actif) }}
+                        </span>
+                    </td>
+                    <td>{{ utilisateur.dernierAcces | date:'dd/MM/yyyy HH:mm' || '-' }}</td>
+                    <td>
+                        <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editUtilisateur(utilisateur)" pTooltip="Modifier"></button>
+                        <button *ngIf="utilisateur.actif" pButton icon="pi pi-ban" class="p-button-rounded p-button-text p-button-danger" (click)="deleteUtilisateur(utilisateur)" pTooltip="Désactiver"></button>
+                        <button *ngIf="!utilisateur.actif" pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success" (click)="activerUtilisateur(utilisateur)" pTooltip="Activer"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="10" class="text-center">Aucun utilisateur enregistré</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-dialog
+        header="{{ isEditMode ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}"
+        [(visible)]="displayDialog"
+        [modal]="true"
+        [style]="{width: '600px'}"
+        [draggable]="false">
+    <form [formGroup]="utilisateurForm">
+        <div class="p-fluid">
+            <div class="field">
+                <label for="structureId">Structure</label>
+                <p-dropdown
+                        id="structureId"
+                        formControlName="structureId"
+                        [options]="structures"
+                        optionLabel="nom"
+                        optionValue="id"
+                        placeholder="Sélectionner une structure"
+                        [style]="{'width': '100%'}">
+                    <ng-template let-structure pTemplate="item">
+                        <div class="structure-option">
+                            <span class="structure-name">{{ structure.nom }}</span>
+                            <span class="structure-type">{{ structure.type }}</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="nom">Nom *</label>
+                    <input id="nom" type="text" pInputText formControlName="nom">
+                    <small class="p-error" *ngIf="utilisateurForm.get('nom')?.invalid && utilisateurForm.get('nom')?.touched">
+                        Nom requis
+                    </small>
+                </div>
+                <div class="field">
+                    <label for="prenom">Prénom *</label>
+                    <input id="prenom" type="text" pInputText formControlName="prenom">
+                    <small class="p-error" *ngIf="utilisateurForm.get('prenom')?.invalid && utilisateurForm.get('prenom')?.touched">
+                        Prénom requis
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="email">Email *</label>
+                    <input id="email" type="email" pInputText formControlName="email">
+                    <small class="p-error" *ngIf="utilisateurForm.get('email')?.invalid && utilisateurForm.get('email')?.touched">
+                        Email valide requis
+                    </small>
+                </div>
+                <div class="field">
+                    <label for="telephone">Téléphone</label>
+                    <input id="telephone" type="tel" pInputText formControlName="telephone">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label for="password">Mot de passe *</label>
+                    <input id="password" type="password" pInputText formControlName="password">
+                    <small class="p-error" *ngIf="utilisateurForm.get('password')?.invalid && utilisateurForm.get('password')?.touched">
+                        Mot de passe requis (min 4 caractères)
+                    </small>
+                    <small class="p-help" *ngIf="isEditMode">Laissez vide pour conserver le mot de passe actuel</small>
+                </div>
+            </div>
+
+            <!-- ✅ Sélection multiple des rôles - CORRECTION : utilisation de formControlName -->
+            <!-- Vérifiez que le template utilise correctement les attributs -->
+            <div class="field">
+                <label>Rôles *</label>
+                <div class="roles-checkbox-group">
+                    <div *ngFor="let role of roles" class="role-checkbox">
+                        <p-checkbox
+                                [value]="role.value"
+                                [label]="role.label"
+                                (onChange)="toggleRole(role.value)"
+                                [checked]="isRoleSelected(role.value)">
+                        </p-checkbox>
+                    </div>
+                </div>
+                <small class="p-error" *ngIf="selectedRoles.length === 0 && displayDialog">
+                    Sélectionnez au moins un rôle
+                </small>
+            </div>
+        </div>
+    </form>
+    <ng-template pTemplate="footer">
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayDialog = false"></button>
+        <button pButton label="Enregistrer" icon="pi pi-save" class="p-button-primary" (click)="saveUtilisateur()" [loading]="loading"></button>
+    </ng-template>
+</p-dialog>

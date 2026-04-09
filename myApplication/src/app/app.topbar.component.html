@@ -1,0 +1,93 @@
+<div class="layout-topbar shadow-4">
+    <div class="layout-topbar-left">
+        <a class="layout-topbar-logo" routerLink="/dashboard">
+            <img id="app-logo" src="assets/layout/images/logo/logo.png" alt="Logo">
+        </a>
+
+        <button class="layout-menu-button" (click)="appMain.onMenuButtonClick($event)" pRipple>
+            <i class="pi pi-chevron-right"></i>
+        </button>
+
+        <button class="layout-topbar-mobile-button" (click)="toggleMobileMenu()" pRipple>
+            <i class="pi pi-ellipsis-v"></i>
+        </button>
+    </div>
+
+    <div class="layout-topbar-right" [class.layout-topbar-mobile-active]="mobileMenuActive">
+        <!-- Notifications -->
+        <div class="notifications-wrapper" *ngIf="notificationsCount > 0">
+            <button class="notifications-btn" (click)="toggleNotifications($event)" pRipple>
+                <span class="notification-badge">
+                    <i class="pi pi-bell"></i>
+                    <span class="notification-count" *ngIf="notificationsCount > 0">
+                        {{notificationsCount > 99 ? '99+' : notificationsCount}}
+                    </span>
+                </span>
+            </button>
+
+            <div class="notifications-panel" *ngIf="activeNotificationsPanel"
+                 [@topbarActionPanelAnimation]>
+                <div class="panel-header">
+                    <span>Notifications</span>
+                    <span class="count-badge">{{notificationsCount}}</span>
+                </div>
+                <div class="panel-content">
+                    <div class="notification-item" *ngFor="let notif of notifications">
+                        <div class="notification-icon">
+                            <i class="pi pi-bell"></i>
+                        </div>
+                        <div class="notification-details">
+                            <div class="notification-title">{{notif.title}}</div>
+                            <div class="notification-message">{{notif.message}}</div>
+                            <div class="notification-date">{{notif.date | date:'dd/MM/yyyy HH:mm'}}</div>
+                        </div>
+                    </div>
+                    <div class="empty-notifications" *ngIf="notifications.length === 0">
+                        <i class="pi pi-inbox"></i>
+                        <p>Aucune notification</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Info & Logout -->
+        <div class="user-wrapper">
+            <div class="user-info">
+                <div class="user-details" *ngIf="currentUser">
+                    <div class="user-name">
+                        {{currentUser.prenom}} {{currentUser.nom | uppercase}}
+                    </div>
+                    <div class="user-role">
+                        {{getRoleLabel(currentUser.role)}}
+                    </div>
+                </div>
+                <div class="user-details" *ngIf="!currentUser">
+                    <div class="user-name">Non connecté</div>
+                </div>
+                <button pButton pRipple type="button"
+                        icon="pi pi-power-off"
+                        (click)="onLogout()"
+                        class="p-button-rounded p-button-danger logout-btn"
+                        pTooltip="Déconnexion"
+                        tooltipPosition="bottom">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dialog de déconnexion -->
+<p-dialog header="Déconnexion" [(visible)]="displayLogoutDialog" [modal]="true"
+          [style]="{width: '90%', maxWidth: '400px'}" [draggable]="false">
+    <div class="text-center p-3">
+        <i class="pi pi-exclamation-triangle" style="font-size: 3rem; color: #f39c12;"></i>
+        <h3>Voulez-vous vraiment vous déconnecter ?</h3>
+        <p>Vous serez redirigé vers la page de connexion.</p>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton label="Annuler" icon="pi pi-times" (click)="displayLogoutDialog = false"
+                class="p-button-text"></button>
+        <button pButton label="Se déconnecter" icon="pi pi-power-off" (click)="confirmLogout()"
+                class="p-button-danger"></button>
+    </ng-template>
+</p-dialog>
