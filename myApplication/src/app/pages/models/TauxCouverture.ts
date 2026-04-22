@@ -4,8 +4,6 @@ export interface TauxCouverture {
     code: string;
     libelle: string;
     tauxPourcentage: number;
-    description?: string;
-    actif: boolean;
 }
 
 export interface PoliceTaux {

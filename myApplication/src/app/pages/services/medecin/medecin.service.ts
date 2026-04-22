@@ -1,17 +1,17 @@
 import {Injectable} from '@angular/core';
 import {PrescriptionExamen} from '../../models/prescription';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {AuthService} from '../auth/auth.service';
 import {Observable} from 'rxjs';
-import {Examen} from "../../models/examen";
-import {Medicament} from "../../models/medicament";
+import {Examen} from '../../models/examen';
+import {Medicament} from '../../models/medicament';
 
 @Injectable({
     providedIn: 'root'
 })
 export class MedecinService {
 
-    private baseUrl = 'http://localhost:8080/api';
+    private baseUrl = 'http://localhost:8080/api/medecin';
 
     constructor(
         private http: HttpClient,
@@ -37,6 +37,23 @@ export class MedecinService {
             Authorization: `Bearer ${token}`
         });
         return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/medecin/examens-realises`, { headers });
+    }
+
+    getDemandesEnAttente(): Observable<PrescriptionExamen[]> {
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${token}`
+        });
+        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/medecin/demandes-attente`, { headers });
+    }
+
+    // ✅ NOUVELLE MÉTHODE : Récupérer les demandes par consultation
+    getDemandesByConsultation(consultationId: number): Observable<PrescriptionExamen[]> {
+        const token = this.authService.getToken();
+        const headers = new HttpHeaders({
+            Authorization: `Bearer ${token}`
+        });
+        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/medecin/demandes/consultation/${consultationId}`, { headers });
     }
 
     /**
@@ -67,29 +84,27 @@ export class MedecinService {
         return this.http.post<PrescriptionExamen>(`${this.baseUrl}/consultations/examens/${examenId}/interpretation`, interpretation, {headers: this.getHeaders()});
     }
 
-    // ========== MÉDICAMENTS ==========
-    searchMedicaments(keyword: string): Observable<Medicament[]> {
-        return this.http.get<Medicament[]>(`${this.baseUrl}/medicaments/search?keyword=${keyword}`, {headers: this.getHeaders()});
-    }
+    // services/medecin/medecin.service.ts
+    /**
+     * Récupérer TOUS les examens ayant fait l'objet d'une demande de validation UAB
+     * (EN_ATTENTE, OUI validé, NON rejeté)
+     * @param numPolice - Numéro de police (optionnel)
+     * @param codeInte - CODEINTE (optionnel)
+     * @param codeRisq - Code risque (optionnel)
+     * @param codeMemb - Code membre (optionnel)
+     */
+    getDemandesValidation(numPolice?: string, codeInte?: string, codeRisq?: string, codeMemb?: string): Observable<PrescriptionExamen[]> {
+        let params = new HttpParams();
+        if (numPolice) { params = params.set('numPolice', numPolice); }
+        if (codeInte) { params = params.set('codeInte', codeInte); }
+        if (codeRisq) { params = params.set('codeRisq', codeRisq); }
+        if (codeMemb) { params = params.set('codeMemb', codeMemb); }  // ✅ Ajouter codeMemb
 
-    getAllMedicaments(): Observable<Medicament[]> {
-        return this.http.get<Medicament[]>(`${this.baseUrl}/medicaments`, {headers: this.getHeaders()});
-    }
+        console.log('Paramètres recherche demandes validation:', { numPolice, codeInte, codeRisq, codeMemb });
 
-    createMedicament(medicament: Partial<Medicament>): Observable<Medicament> {
-        return this.http.post<Medicament>(`${this.baseUrl}/medicaments`, medicament, {headers: this.getHeaders()});
-    }
-
-    // ========== EXAMENS ==========
-    searchExamens(keyword: string): Observable<Examen[]> {
-        return this.http.get<Examen[]>(`${this.baseUrl}/examens/search?keyword=${keyword}`, {headers: this.getHeaders()});
-    }
-
-    getAllExamens(): Observable<Examen[]> {
-        return this.http.get<Examen[]>(`${this.baseUrl}/examens`, {headers: this.getHeaders()});
-    }
-
-    createExamen(examen: Partial<Examen>): Observable<Examen> {
-        return this.http.post<Examen>(`${this.baseUrl}/examens`, examen, {headers: this.getHeaders()});
+        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/demandes-validation`, {
+            headers: this.getHeaders(),
+            params
+        });
     }
 }

@@ -1,7 +1,65 @@
+// pages/components/uab/dashboard/dashboard.component.ts
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { UabService } from '../../../services/uab/uab.service';
+
+// ✅ Interfaces pour le typage
+interface StructureStat {
+    structureId: number;
+    structureNom: string;
+    structureType: string;
+    totalDossiers: number;
+    montantTotal: number;
+    annees: AnneeStat[];
+}
+
+interface AnneeStat {
+    annee: number;
+    totalDossiers: number;
+    montantTotal: number;
+    mois: MoisStat[];
+}
+
+interface MoisStat {
+    mois: number;
+    nomMois: string;
+    totalDossiers: number;
+    montantTotal: number;
+}
+
+interface MonthData {
+    mois: number;
+    nomMois: string;
+    totalDossiers: number;
+    montantTotal: number;
+    structures: StructureItem[];
+}
+
+interface YearData {
+    annee: number;
+    totalDossiers: number;
+    montantTotal: number;
+    mois: MonthData[];
+}
+
+interface GroupData {
+    type: string;
+    label: string;
+    icon: string;
+    color: string;
+    order: number;
+    totalStructures: number;
+    years: YearData[];
+}
+
+interface StructureItem {
+    id: number;
+    nom: string;
+    totalDossiers: number;
+    montantTotal: number;
+    type: string;
+}
 
 @Component({
     selector: 'app-dashboard',
@@ -12,52 +70,26 @@ export class DashboardComponent implements OnInit {
 
     stats: any = null;
     loading = false;
-    selectedStructure: string | null = null;
-    selectedAnnee: number | null = null;
-    selectedMois: number | null = null;
+
+    // Niveaux d'expansion
+    expandedType: string | null = null;
+    expandedYear: number | null = null;
+    expandedMonth: number | null = null;
+
+    structuredData: GroupData[] = [];
 
     chartData: any;
     chartOptions: any;
 
-    // Groupe de structures
-    groupedStructures: any[] = [];
+    searchTerm = '';
+    filteredStructuredData: GroupData[] = [];
 
-    // ✅ Propriétés pour le filtre de recherche
-    filteredGroupedStructures: any[] = [];
-    searchStructureTerm = '';
-
-    // Configuration des groupes
     structureGroups = [
-        {
-            type: 'HOPITAL',
-            label: '🏥 Hôpitaux',
-            icon: 'pi pi-building',
-            color: '#3b82f6'
-        },
-        {
-            type: 'CLINIQUE',
-            label: '🏥 Cliniques',
-            icon: 'pi pi-heart',
-            color: '#10b981'
-        },
-        {
-            type: 'PHARMACIE',
-            label: '💊 Pharmacies',
-            icon: 'pi pi-shopping-cart',
-            color: '#f59e0b'
-        },
-        {
-            type: 'LABORATOIRE',
-            label: '🔬 Laboratoires',
-            icon: 'pi pi-flask',
-            color: '#8b5cf6'
-        },
-        {
-            type: 'AUTRE',
-            label: '📋 Autres structures',
-            icon: 'pi pi-building',
-            color: '#6b7280'
-        }
+        { type: 'HOPITAL', label: '🏥 Hôpitaux', icon: 'pi pi-building', color: '#3b82f6', order: 1 },
+        { type: 'CLINIQUE', label: '🏥 Cliniques', icon: 'pi pi-heart', color: '#10b981', order: 2 },
+        { type: 'PHARMACIE', label: '💊 Pharmacies', icon: 'pi pi-shopping-cart', color: '#f59e0b', order: 3 },
+        { type: 'LABORATOIRE', label: '🔬 Laboratoires', icon: 'pi pi-flask', color: '#8b5cf6', order: 4 },
+        { type: 'AUTRE', label: '📋 Autres structures', icon: 'pi pi-building', color: '#6b7280', order: 5 }
     ];
 
     constructor(
@@ -78,7 +110,7 @@ export class DashboardComponent implements OnInit {
                 this.stats = data;
                 this.loading = false;
                 this.initChartData();
-                this.groupStructuresByType();
+                this.restructureData();
             },
             error: (error) => {
                 this.loading = false;
@@ -92,134 +124,197 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    // Méthode pour regrouper les structures par type
-    groupStructuresByType(): void {
-        if (!this.stats || !this.stats.structures) { return; }
+    restructureData(): void {
+        if (!this.stats?.structures) return;
 
-        const groups = [];
+        const result: GroupData[] = [];
 
         for (const groupConfig of this.structureGroups) {
             const structures = this.stats.structures.filter(
-                (s: any) => s.structureType === groupConfig.type
+                (s: StructureStat) => s.structureType === groupConfig.type
             );
 
-            if (structures.length > 0) {
-                groups.push({
-                    ...groupConfig,
-                    structures
-                });
-            }
-        }
+            if (structures.length === 0) continue;
 
-        // Ajouter les structures de type non défini
-        const autres = this.stats.structures.filter(
-            (s: any) => !this.structureGroups.some(g => g.type === s.structureType)
-        );
+            const yearsMap = new Map<number, YearData>();
 
-        if (autres.length > 0) {
-            groups.push({
-                type: 'AUTRE',
-                label: '📋 Autres structures',
-                icon: 'pi pi-building',
-                color: '#6b7280',
-                structures: autres
+            structures.forEach((structure: StructureStat) => {
+                if (structure.annees && structure.annees.length > 0) {
+                    structure.annees.forEach((annee: AnneeStat) => {
+                        if (!yearsMap.has(annee.annee)) {
+                            yearsMap.set(annee.annee, {
+                                annee: annee.annee,
+                                totalDossiers: 0,
+                                montantTotal: 0,
+                                mois: []
+                            });
+                        }
+                        const yearData = yearsMap.get(annee.annee)!;
+                        yearData.totalDossiers += annee.totalDossiers;
+                        yearData.montantTotal += annee.montantTotal;
+
+                        if (annee.mois && annee.mois.length > 0) {
+                            annee.mois.forEach((mois: MoisStat) => {
+                                let monthData = yearData.mois.find(m => m.mois === mois.mois);
+                                if (!monthData) {
+                                    monthData = {
+                                        mois: mois.mois,
+                                        nomMois: this.getNomMois(mois.mois),
+                                        totalDossiers: 0,
+                                        montantTotal: 0,
+                                        structures: []
+                                    };
+                                    yearData.mois.push(monthData);
+                                }
+                                monthData.totalDossiers += mois.totalDossiers;
+                                monthData.montantTotal += mois.montantTotal;
+
+                                if (mois.totalDossiers > 0) {
+                                    monthData.structures.push({
+                                        id: structure.structureId,
+                                        nom: structure.structureNom,
+                                        totalDossiers: mois.totalDossiers,
+                                        montantTotal: mois.montantTotal,
+                                        type: structure.structureType
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // ✅ CORRECTION ICI : trier correctement les mois
+            const years = Array.from(yearsMap.values()).map(year => ({
+                ...year,
+                mois: year.mois.sort((a: MonthData, b: MonthData) => a.mois - b.mois)
+            })).sort((a, b) => b.annee - a.annee);
+
+            result.push({
+                type: groupConfig.type,
+                label: groupConfig.label,
+                icon: groupConfig.icon,
+                color: groupConfig.color,
+                order: groupConfig.order,
+                totalStructures: structures.length,
+                years: years
             });
         }
 
-        this.groupedStructures = groups;
-        this.filteredGroupedStructures = [...groups];
-        console.log('Structures regroupées:', this.groupedStructures);
+        this.structuredData = result.sort((a, b) => a.order - b.order);
+        this.filteredStructuredData = [...this.structuredData];
+        console.log('Données restructurées:', this.structuredData);
     }
 
-    // ✅ Filtrer les structures par nom
-    filterStructures(): void {
-        if (!this.searchStructureTerm.trim()) {
-            this.filteredGroupedStructures = [...this.groupedStructures];
+    filterData(): void {
+        if (!this.searchTerm.trim()) {
+            this.filteredStructuredData = [...this.structuredData];
             return;
         }
 
-        const searchTerm = this.searchStructureTerm.toLowerCase().trim();
+        const searchLower = this.searchTerm.toLowerCase().trim();
 
-        this.filteredGroupedStructures = this.groupedStructures
-            .map(group => ({
-                ...group,
-                structures: group.structures.filter((structure: any) =>
-                    structure.structureNom?.toLowerCase().includes(searchTerm)
-                )
-            }))
-            .filter(group => group.structures.length > 0);
+        this.filteredStructuredData = this.structuredData
+            .map(group => {
+                const filteredYears = group.years
+                    .map(year => ({
+                        ...year,
+                        mois: year.mois
+                            .map(month => ({
+                                ...month,
+                                structures: month.structures.filter(s =>
+                                    s.nom?.toLowerCase().includes(searchLower)
+                                )
+                            }))
+                            .filter(month => month.structures.length > 0)
+                    }))
+                    .filter(year => year.mois.length > 0);
+
+                return { ...group, years: filteredYears };
+            })
+            .filter(group => group.years.length > 0);
     }
 
-    // ✅ Effacer la recherche
     clearSearch(): void {
-        this.searchStructureTerm = '';
-        this.filteredGroupedStructures = [...this.groupedStructures];
+        this.searchTerm = '';
+        this.filteredStructuredData = [...this.structuredData];
     }
 
-    // ✅ Obtenir le nombre total de structures après filtrage
-    getTotalStructuresCount(): number {
-        return this.filteredGroupedStructures.reduce(
-            (total, group) => total + group.structures.length, 0
+    getTotalStructures(): number {
+        return this.filteredStructuredData.reduce(
+            (total, group) => total + group.totalStructures, 0
         );
     }
 
-    // Calculer le total des dossiers pour un groupe
-    getGroupTotalDossiers(structures: any[]): number {
-        if (!structures) { return 0; }
-        return structures.reduce((sum, s) => sum + (s.totalDossiers || 0), 0);
+    getTypeTotalDossiers(group: GroupData): number {
+        return group.years.reduce((sum, year) => sum + year.totalDossiers, 0);
     }
 
-    // Calculer le montant total pour un groupe
-    getGroupMontantTotal(structures: any[]): number {
-        if (!structures) { return 0; }
-        return structures.reduce((sum, s) => sum + (s.montantTotal || 0), 0);
+    getTypeMontantTotal(group: GroupData): number {
+        return group.years.reduce((sum, year) => sum + year.montantTotal, 0);
     }
+
+    toggleType(type: string): void {
+        this.expandedType = this.expandedType === type ? null : type;
+        this.expandedYear = null;
+        this.expandedMonth = null;
+    }
+
+    toggleYear(year: number): void {
+        this.expandedYear = this.expandedYear === year ? null : year;
+        this.expandedMonth = null;
+    }
+
+    toggleMonth(month: number): void {
+        this.expandedMonth = this.expandedMonth === month ? null : month;
+    }
+
+    voirDossiersStructure(structure: StructureItem): void {
+        this.router.navigate(['/uab/dossiers'], {
+            queryParams: {
+                structureId: structure.id,
+                structureNom: structure.nom
+            }
+        });
+    }
+
+    voirDossiersEnAttente(): void {
+        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'COMPLET' } });
+    }
+
+    voirDossiersValides(): void {
+        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'VALIDEE_UAB' } });
+    }
+
+    voirDossiersRejetes(): void {
+        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'REJETEE' } });
+    }
+
+    // ========== MÉTHODES UTILITAIRES ==========
 
     initChartOptions(): void {
         this.chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label(context: any) {
-                            return context.dataset.label + ': ' + context.raw + ' dossiers';
-                        }
-                    }
-                }
-            },
+            plugins: { legend: { position: 'top' } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Nombre de dossiers'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Mois'
-                    }
-                }
+                y: { beginAtZero: true, title: { display: true, text: 'Nombre de dossiers' } },
+                x: { title: { display: true, text: 'Mois' } }
             }
         };
     }
 
     initChartData(): void {
-        if (!this.stats || !this.stats.structures) { return; }
+        if (!this.stats?.structures) return;
 
         const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
         const datasets: any[] = [];
 
-        this.stats.structures.forEach((structure: any) => {
+        this.stats.structures.forEach((structure: StructureStat) => {
             const data = new Array(12).fill(0);
             if (structure.annees && structure.annees.length > 0) {
-                const moisData = structure.annees[0].mois;
-                moisData.forEach((m: any, index: number) => {
+                const moisData = structure.annees[0]?.mois || [];
+                moisData.forEach((m: MoisStat, index: number) => {
                     data[index] = m.totalDossiers;
                 });
             }
@@ -232,68 +327,7 @@ export class DashboardComponent implements OnInit {
             });
         });
 
-        this.chartData = {
-            labels: mois,
-            datasets
-        };
-    }
-
-    // Redirection vers tous les dossiers d'une structure
-    voirDossiersStructure(structure: any): void {
-        if (!structure) {
-            this.router.navigate(['/uab/dossiers']);
-        } else {
-            this.router.navigate(['/uab/dossiers'], {
-                queryParams: {
-                    structureId: structure.structureId,
-                    structureNom: structure.structureNom
-                }
-            });
-        }
-    }
-
-    // Redirection vers les dossiers d'une structure pour une année spécifique
-    voirDossiersParAnnee(structure: any, annee: number): void {
-        this.router.navigate(['/uab/dossiers'], {
-            queryParams: {
-                structureId: structure.structureId,
-                structureNom: structure.structureNom,
-                annee
-            }
-        });
-    }
-
-    // Redirection vers les dossiers d'une structure pour un mois spécifique
-    voirDossiersParMois(structure: any, annee: number, mois: number): void {
-        this.router.navigate(['/uab/dossiers'], {
-            queryParams: {
-                structureId: structure.structureId,
-                structureNom: structure.structureNom,
-                annee,
-                mois
-            }
-        });
-    }
-
-    // Redirection vers tous les dossiers en attente
-    voirDossiersEnAttente(): void {
-        this.router.navigate(['/uab/dossiers'], {
-            queryParams: { statut: 'COMPLET' }
-        });
-    }
-
-    // Redirection vers tous les dossiers validés
-    voirDossiersValides(): void {
-        this.router.navigate(['/uab/dossiers'], {
-            queryParams: { statut: 'VALIDEE_UAB' }
-        });
-    }
-
-    // Redirection vers tous les dossiers rejetés
-    voirDossiersRejetes(): void {
-        this.router.navigate(['/uab/dossiers'], {
-            queryParams: { statut: 'REJETEE' }
-        });
+        this.chartData = { labels: mois, datasets };
     }
 
     getNomMois(mois: number): string {
@@ -304,28 +338,23 @@ export class DashboardComponent implements OnInit {
         return moisNoms[mois - 1] || '';
     }
 
-    getTotalParStructure(): number {
-        if (!this.stats?.structures) { return 0; }
-        return this.stats.structures.length;
+    getTotalDossiers(): number {
+        return this.stats?.totalDossiers || 0;
     }
 
-    getCouleurParType(type: string): string {
-        switch (type) {
-            case 'HOPITAL': return '#3b82f6';
-            case 'CLINIQUE': return '#10b981';
-            case 'PHARMACIE': return '#f59e0b';
-            case 'LABORATOIRE': return '#8b5cf6';
-            default: return '#6b7280';
-        }
+    getEnAttente(): number {
+        return this.stats?.enAttente || 0;
     }
 
-    getIconeParType(type: string): string {
-        switch (type) {
-            case 'HOPITAL': return 'pi pi-building';
-            case 'CLINIQUE': return 'pi pi-heart';
-            case 'PHARMACIE': return 'pi pi-shopping-cart';
-            case 'LABORATOIRE': return 'pi pi-flask';
-            default: return 'pi pi-question';
-        }
+    getValides(): number {
+        return this.stats?.valides || 0;
+    }
+
+    getRejetes(): number {
+        return this.stats?.rejetes || 0;
+    }
+
+    getMontantTotal(): number {
+        return this.stats?.montantTotalPrisEnCharge || 0;
     }
 }

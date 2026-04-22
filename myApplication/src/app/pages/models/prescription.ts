@@ -42,7 +42,12 @@ export interface PrescriptionExamen {
     patientNom: string;
     patientPrenom: string;
     patientPolice: string;
+    codeInte?: string;      // ✅ AJOUTER - CODEINTE
+    codeRisq?: string;      // ✅ AJOUTER - CODERISQ
+    datePaiement?: string;
     examenId?: number;
+    validationUab: string;
+    motifRejet?: string;
     examenNom: string;
     examenCategorie?: string;
     codeActe: string;
@@ -60,6 +65,8 @@ export interface PrescriptionExamen {
     resultats: ResultatExamen[];
     interpretation: string;
     paye: boolean;           // ✅ Ajouter cette propriété
+    datePrescription?: string;
+    medecinNom?: string;
 }
 
 export interface ResultatExamen {

@@ -11,7 +11,7 @@ import {
 } from '../../models/prescription';
 import {PoliceTaux} from '../../models/TauxCouverture';
 import {Observable} from 'rxjs';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {AuthService} from '../auth/auth.service';
 
 @Injectable({
@@ -36,8 +36,17 @@ export class ConsultationService {
         return this.http.put<Consultation>(`${this.baseUrl}/consultations/${id}/prescriptions`, request);
     }
 
-    getConsultationsEnAttente(): Observable<Consultation[]> {
-        return this.http.get<Consultation[]>(`${this.baseUrl}/consultations/medecin/attente`);
+    // services/consultation/consultation.service.ts
+    getConsultationsEnAttente(numPolice?: string, codeInte?: string, codeRisq?: string, codeMemb?: string): Observable<Consultation[]> {
+        let params = new HttpParams();
+        if (numPolice) { params = params.set('numPolice', numPolice); }
+        if (codeInte) { params = params.set('codeInte', codeInte); }
+        if (codeRisq) { params = params.set('codeRisq', codeRisq); }
+        if (codeMemb) { params = params.set('codeMemb', codeMemb); }  // ✅ Ajouter codeMemb
+
+        console.log('Paramètres recherche:', { numPolice, codeInte, codeRisq, codeMemb });
+
+        return this.http.get<Consultation[]>(`${this.baseUrl}/consultations/medecin/attente`, { params });
     }
 
     /**

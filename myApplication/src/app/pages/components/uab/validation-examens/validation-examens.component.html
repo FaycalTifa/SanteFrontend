@@ -1,0 +1,162 @@
+<!-- pages/components/uab/validation-examens/validation-examens.component.html -->
+<div class="validation-container">
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-check-square"></i>
+            </div>
+            <div class="header-content">
+                <h2>Validation des examens</h2>
+                <p>Examens nécessitant une validation UAB avant réalisation</p>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="stats-section" *ngIf="examens.length > 0">
+            <div class="stat-card">
+                <div class="stat-value">{{ examens.length }}</div>
+                <div class="stat-label">En attente</div>
+            </div>
+        </div>
+
+        <!-- Tableau des examens -->
+        <div class="table-wrapper">
+            <p-table
+                    [value]="filteredExamens"
+                    [loading]="loading"
+                    [paginator]="true"
+                    [rows]="10"
+                    [rowsPerPageOptions]="[5,10,20,50]"
+                    responsiveLayout="scroll"
+                    styleClass="p-datatable-sm">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Date prescription</th>
+                        <th>Patient</th>
+                        <th>N° Police</th>
+                        <th>CODEINTE</th>
+                        <th>Code Risque</th>
+                        <th>Examen</th>
+                        <th>Code</th>
+                        <th>Médecin</th>
+                        <th style="width: 150px">Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-examen>
+                    <tr>
+                        <td>{{ examen.datePrescription | date:'dd/MM/yyyy' }}</td>
+                        <td>
+                            <div class="patient-cell">
+                                <i class="pi pi-user"></i>
+                                <span>{{ examen.patientPrenom }} {{ examen.patientNom }}</span>
+                            </div>
+                        </td>
+                        <td><strong class="police-number">{{ examen.patientPolice }}</strong></td>
+                        <td>{{ examen.codeInte || '-' }}</td>
+                        <td>{{ examen.codeRisq || '-' }}</td>
+                        <td>{{ examen.examenNom }}</td>
+                        <td>{{ examen.codeActe }}</td>
+                        <td>{{ examen.medecinNom || '-' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button pButton
+                                        icon="pi pi-check"
+                                        label="Valider"
+                                        class="p-button-success p-button-sm"
+                                        (click)="valider(examen)">
+                                </button>
+                                <button pButton
+                                        icon="pi pi-times"
+                                        label="Rejeter"
+                                        class="p-button-danger p-button-sm"
+                                        (click)="ouvrirRejet(examen)">
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="9" class="empty-message">
+                            <i class="pi pi-inbox"></i>
+                            <p>Aucun examen en attente de validation</p>
+                            <small>Tous les examens ont été traités</small>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<!-- Dialogue de rejet -->
+<p-dialog
+        header="Motif du rejet"
+        [(visible)]="showRejetDialog"
+        [modal]="true"
+        [style]="{width: '450px'}"
+        [draggable]="false"
+        [closable]="true">
+
+    <div class="rejet-dialog">
+        <div class="dialog-icon warning">
+            <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <div class="dialog-info">
+            <p>Vous êtes sur le point de rejeter l'examen :</p>
+            <div class="examen-info">
+                <strong>{{ selectedExamen?.examenNom }}</strong>
+                <span>Patient: {{ selectedExamen?.patientPrenom }} {{ selectedExamen?.patientNom }}</span>
+                <span>Police: {{ selectedExamen?.patientPolice }}</span>
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="motif">Motif du rejet <span class="required">*</span></label>
+            <textarea
+                    id="motif"
+                    rows="4"
+                    pInputTextarea
+                    [(ngModel)]="motifRejet"
+                    placeholder="Expliquez pourquoi cet examen est rejeté..."
+                    [class.ng-invalid]="motifRejet.trim() === '' && motifRejet.length > 0">
+            </textarea>
+            <small class="info-text">
+                <i class="pi pi-info-circle"></i>
+                Ce motif sera communiqué au médecin prescripteur
+            </small>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <button pButton
+                    icon="pi pi-times"
+                    label="Annuler"
+                    class="p-button-text"
+                    (click)="showRejetDialog = false">
+            </button>
+            <button pButton
+                    icon="pi pi-check"
+                    label="Confirmer le rejet"
+                    class="p-button-danger"
+                    [disabled]="!motifRejet.trim()"
+                    (click)="confirmerRejet()">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>
+<p-confirmDialog></p-confirmDialog>

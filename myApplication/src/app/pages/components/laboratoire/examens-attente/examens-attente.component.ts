@@ -1,3 +1,4 @@
+// examens-attente.component.ts
 import { Component, OnInit } from '@angular/core';
 import { PrescriptionExamen } from '../../../models/prescription';
 import { Router } from '@angular/router';
@@ -15,18 +16,36 @@ export class ExamensAttenteComponent implements OnInit {
     examens: PrescriptionExamen[] = [];
     filteredExamens: PrescriptionExamen[] = [];
     loading = false;
-    searchPolice = '';
+    rechercheEnCours = false;
+
+    searchNumPolice = '';
+    searchCodeInte = '';
+    searchCodeRisq = '';
+    searchCodeMemb = '';
+
+    // Sauvegarde des critères de recherche
+    lastSearchCriteria = {
+        numPolice: '',
+        codeInte: '',
+        codeRisq: '',
+        codeMemb: ''
+    };
+
     currentUser: any;
     isBiologiste = false;
     isCaissier = false;
 
-    // Filtres
-    filterOptions = [
-        { label: 'Tous', value: 'all' },
-        { label: 'En attente de paiement', value: 'unpaid' },
-        { label: 'Réglés', value: 'paid' }
-    ];
-    currentFilter = 'all';
+    // Regrouper par consultation
+    consultationsMap: Map<number, {
+        consultation: any,
+        examens: PrescriptionExamen[],
+        totalExamens: number,
+        payeCount: number,
+        realiseCount: number,
+        valideCount: number
+    }> = new Map();
+
+    selectedConsultationId: number | null = null;
 
     constructor(
         private laboratoireService: LaboratoireService,
@@ -37,202 +56,330 @@ export class ExamensAttenteComponent implements OnInit {
 
     ngOnInit(): void {
         this.currentUser = this.authService.getCurrentUser();
-
         const userRoles = this.currentUser?.roles || [];
         this.isBiologiste = userRoles.includes('BIOLOGISTE');
         this.isCaissier = userRoles.includes('CAISSIER_LABORATOIRE');
 
-        console.log('=== EXAMENS ATTENTE COMPONENT ===');
-        console.log('Utilisateur:', this.currentUser);
-        console.log('Rôles:', userRoles);
-        console.log('Est biologiste:', this.isBiologiste);
-        console.log('Est caissier:', this.isCaissier);
-
-        this.loadExamens();
-    }
-
-    // Ajoutez ces méthodes dans votre composant
-
-// Compter les examens en attente de paiement
-    getPendingCount(): number {
-        return this.filteredExamens.filter(e => !e.paye).length;
-    }
-
-// Compter les examens réglés
-    getPaidCount(): number {
-        return this.filteredExamens.filter(e => e.paye).length;
-    }
-
-    loadExamens(): void {
-        this.loading = true;
-
-        if (this.isCaissier) {
-            this.loadExamensEnAttentePaiement();
-        } else if (this.isBiologiste) {
-            this.loadExamensPayesEnAttente();
-        } else {
-            this.loadExamensSimples();
-        }
-    }
-
-    loadExamensSimples(): void {
-        this.laboratoireService.getExamensEnAttente().subscribe({
-            next: (data) => {
-                this.examens = data;
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: () => {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les examens'
-                });
-            }
-        });
-    }
-
-    loadExamensEnAttentePaiement(): void {
-        this.laboratoireService.getExamensEnAttentePaiement().subscribe({
-            next: (data) => {
-                this.examens = data;
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: () => {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les examens en attente de paiement'
-                });
-            }
-        });
-    }
-
-    loadExamensPayesEnAttente(): void {
-        this.laboratoireService.getExamensPayesEnAttente().subscribe({
-            next: (data) => {
-                this.examens = data;
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: () => {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les examens payés en attente'
-                });
-            }
-        });
-    }
-
-    rechercher(): void {
-        if (this.searchPolice.trim()) {
-            this.loading = true;
-            this.laboratoireService.rechercherParPolice(this.searchPolice).subscribe({
-                next: (data) => {
-                    console.log('=== RÉSULTAT RECHERCHE ===');
-                    console.log('Données reçues:', data);
-                    console.log('Statut paye de chaque examen:');
-                    data.forEach(e => {
-                        console.log(`  - Examen ${e.id}: paye = ${e.paye}`);
-                    });
-
-                    this.examens = data;
-                    this.applyFilters();
-                    this.loading = false;
-                },
-                error: () => {
-                    this.loading = false;
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Erreur',
-                        detail: 'Impossible de rechercher'
-                    });
-                }
-            });
-        } else {
-            this.loadExamens();
-        }
-    }
-
-    resetSearch(): void {
-        this.searchPolice = '';
-        this.currentFilter = 'all';
-        this.loadExamens();
-    }
-
-    applyFilters(): void {
-        let result = [...this.examens];
-
-        // Filtre par recherche
-        if (this.searchPolice.trim()) {
-            result = result.filter(e =>
-                e.patientPolice?.toLowerCase().includes(this.searchPolice.toLowerCase())
-            );
-        }
-
-        // Filtre par statut de paiement
-        if (this.currentFilter === 'paid') {
-            result = result.filter(e => e.paye === true);
-        } else if (this.currentFilter === 'unpaid') {
-            result = result.filter(e => e.paye === false);
-        }
-
-        this.filteredExamens = result;
-    }
-
-    onFilterChange(value: string): void {
-        this.currentFilter = value;
-        this.applyFilters();
-    }
-
-    action(examen: PrescriptionExamen): void {
-        console.log('=== ACTION DÉCLENCHÉE ===');
-        console.log('Examen ID:', examen.id);
-        console.log('Payé:', examen.paye);
+        console.log('=== EXAMENS ATTENTE INIT ===');
         console.log('isCaissier:', this.isCaissier);
         console.log('isBiologiste:', this.isBiologiste);
 
-        if (this.isCaissier) {
-            if (examen.paye) {
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Attention',
-                    detail: 'Cet examen a déjà été payé'
-                });
-                return;
+        // ✅ CHARGER LES CRITÈRES SAUVEGARDÉS
+        this.loadSavedSearchCriteria();
+    }
+
+    /**
+     * ✅ Sauvegarder les critères de recherche dans sessionStorage
+     */
+    private saveSearchCriteria(): void {
+        const criteria = {
+            numPolice: this.searchNumPolice,
+            codeInte: this.searchCodeInte,
+            codeRisq: this.searchCodeRisq,
+            codeMemb: this.searchCodeMemb
+        };
+        sessionStorage.setItem('laboratoire_search_criteria', JSON.stringify(criteria));
+        console.log('✅ Critères laboratoire sauvegardés:', criteria);
+    }
+
+    /**
+     * ✅ Charger les critères de recherche sauvegardés
+     */
+    private loadSavedSearchCriteria(): void {
+        const saved = sessionStorage.getItem('laboratoire_search_criteria');
+        if (saved) {
+            try {
+                const criteria = JSON.parse(saved);
+                this.searchNumPolice = criteria.numPolice || '';
+                this.searchCodeInte = criteria.codeInte || '';
+                this.searchCodeRisq = criteria.codeRisq || '';
+                this.searchCodeMemb = criteria.codeMemb || '';
+                console.log('✅ Critères laboratoire chargés:', criteria);
+
+                // ✅ Si des critères existent, lancer automatiquement la recherche
+                if (this.searchNumPolice && this.searchCodeInte && this.searchCodeRisq) {
+                    setTimeout(() => {
+                        this.rechercher();
+                    }, 500);
+                }
+            } catch (e) {
+                console.error('Erreur chargement critères:', e);
             }
-            this.allerVersCaisse(examen);
-        } else if (this.isBiologiste) {
-            if (!examen.paye) {
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Attention',
-                    detail: 'Cet examen doit d\'abord être payé avant réalisation'
-                });
-                return;
-            }
-            this.allerVersRealisation(examen);
-        } else {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Vous n\'avez pas les droits pour effectuer cette action'
-            });
         }
     }
 
-    allerVersCaisse(examen: PrescriptionExamen): void {
-        console.log('Redirection vers caisse pour examen:', examen.id);
+    /**
+     * ✅ Effacer les critères sauvegardés
+     */
+    private clearSavedSearchCriteria(): void {
+        sessionStorage.removeItem('laboratoire_search_criteria');
+    }
+
+    rechercher(): void {
+        const numPolice = this.searchNumPolice?.trim() || '';
+        const codeInteVal = this.searchCodeInte?.trim() || '';
+        const codeRisqVal = this.searchCodeRisq?.trim() || '';
+        const codeMembVal = this.searchCodeMemb?.trim() || '';
+
+        console.log('=== RECHERCHE LABORATOIRE ===');
+        console.log('numPolice:', numPolice);
+        console.log('codeInte:', codeInteVal);
+        console.log('codeRisq:', codeRisqVal);
+        console.log('codeMemb:', codeMembVal);
+
+        if (!numPolice || !codeInteVal || !codeRisqVal) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: '⚠️ Attention',
+                detail: 'Veuillez remplir les champs obligatoires: CODEINTE, N° Police, Code Risque'
+            });
+            return;
+        }
+
+        // Sauvegarder les critères
+        this.lastSearchCriteria = {
+            numPolice,
+            codeInte: codeInteVal,
+            codeRisq: codeRisqVal,
+            codeMemb: codeMembVal
+        };
+
+        // ✅ Sauvegarder dans sessionStorage
+        this.saveSearchCriteria();
+
+        this.loading = true;
+        this.rechercheEnCours = true;
+
+        this.laboratoireService.rechercherParCriteres(numPolice, codeInteVal, codeRisqVal, codeMembVal || undefined).subscribe({
+            next: (data) => {
+                console.log('=== EXAMENS REÇUS ===', data);
+                this.examens = data;
+                this.groupByConsultation();
+                this.loading = false;
+                this.rechercheEnCours = false;
+
+                if (data.length === 0) {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: '📋 Aucun résultat',
+                        detail: 'Aucun examen trouvé avec ces critères.',
+                        life: 3000
+                    });
+                } else {
+                    const aPayer = data.filter(e => e.validationUab === 'OUI' && !e.paye).length;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: '✅ Résultats',
+                        detail: `${data.length} examen(s) trouvé(s) | ${aPayer} à payer`,
+                        life: 4000
+                    });
+                }
+            },
+            error: (error) => {
+                this.loading = false;
+                this.rechercheEnCours = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: '❌ Erreur',
+                    detail: 'Erreur lors de la recherche.',
+                    life: 5000
+                });
+            }
+        });
+    }
+
+    resetSearch(): void {
+        this.searchNumPolice = '';
+        this.searchCodeInte = '';
+        this.searchCodeRisq = '';
+        this.searchCodeMemb = '';
+        this.examens = [];
+        this.filteredExamens = [];
+        this.consultationsMap.clear();
+        this.selectedConsultationId = null;
+        this.lastSearchCriteria = { numPolice: '', codeInte: '', codeRisq: '', codeMemb: '' };
+
+        // ✅ Effacer les critères sauvegardés
+        this.clearSavedSearchCriteria();
+
+        this.messageService.add({
+            severity: 'info',
+            summary: '🔄 Filtres réinitialisés',
+            detail: 'Veuillez saisir les critères de recherche.',
+            life: 3000
+        });
+    }
+
+    groupByConsultation(): void {
+        this.consultationsMap.clear();
+
+        this.examens.forEach(examen => {
+            const consultationId = examen.consultationId;
+            if (!consultationId) { return; }
+
+            if (!this.consultationsMap.has(consultationId)) {
+                this.consultationsMap.set(consultationId, {
+                    consultation: {
+                        id: consultationId,
+                        numeroFeuille: examen.consultationNumeroFeuille,
+                        patientNom: examen.patientNom,
+                        patientPrenom: examen.patientPrenom,
+                        patientPolice: examen.patientPolice,
+                        codeInte: examen.codeInte,
+                        codeRisq: examen.codeRisq
+                    },
+                    examens: [],
+                    totalExamens: 0,
+                    payeCount: 0,
+                    realiseCount: 0,
+                    valideCount: 0
+                });
+            }
+            const group = this.consultationsMap.get(consultationId)!;
+            group.examens.push(examen);
+            group.totalExamens++;
+            if (examen.paye) { group.payeCount++; }
+            if (examen.realise) { group.realiseCount++; }
+            if (examen.validationUab === 'OUI') { group.valideCount++; }
+        });
+    }
+
+    getConsultationsList(): any[] {
+        return Array.from(this.consultationsMap.values());
+    }
+
+    toggleConsultation(consultationId: number): void {
+        if (this.selectedConsultationId === consultationId) {
+            this.selectedConsultationId = null;
+        } else {
+            this.selectedConsultationId = consultationId;
+        }
+    }
+
+    isConsultationExpanded(consultationId: number): boolean {
+        return this.selectedConsultationId === consultationId;
+    }
+
+    getNonPayeCount(group: any): number {
+        return group.totalExamens - group.payeCount;
+    }
+
+    getNonRealiseCount(group: any): number {
+        return group.payeCount - group.realiseCount;
+    }
+
+    getEnAttenteCount(group: any): number {
+        return group.totalExamens - group.valideCount;
+    }
+
+    payer(examen: PrescriptionExamen): void {
+        if (examen.validationUab !== 'OUI') {
+            this.messageService.add({
+                severity: 'error',
+                summary: '⛔ Validation UAB requise',
+                detail: 'Cet examen n\'a pas été validé par l\'UAB. Paiement impossible.',
+                life: 5000
+            });
+            return;
+        }
+
+        if (examen.paye) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: '⚠️ Déjà payé',
+                detail: 'Cet examen a déjà été payé.',
+                life: 3000
+            });
+            return;
+        }
+
         this.router.navigate(['/laboratoire/caisse', examen.id]);
     }
 
-    allerVersRealisation(examen: PrescriptionExamen): void {
-        console.log('Redirection vers réalisation pour examen:', examen.id);
+    realiser(examen: PrescriptionExamen): void {
+        if (examen.validationUab !== 'OUI') {
+            this.messageService.add({
+                severity: 'error',
+                summary: '⛔ Validation UAB requise',
+                detail: 'Cet examen n\'a pas été validé par l\'UAB. Réalisation impossible.',
+                life: 5000
+            });
+            return;
+        }
+
+        if (!examen.paye) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: '⚠️ Paiement requis',
+                detail: 'Cet examen doit d\'abord être payé avant réalisation.',
+                life: 3000
+            });
+            return;
+        }
+
+        if (examen.realise) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: '⚠️ Déjà réalisé',
+                detail: 'Cet examen a déjà été réalisé.',
+                life: 3000
+            });
+            return;
+        }
+
         this.router.navigate(['/laboratoire/realisation', examen.id]);
+    }
+
+    contacterUAB(examen?: PrescriptionExamen): void {
+        let message = 'Demande de validation d\'examen\n';
+        if (examen) {
+            message += `Examen: ${examen.examenNom}\n`;
+            message += `Patient: ${examen.patientPrenom} ${examen.patientNom}\n`;
+            message += `Police: ${examen.patientPolice}\n`;
+            message += `CODEINTE: ${examen.codeInte}\n`;
+            message += `Code Risque: ${examen.codeRisq}`;
+        } else {
+            message += `CODEINTE: ${this.searchCodeInte}\n`;
+            message += `N° Police: ${this.searchNumPolice}\n`;
+            message += `Code Risque: ${this.searchCodeRisq}`;
+        }
+
+        navigator.clipboard.writeText(message).then(() => {
+            this.messageService.add({
+                severity: 'success',
+                summary: '📋 Informations copiées',
+                detail: 'Les informations ont été copiées. Contactez l\'UAB pour validation.',
+                life: 5000
+            });
+        });
+
+        this.messageService.add({
+            severity: 'info',
+            summary: '📞 Contacter l\'UAB',
+            detail: 'Contactez l\'administrateur UAB par email: admin@uab.ci',
+            life: 8000,
+            sticky: true
+        });
+    }
+
+    getValidationStatusClass(validationUab: string): string {
+        if (validationUab === 'OUI') { return 'status-validated'; }
+        if (validationUab === 'EN_ATTENTE') { return 'status-pending'; }
+        if (validationUab === 'NON') { return 'status-rejected'; }
+        return 'status-unknown';
+    }
+
+    getValidationLabel(validationUab: string): string {
+        if (validationUab === 'OUI') { return '✅ Validé UAB'; }
+        if (validationUab === 'EN_ATTENTE') { return '⏳ En attente validation UAB'; }
+        if (validationUab === 'NON') { return '❌ Rejeté par UAB'; }
+        return '❓ Statut inconnu';
+    }
+
+    getValidationIcon(validationUab: string): string {
+        if (validationUab === 'OUI') { return 'pi pi-check-circle'; }
+        if (validationUab === 'EN_ATTENTE') { return 'pi pi-clock'; }
+        if (validationUab === 'NON') { return 'pi pi-times-circle'; }
+        return 'pi pi-question-circle';
     }
 }

@@ -1,8 +1,9 @@
+// prescriptions-attente.component.ts
 import { Component, OnInit } from '@angular/core';
+import { PharmacieService } from '../../../services/pharmacie/pharmacie.service';
 import { PrescriptionMedicament } from '../../../models/prescription';
-import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { PharmacieService } from "../../../services/pharmacie/pharmacie.service";
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-prescriptions-attente',
@@ -14,210 +15,245 @@ export class PrescriptionsAttenteComponent implements OnInit {
     prescriptions: PrescriptionMedicament[] = [];
     filteredPrescriptions: PrescriptionMedicament[] = [];
     loading = false;
-    searchPolice = '';
-    selectedPrescription: any = null;
-    displayDialog = false;
-    prixUnitaire = 0;
-    quantiteDelivree = 0;
 
-    filterOptions = [
-        { label: '📋 Tous', value: 'all' },
-        { label: '⏳ En attente', value: 'pending' },
-        { label: '✅ Délivrés', value: 'delivered' }
-    ];
-    currentFilter = 'all';
+    // Champs de recherche
+    numeroPolice = '';
+    codeInte = '';
+    codeRisq = '';
+    codeMemb = '';
+
+    rechercheEnCours = false;
+
+    // Consultation sélectionnée pour afficher les détails
+    selectedConsultationId: number | null = null;
+
+    // Regrouper par consultation
+    consultationsMap: Map<number, {
+        consultation: any,
+        prescriptions: PrescriptionMedicament[],
+        totalMedicaments: number,
+        delivreCount: number
+    }> = new Map();
 
     constructor(
         private pharmacieService: PharmacieService,
-        private router: Router,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private router: Router
     ) {}
 
     ngOnInit(): void {
-        this.loadAllPrescriptions();
-    }
+        // ✅ CHARGER LES CRITÈRES SAUVEGARDÉS
+        this.loadSavedSearchCriteria();
 
-    loadAllPrescriptions(): void {
-        this.loading = true;
-        this.pharmacieService.getAllPrescriptions().subscribe({
-            next: (data) => {
-                console.log('=== TOUTES LES PRESCRIPTIONS ===');
-                console.log('Nombre total:', data.length);
-                this.prescriptions = data;
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: (error) => {
-                this.loading = false;
-                console.error('Erreur chargement:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les prescriptions'
-                });
-            }
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Bienvenue',
+            detail: 'Veuillez saisir les trois critères de recherche (CODEINTE, N° Police, Code Risque)'
         });
     }
 
-    searchByPolice(): void {
-        if (this.searchPolice.trim()) {
-            this.loading = true;
-            this.pharmacieService.getPrescriptionsByPolice(this.searchPolice).subscribe({
-                next: (data) => {
-                    console.log('=== PRESCRIPTIONS PAR POLICE ===');
-                    console.log('Police:', this.searchPolice);
-                    console.log('Nombre:', data.length);
-                    this.prescriptions = data;
-                    this.applyFilters();
-                    this.loading = false;
-                },
-                error: (error) => {
-                    this.loading = false;
-                    console.error('Erreur recherche:', error);
+    /**
+     * ✅ Sauvegarder les critères de recherche dans sessionStorage
+     */
+    private saveSearchCriteria(): void {
+        const criteria = {
+            numeroPolice: this.numeroPolice,
+            codeInte: this.codeInte,
+            codeRisq: this.codeRisq,
+            codeMemb: this.codeMemb
+        };
+        sessionStorage.setItem('pharmacie_search_criteria', JSON.stringify(criteria));
+        console.log('✅ Critères sauvegardés:', criteria);
+    }
+
+    /**
+     * ✅ Charger les critères de recherche sauvegardés
+     */
+    private loadSavedSearchCriteria(): void {
+        const saved = sessionStorage.getItem('pharmacie_search_criteria');
+        if (saved) {
+            try {
+                const criteria = JSON.parse(saved);
+                this.numeroPolice = criteria.numeroPolice || '';
+                this.codeInte = criteria.codeInte || '';
+                this.codeRisq = criteria.codeRisq || '';
+                this.codeMemb = criteria.codeMemb || '';
+                console.log('✅ Critères chargés:', criteria);
+
+                // ✅ Si des critères existent, lancer automatiquement la recherche
+                if (this.numeroPolice && this.codeInte && this.codeRisq) {
+                    setTimeout(() => {
+                        this.rechercher();
+                    }, 500);
+                }
+            } catch (e) {
+                console.error('Erreur chargement critères:', e);
+            }
+        }
+    }
+
+    /**
+     * ✅ Effacer les critères sauvegardés
+     */
+    private clearSavedSearchCriteria(): void {
+        sessionStorage.removeItem('pharmacie_search_criteria');
+    }
+
+    rechercher(): void {
+        const numPolice = this.numeroPolice?.trim() || '';
+        const codeInteVal = this.codeInte?.trim() || '';
+        const codeRisqVal = this.codeRisq?.trim() || '';
+        const codeMembVal = this.codeMemb?.trim() || '';
+
+        console.log('=== RECHERCHE PHARMACIE ===');
+        console.log('numPolice:', numPolice);
+        console.log('codeInte:', codeInteVal);
+        console.log('codeRisq:', codeRisqVal);
+        console.log('codeMemb:', codeMembVal);
+
+        if (!numPolice || !codeInteVal || !codeRisqVal) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Champs obligatoires',
+                detail: 'Veuillez remplir les trois champs : CODEINTE, N° Police et Code Risque',
+                life: 5000
+            });
+            return;
+        }
+
+        // ✅ Sauvegarder les critères avant recherche
+        this.saveSearchCriteria();
+
+        this.loading = true;
+        this.rechercheEnCours = true;
+
+        this.pharmacieService.rechercherParPoliceEtCodeInte(numPolice, codeInteVal, codeRisqVal, codeMembVal || undefined).subscribe({
+            next: (data) => {
+                console.log('✅ Prescriptions reçues:', data);
+                this.prescriptions = data;
+                this.groupByConsultation();
+                this.loading = false;
+                this.rechercheEnCours = false;
+
+                if (data.length === 0) {
                     this.messageService.add({
-                        severity: 'error',
-                        summary: 'Erreur',
-                        detail: 'Impossible de rechercher les prescriptions'
+                        severity: 'info',
+                        summary: 'Aucun résultat',
+                        detail: 'Aucune prescription trouvée avec ces critères',
+                        life: 3000
+                    });
+                } else {
+                    const totalMedicaments = this.prescriptions.length;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Résultats',
+                        detail: `${totalMedicaments} médicament(s) à délivrer pour ${this.consultationsMap.size} consultation(s)`,
+                        life: 4000
                     });
                 }
-            });
-        } else {
-            this.loadAllPrescriptions();
-        }
+            },
+            error: (error) => {
+                this.loading = false;
+                this.rechercheEnCours = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: error.error?.message || 'Erreur lors de la recherche'
+                });
+            }
+        });
     }
 
     resetSearch(): void {
-        this.searchPolice = '';
-        this.currentFilter = 'all';
-        this.loadAllPrescriptions();
+        this.numeroPolice = '';
+        this.codeInte = '';
+        this.codeRisq = '';
+        this.codeMemb = '';
+        this.prescriptions = [];
+        this.filteredPrescriptions = [];
+        this.consultationsMap.clear();
+        this.selectedConsultationId = null;
+
+        // ✅ Effacer les critères sauvegardés
+        this.clearSavedSearchCriteria();
+
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Filtres réinitialisés',
+            detail: 'Veuillez saisir les trois critères de recherche',
+            life: 3000
+        });
     }
 
-    applyFilters(): void {
-        let result = [...this.prescriptions];
+    groupByConsultation(): void {
+        this.consultationsMap.clear();
 
-        if (this.searchPolice.trim()) {
-            result = result.filter(p => {
-                const police = p.patientPolice || '';
-                return police.toLowerCase().includes(this.searchPolice.toLowerCase());
-            });
+        this.prescriptions.forEach(prescription => {
+            const consultationId = prescription.consultationId || prescription.consultation?.id;
+            if (!consultationId) return;
+
+            const consultationData = prescription.consultation;
+
+            if (!this.consultationsMap.has(consultationId)) {
+                this.consultationsMap.set(consultationId, {
+                    consultation: {
+                        id: consultationId,
+                        numeroFeuille: consultationData?.numeroFeuille,
+                        numeroPolice: prescription.patientPolice || consultationData?.numeroPolice,
+                        nomPatient: prescription.patientNom || consultationData?.nomPatient,
+                        prenomPatient: prescription.patientPrenom || consultationData?.prenomPatient,
+                        dateConsultation: consultationData?.dateConsultation
+                    },
+                    prescriptions: [],
+                    totalMedicaments: 0,
+                    delivreCount: 0
+                });
+            }
+            const group = this.consultationsMap.get(consultationId)!;
+            group.prescriptions.push(prescription);
+            group.totalMedicaments++;
+            if (prescription.delivre) {
+                group.delivreCount++;
+            }
+        });
+    }
+
+    getConsultationsList(): any[] {
+        return Array.from(this.consultationsMap.values());
+    }
+
+    toggleConsultation(consultationId: number): void {
+        if (this.selectedConsultationId === consultationId) {
+            this.selectedConsultationId = null;
+        } else {
+            this.selectedConsultationId = consultationId;
         }
-
-        if (this.currentFilter === 'delivered') {
-            result = result.filter(p => p.delivre === true);
-        } else if (this.currentFilter === 'pending') {
-            result = result.filter(p => p.delivre === false);
-        }
-
-        this.filteredPrescriptions = result;
-        console.log(`Filtre appliqué: ${this.currentFilter} - ${this.filteredPrescriptions.length} prescriptions`);
     }
 
-    onFilterChange(value: string): void {
-        this.currentFilter = value;
-        this.applyFilters();
+    isConsultationExpanded(consultationId: number): boolean {
+        return this.selectedConsultationId === consultationId;
     }
 
-    // ✅ Méthodes pour le dialogue avec taux réel
-    getTauxCouverture(): number {
-        if (this.selectedPrescription?.tauxCouverture) {
-            return this.selectedPrescription.tauxCouverture;
-        }
-        if (this.selectedPrescription?.prixTotal && this.selectedPrescription?.montantPrisEnCharge && this.selectedPrescription.prixTotal > 0) {
-            return (this.selectedPrescription.montantPrisEnCharge / this.selectedPrescription.prixTotal) * 100;
-        }
-        return 80;
+    getNonDelivreCount(group: any): number {
+        return group.totalMedicaments - group.delivreCount;
     }
 
-    getPrixTotal(): number {
-        const quantite = this.quantiteDelivree || this.selectedPrescription?.quantitePrescitee || 0;
-        return this.prixUnitaire * quantite;
-    }
-
-    getMontantUAB(): number {
-        const prixTotal = this.getPrixTotal();
-        const taux = this.getTauxCouverture();
-        return prixTotal * (taux / 100);
-    }
-
-    getMontantPatient(): number {
-        const prixTotal = this.getPrixTotal();
-        const montantUAB = this.getMontantUAB();
-        return prixTotal - montantUAB;
-    }
-
-    delivrer(prescription: PrescriptionMedicament): void {
+    redirigerVersDelivrance(prescription: PrescriptionMedicament): void {
         if (prescription.delivre) {
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Attention',
-                detail: 'Ce médicament a déjà été délivré'
+                summary: 'Déjà délivré',
+                detail: 'Ce médicament a déjà été délivré',
+                life: 3000
             });
             return;
         }
 
-        this.selectedPrescription = prescription;
-        this.prixUnitaire = 0;
-        this.quantiteDelivree = prescription.quantitePrescitee;
-        this.displayDialog = true;
+        console.log('Redirection vers délivrance pour prescription ID:', prescription.id);
+        this.router.navigate(['/pharmacie/delivrance', prescription.id]);
     }
 
-    fermerDialogue(): void {
-        this.displayDialog = false;
-        this.selectedPrescription = null;
-        this.prixUnitaire = 0;
-        this.quantiteDelivree = 0;
-    }
-
-    confirmerDelivrance(): void {
-        if (!this.prixUnitaire || this.prixUnitaire <= 0) {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Veuillez saisir un prix unitaire valide'
-            });
-            return;
-        }
-
-        if (this.quantiteDelivree > this.selectedPrescription.quantitePrescitee) {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'La quantité délivrée ne peut pas dépasser la quantité prescrite'
-            });
-            return;
-        }
-
-        this.loading = true;
-
-        const montantPatient = this.getMontantPatient();
-
-        this.pharmacieService.delivrerMedicament({
-            prescriptionId: this.selectedPrescription.id,
-            prixUnitaire: this.prixUnitaire,
-            quantiteDelivree: this.quantiteDelivree || this.selectedPrescription.quantitePrescitee
-        }).subscribe({
-            next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: `Médicament délivré avec succès. Montant encaissé: ${montantPatient.toLocaleString()} FCFA`
-                });
-                this.fermerDialogue();
-                if (this.searchPolice.trim()) {
-                    this.searchByPolice();
-                } else {
-                    this.loadAllPrescriptions();
-                }
-                this.loading = false;
-            },
-            error: (error) => {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: error.error?.message || 'Erreur lors de la délivrance'
-                });
-            }
-        });
+    getTotalMedicaments(): number {
+        return this.prescriptions.length;
     }
 }

@@ -110,15 +110,15 @@
                     <h3><i class="pi pi-calculator"></i> Résumé des remboursements</h3>
                     <div class="summary-card">
                         <div class="summary-item">
-                            <span>Hôpital :</span>
+                            <span>Prise en charge :</span>
                             <strong>{{ consultation.montantPrisEnCharge | number }} FCFA</strong>
                         </div>
                         <div class="summary-item">
-                            <span>Pharmacie :</span>
+                            <span>Prise en charge :</span>
                             <strong>{{ getTotalPharmacie() | number }} FCFA</strong>
                         </div>
                         <div class="summary-item">
-                            <span>Laboratoire :</span>
+                            <span>Monta :</span>
                             <strong>{{ getTotalLaboratoire() | number }} FCFA</strong>
                         </div>
                         <div class="summary-item total">
@@ -151,3 +151,12 @@
         <button pButton icon="pi pi-check" label="Confirmer le rejet" class="p-button-danger" (click)="confirmerRejet()"></button>
     </ng-template>
 </p-dialog>
+<!-- examens-attente.component.html - Ajouter au début -->
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>

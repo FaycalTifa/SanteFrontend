@@ -1,5 +1,6 @@
 // models/consultation.model.ts
 
+
 import {PrescriptionExamen, PrescriptionMedicament} from "./prescription";
 
 export interface Consultation {
@@ -21,7 +22,13 @@ export interface Consultation {
     natureMaladie: string;
     diagnostic: string;
     actesMedicaux: string;
-    medecinNom: string;
+    medecinNom: string;          // ✅ Déjà présent
+    structureNom: string;         // ✅ AJOUTER CETTE LIGNE
+    structureId?: number;         // ✅ AJOUTER CETTE LIGNE (optionnel)
+    medecinId?: number;           // ✅ AJOUTER CETTE LIGNE (optionnel)
+    codeInte: string;      // ← AJOUTER
+    codeRisq: string;      // ← AJOUTER
+    typeConsultation: string; // ← AJOUTER
     statut: string;
     validationUab: boolean;
     prescriptionsMedicaments: PrescriptionMedicament[];
@@ -29,8 +36,16 @@ export interface Consultation {
     prescriptionsValidees: boolean;  // ✅ AJOUTER CE CHAMP
 }
 
+// models/consultation.ts
 export interface ConsultationCaisseRequest {
     numeroPolice: string;
+    codeInte: string;
+    codeRisq: string;
+    typeConsultation: string;  // ← Doit exister
+    codePres?: string;
+    codeMemb?: string;
+    libellePres?: string;
+    montantPlafond?: number;
     nomPatient: string;
     prenomPatient: string;
     telephonePatient: string;
@@ -38,6 +53,7 @@ export interface ConsultationCaisseRequest {
     dateConsultation: string;
     prixConsultation: number;
     prixActes: number;
+    tauxId: number;
 }
 
 export interface ConsultationPrescriptionRequest {

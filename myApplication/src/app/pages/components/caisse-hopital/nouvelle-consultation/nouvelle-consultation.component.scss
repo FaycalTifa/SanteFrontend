@@ -535,3 +535,2073 @@
     font-size: 0.8rem;
   }
 }
+// nouvelle-consultation.component.scss
+.input-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .input-icon {
+    flex: 1;
+    position: relative;
+
+    i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-400);
+    }
+
+    input {
+      width: 100%;
+      padding-left: 2.5rem;
+    }
+  }
+}
+
+.info-card {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0369a1;
+    font-size: 14px;
+    margin-bottom: 8px;
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  .info-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .info-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+
+      .info-label {
+        color: #475569;
+        font-weight: 500;
+      }
+
+      .info-value {
+        color: #0f172a;
+      }
+    }
+  }
+}
+
+.risk-selector, .beneficiaire-selector {
+  margin-bottom: 8px;
+
+  .risk-buttons, .beneficiaire-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .risk-btn, .beneficiaire-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+  }
+}
+
+.full-width {
+  flex: 1 1 100%;
+  min-width: 100%;
+}
+
+.dialog-content {
+  padding: 8px 0;
+}
+
+.p-button-sm {
+  width: 32px;
+  height: 32px;
+
+  .pi {
+    font-size: 14px;
+  }
+}
+
+.empty-message {
+  text-align: center;
+  padding: 32px;
+  color: #64748b;
+
+  i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+// nouvelle-consultation.component.scss
+.consultation-container {
+  padding: 1rem;
+}
+
+.consultation-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .header-icon {
+    i {
+      font-size: 2rem;
+    }
+  }
+
+  .header-content {
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0.25rem 0 0;
+      opacity: 0.9;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.form-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+
+    i {
+      font-size: 1.25rem;
+      color: #667eea;
+    }
+  }
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .form-field {
+    flex: 1;
+    min-width: 200px;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #334155;
+
+      .required {
+        color: #ef4444;
+      }
+    }
+
+    .input-icon {
+      position: relative;
+
+      i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+      }
+
+      input, p-calendar {
+        width: 100%;
+        padding-left: 2.5rem;
+      }
+
+      .currency {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.875rem;
+      }
+    }
+
+    .full-width {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+.input-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .input-icon {
+    flex: 1;
+  }
+
+  button {
+    height: 42px;
+  }
+}
+
+.info-card {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0369a1;
+    font-size: 14px;
+    margin-bottom: 8px;
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  .info-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .info-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+
+      .info-label {
+        color: #475569;
+        font-weight: 500;
+      }
+
+      .info-value {
+        color: #0f172a;
+      }
+    }
+  }
+
+  &.police-info {
+    background: #f0f9ff;
+    border-color: #bae6fd;
+    .info-header { color: #0369a1; }
+  }
+
+  &.risque-info {
+    background: #fef3c7;
+    border-color: #fde68a;
+    .info-header { color: #d97706; }
+  }
+
+  &.beneficiaire-info {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    .info-header { color: #059669; }
+  }
+}
+
+.total-card {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+
+  .total-info {
+    .total-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+    }
+
+    .total-detail {
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+
+        &.pris-en-charge {
+          color: #10b981;
+          font-weight: 500;
+        }
+
+        &.ticket {
+          color: #f59e0b;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .payment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    color: #64748b;
+
+    i {
+      color: #3b82f6;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+}
+
+.dialog-content {
+  padding: 0.5rem 0;
+}
+
+.info-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+
+  i {
+    margin-right: 0.25rem;
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.patient-found-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #ecfdf5;
+  border-radius: 8px;
+  color: #059669;
+
+  i {
+    font-size: 1.25rem;
+  }
+
+  .patient-info {
+    flex: 1;
+
+    .patient-phone, .patient-dob {
+      margin-left: 1rem;
+      font-size: 0.875rem;
+      color: #047857;
+    }
+  }
+}
+
+.patient-searching {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #eff6ff;
+  border-radius: 8px;
+  color: #2563eb;
+}
+
+.patient-not-found {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border-radius: 8px;
+  color: #dc2626;
+}
+
+// Ajouter dans nouvelle-consultation.component.scss
+
+.search-beneficiaire-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border-radius: 8px;
+
+  .input-icon {
+    flex: 1;
+    position: relative;
+
+    i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.875rem;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+
+  .search-result-count {
+    font-size: 0.75rem;
+    color: #64748b;
+    white-space: nowrap;
+  }
+}
+
+.principal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.beneficiaire-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #e0e7ff;
+  color: #4f46e5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.search-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #eff6ff;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: #2563eb;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+// nouvelle-consultation.component.scss
+
+.consultation-container {
+  padding: 1rem;
+}
+
+.consultation-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .header-icon {
+    i {
+      font-size: 2rem;
+    }
+  }
+
+  .header-content {
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0.25rem 0 0;
+      opacity: 0.9;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.form-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+
+    i {
+      font-size: 1.25rem;
+      color: #667eea;
+    }
+  }
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .form-field {
+    flex: 1;
+    min-width: 200px;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #334155;
+
+      .required {
+        color: #ef4444;
+      }
+    }
+
+    .input-icon {
+      position: relative;
+
+      i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+      }
+
+      input, p-calendar {
+        width: 100%;
+        padding-left: 2.5rem;
+      }
+
+      .currency {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.875rem;
+      }
+    }
+
+    &.full-width {
+      flex: 1 1 100%;
+    }
+
+    &.search-button {
+      display: flex;
+      align-items: flex-end;
+
+      button {
+        width: 100%;
+        height: 42px;
+      }
+    }
+  }
+}
+
+.input-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  .input-icon {
+    flex: 1;
+  }
+
+  button {
+    height: 42px;
+  }
+}
+
+.info-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+
+  i {
+    margin-right: 0.25rem;
+  }
+}
+
+// ========== DIALOGUE STYLES ==========
+
+.dialog-content {
+  padding: 0.5rem 0;
+}
+
+// Police header
+.police-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+
+  .police-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    i {
+      font-size: 28px;
+      color: #0369a1;
+    }
+
+    div {
+      .police-number {
+        font-size: 14px;
+        color: #475569;
+
+        strong {
+          font-size: 16px;
+          color: #0f172a;
+        }
+      }
+
+      .police-codeinte {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .raissoci-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #e0f2fe;
+    padding: 8px 16px;
+    border-radius: 20px;
+
+    i {
+      font-size: 14px;
+      color: #0284c7;
+    }
+
+    .raissoci-name {
+      font-weight: 500;
+      color: #0369a1;
+      font-size: 14px;
+    }
+  }
+}
+
+// Section title
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+
+  i {
+    font-size: 18px;
+    color: #667eea;
+  }
+
+  span {
+    font-weight: 600;
+    font-size: 16px;
+    color: #1e293b;
+  }
+}
+
+// Liste des assurés principaux
+.assures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.assure-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #667eea;
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .assure-code {
+    background: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .assure-name {
+    flex: 1;
+    margin-left: 16px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #1e293b;
+  }
+
+  button {
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Info de l'assuré sélectionné
+.selected-assure-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+
+  i {
+    font-size: 18px;
+    color: #d97706;
+  }
+
+  span {
+    font-size: 14px;
+    color: #92400e;
+
+    strong {
+      font-weight: 600;
+    }
+  }
+}
+
+// Liste des bénéficiaires
+.beneficiaires-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.beneficiaire-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e0e7ff;
+    border-color: #667eea;
+    transform: translateX(4px);
+  }
+
+  .beneficiaire-code {
+    background: #94a3b8;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .beneficiaire-name {
+    flex: 1;
+    margin-left: 12px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #1e293b;
+  }
+
+  .beneficiaire-lien {
+    color: #64748b;
+    font-size: 12px;
+    margin-right: 12px;
+    background: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  button {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Empty list message
+.empty-list {
+  text-align: center;
+  padding: 48px 20px;
+  color: #94a3b8;
+
+  i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// ========== FORMULAIRES EXISTANTS ==========
+
+.total-card {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+
+  .total-info {
+    .total-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+    }
+
+    .total-detail {
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+
+        &.pris-en-charge {
+          color: #10b981;
+          font-weight: 500;
+        }
+
+        &.ticket {
+          color: #f59e0b;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .payment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    color: #64748b;
+
+    i {
+      color: #3b82f6;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+// Scrollbar personnalisée
+.assures-list::-webkit-scrollbar,
+.beneficiaires-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.assures-list::-webkit-scrollbar-track,
+.beneficiaires-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.assures-list::-webkit-scrollbar-thumb,
+.beneficiaires-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+
+  &:hover {
+    background: #94a3b8;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+
+    .form-field {
+      min-width: 100%;
+    }
+  }
+
+  .police-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+
+    .police-info {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  .assure-card, .beneficiaire-card {
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .assure-name, .beneficiaire-name {
+      flex: 1 1 100%;
+      margin-left: 0;
+    }
+  }
+}
+
+// Ajouter dans nouvelle-consultation.component.scss
+
+.section-badge {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+// Carte de l'assuré principal
+.principal-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  }
+
+  .principal-icon {
+    i {
+      font-size: 32px;
+      color: #d97706;
+    }
+  }
+
+  .principal-info {
+    flex: 1;
+
+    .principal-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+
+    .principal-details {
+      display: flex;
+      gap: 16px;
+
+      .principal-code {
+        background: #fef3c7;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        color: #b45309;
+      }
+
+      .principal-date {
+        font-size: 11px;
+        color: #78716c;
+      }
+    }
+  }
+}
+
+// Carte des bénéficiaires
+.beneficiaire-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e0e7ff;
+    border-color: #667eea;
+    transform: translateX(4px);
+  }
+
+  .beneficiaire-avatar {
+    i {
+      font-size: 24px;
+      color: #94a3b8;
+    }
+  }
+
+  .beneficiaire-info {
+    flex: 1;
+
+    .beneficiaire-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .beneficiaire-details {
+      display: flex;
+      gap: 12px;
+
+      .beneficiaire-code {
+        background: #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        color: #475569;
+      }
+
+      .beneficiaire-date {
+        font-size: 10px;
+        color: #94a3b8;
+      }
+    }
+  }
+}
+// Styles pour le dialogue plafond
+.plafonds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.plafond-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #e0e7ff;
+    border-color: #667eea;
+    transform: translateX(4px);
+  }
+
+  .plafond-icon i {
+    font-size: 24px;
+    color: #667eea;
+  }
+
+  .plafond-info {
+    flex: 1;
+
+    .plafond-code {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .plafond-libelle {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .plafond-montant {
+      font-size: 14px;
+      color: #10b981;
+      font-weight: 500;
+    }
+  }
+}
+
+.plafond-info-card {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 16px;
+
+  .plafond-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0369a1;
+    font-weight: 500;
+    margin-bottom: 8px;
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  .plafond-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .plafond-item {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+
+      .label {
+        color: #475569;
+        font-weight: 500;
+
+        &.label-warning {
+          color: #d97706;
+        }
+      }
+
+      .value {
+        color: #0f172a;
+
+        &.warning {
+          color: #d97706;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+// Ajouter dans nouvelle-consultation.component.scss
+
+.no-plafond-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #dc2626;
+
+  i {
+    font-size: 18px;
+  }
+}
+
+.full-width {
+  flex: 1 1 100%;
+  min-width: 100%;
+}
+
+.p-button-sm {
+  width: 36px;
+  height: 36px;
+
+  .pi {
+    font-size: 14px;
+  }
+}
+// Styles pour la liste des plafonds
+.plafonds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+
+  // Scrollbar personnalisée
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+// Carte de plafond
+.plafond-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateX(4px);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    background: #f8fafc;
+  }
+
+  &:active {
+    transform: translateX(2px);
+  }
+
+  // Icône du plafond
+  .plafond-icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+    border-radius: 1rem;
+    transition: all 0.2s;
+
+    i {
+      font-size: 1.25rem;
+      color: #3b82f6;
+    }
+  }
+
+  // Informations du plafond
+  .plafond-info {
+    flex: 1;
+
+    .plafond-code {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #3b82f6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #e0e7ff;
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .plafond-libelle {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .plafond-montant {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #059669;
+      display: inline-block;
+      background: #d1fae5;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+
+      &::before {
+        content: "💰 ";
+        font-size: 0.7rem;
+      }
+    }
+  }
+
+  // Bouton de sélection
+  button {
+    width: 2rem;
+    height: 2rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+
+    i {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    &:hover {
+      background: #3b82f6;
+      border-color: #3b82f6;
+
+      i {
+        color: white;
+      }
+    }
+  }
+
+  // État survol du bouton
+  &:hover button {
+    background: #3b82f6;
+    border-color: #3b82f6;
+
+    i {
+      color: white;
+    }
+  }
+}
+
+// Style pour le dernier élément
+.plafond-card:last-child {
+  margin-bottom: 0;
+}
+
+// Style pour le premier élément
+.plafond-card:first-child {
+  margin-top: 0;
+}
+
+// Style pour les écrans mobiles
+@media (max-width: 640px) {
+  .plafonds-list {
+    gap: 0.5rem;
+  }
+
+  .plafond-card {
+    padding: 0.75rem 1rem;
+
+    .plafond-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .plafond-info {
+      .plafond-libelle {
+        font-size: 0.8rem;
+      }
+
+      .plafond-montant {
+        font-size: 0.7rem;
+      }
+    }
+  }
+}
+
+// Animation d'apparition
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.plafond-card {
+  animation: fadeInUp 0.3s ease-out;
+  animation-fill-mode: both;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+}
+// Styles pour la carte d'information du plafond
+.plafond-info-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease-out;
+
+  // En-tête de la carte
+  .plafond-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #bbf7d0;
+
+    i {
+      font-size: 1.1rem;
+      color: #10b981;
+    }
+
+    span {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #065f46;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // Contenu de la carte
+  .plafond-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+
+    .plafond-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      // Style pour les items sur une seule ligne (optionnel)
+      &.full-width {
+        grid-column: span 2;
+      }
+
+      .label {
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: #047857;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+
+        &.label-warning {
+          color: #dc2626;
+        }
+      }
+
+      .value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #064e3b;
+
+        &.warning {
+          color: #dc2626;
+          background: #fee2e2;
+          padding: 0.2rem 0.5rem;
+          border-radius: 0.5rem;
+          display: inline-block;
+        }
+      }
+    }
+  }
+}
+
+// Animation d'apparition
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Styles pour le dialogue des résultats de recherche
+.dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 0.5rem;
+
+  // Scrollbar personnalisée
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+// ========== POLICE HEADER ==========
+.police-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+
+  .police-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+    }
+
+    div {
+      .police-number {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 0.25rem;
+
+        strong {
+          color: white;
+          font-size: 1rem;
+        }
+      }
+
+      .police-codeinte {
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+    }
+  }
+
+  .raissoci-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(59, 130, 246, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+
+    i {
+      font-size: 0.9rem;
+      color: #3b82f6;
+    }
+
+    .raissoci-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+  }
+}
+
+// ========== SECTION TITRE ==========
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+
+  i {
+    font-size: 1rem;
+    color: #3b82f6;
+  }
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .section-badge {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    margin-left: 0.5rem;
+    text-transform: none;
+  }
+}
+
+// ========== ASSURÉ PRINCIPAL ==========
+.assure-principal-section {
+  margin-bottom: 1.5rem;
+}
+
+.principal-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+  }
+
+  .principal-icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #3b82f6;
+    border-radius: 1rem;
+
+    i {
+      font-size: 1.25rem;
+      color: white;
+    }
+  }
+
+  .principal-info {
+    flex: 1;
+
+    .principal-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+
+    .principal-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      span {
+        font-size: 0.7rem;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        &::before {
+          content: "•";
+          color: #3b82f6;
+        }
+
+        &:first-child::before {
+          display: none;
+        }
+      }
+    }
+  }
+
+  button {
+    background: #3b82f6;
+    border: none;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #2563eb;
+      transform: scale(1.02);
+    }
+  }
+}
+
+// ========== BÉNÉFICIAIRES SECTION ==========
+.beneficiaires-section {
+  margin-top: 1rem;
+}
+
+// Barre de recherche
+.search-bar {
+  position: relative;
+  margin-bottom: 1rem;
+
+  .input-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 1rem;
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.7rem 1rem 0.7rem 2.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+
+  button {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+
+    &:hover {
+      color: #ef4444;
+    }
+  }
+}
+
+// Liste des bénéficiaires
+.beneficiaires-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 0.25rem;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+.beneficiaire-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .beneficiaire-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    border-radius: 50%;
+
+    i {
+      font-size: 1rem;
+      color: #64748b;
+    }
+  }
+
+  .beneficiaire-info {
+    flex: 1;
+
+    .beneficiaire-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+
+    .beneficiaire-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      span {
+        font-size: 0.65rem;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        &::before {
+          content: "•";
+        }
+
+        &:first-child::before {
+          display: none;
+        }
+      }
+    }
+  }
+
+  button {
+    background: #10b981;
+    border: none;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #059669;
+      transform: scale(1.02);
+    }
+  }
+}
+
+// ========== ÉTAT VIDE ==========
+.empty-list {
+  text-align: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+
+  i {
+    font-size: 2.5rem;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+}
+
+// ========== RESPONSIVE ==========
+@media (max-width: 640px) {
+  .police-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    .raissoci-info {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .principal-card {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+
+    .principal-info {
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .beneficiaire-card {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+
+    .beneficiaire-info {
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// ========== ANIMATIONS ==========
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.principal-card, .beneficiaire-card {
+  animation: fadeIn 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+@for $i from 1 through 20 {
+  .beneficiaire-card:nth-child(#{$i}) {
+    animation-delay: #{$i * 0.03}s;
+  }
+}
+// CSS pour 4 colonnes + bouton en dessous
+.form-row-4cols-inputs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  .form-field {
+    margin-bottom: 0;
+  }
+}
+
+.form-row-button {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+
+  .search-button {
+    width: auto;
+
+    button {
+      min-width: 150px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row-4cols-inputs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-row-4cols-inputs {
+    grid-template-columns: 1fr;
+  }
+}

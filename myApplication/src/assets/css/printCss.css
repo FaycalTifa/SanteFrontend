@@ -1,77 +1,68 @@
+.container {
+    margin: 0 15px;
+}
 
-.justify_content{
+.justify_content {
     display: flex;
     justify-content: space-between;
-    margin-top: 3rem;
-}
-#table{
-    margin: 0;
+    margin-top: 2rem;
 }
 
-#para{
-    display: flex;
-    margin-top: 3%;
+#table {
+    width: 100%;
+    border-collapse: collapse;
+
+    & th, & td {
+        border: 1px solid black;
+        padding: 8px;
+    }
 }
-.row{
-    margin-left: 20%;
-    margin-top: 5%;
-    font-size: large;
-}
-#p{
+
+.row {
     display: flex;
     justify-content: center;
+    margin-top: 2rem;
 }
-.text_familly{
+
+.text_familly {
     font-family: "Noelan";
 }
-.container{
-    display: block;
-    margin-left: 15px;
-    margin-right: 15px;
-}
-.text_css{
-    display: flex;
-    justify-content: flex-end;
 
-}
-.text_margin{
-    margin-top: 5rem;
-}
-.margin_right{
-    margin-right: 10rem;
-}
-
-.text_decoration{
+.text_decoration {
     text-decoration: underline;
-    font-weight: bolder;
+    font-weight: bold;
 }
 
-.text_center{
-    border: solid black 2px;
+.text_center {
+    border: 1px solid black;
     width: 50%;
     margin: auto;
+    text-align: center;
+    padding: 1rem;
 }
 
-.header_css_image{
+.header_css_image {
     width: 100%;
-    margin: auto;
+    height: auto;
 }
-th,td {     border: 0.0001em solid black;
-            margin-right: -0.5px;
-            margin-top: -0.5px;
-        }
-.margin_col{
-    margin: 0px;
-;
- }
 
-.footer_css{
+.footer_css {
     display: flex;
-    margin-top: 500px;
+    justify-content: center;
+    margin-top: 3rem;
 }
 
-.margin_bottom{
-    margin-top: 40%;
+@media (max-width: 768px) {
+    .justify_content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .row {
+        margin-left: 0;
+    }
+
+    .text_center {
+        width: 90%;
+    }
 }
-
-

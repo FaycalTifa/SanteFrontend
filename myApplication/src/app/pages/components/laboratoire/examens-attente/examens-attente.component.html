@@ -1,5 +1,7 @@
-<!-- pages/components/laboratoire/examens-attente/examens-attente.component.html -->
+<!-- examens-attente.component.html -->
 <div class="laboratoire-container">
+    <p-toast position="top-right"></p-toast>
+
     <div class="card">
         <div class="card-header">
             <div class="header-title">
@@ -7,143 +9,198 @@
                     <i class="pi pi-flask"></i>
                 </div>
                 <div>
-                    <h2>Examens en attente</h2>
-                    <p>Liste des examens prescrits en attente de traitement</p>
-                </div>
-            </div>
-            <div class="stats-badge" *ngIf="filteredExamens.length > 0">
-                <div class="stat-item">
-                    <span class="stat-label">Total</span>
-                    <span class="stat-value">{{ filteredExamens.length }}</span>
-                </div>
-                <div class="stat-item warning">
-                    <span class="stat-label">En attente</span>
-                    <span class="stat-value">{{ getPendingCount() }}</span>
-                </div>
-                <div class="stat-item success">
-                    <span class="stat-label">Réglés</span>
-                    <span class="stat-value">{{ getPaidCount() }}</span>
+                    <h2>Examens - Laboratoire</h2>
+                    <p>Recherchez par CODEINTE, N° Police et Code Risque</p>
                 </div>
             </div>
         </div>
 
-        <!-- Barre de recherche et filtres -->
+        <!-- Barre de recherche -->
         <div class="search-section">
-            <div class="search-bar">
-                <div class="p-inputgroup">
-                    <input type="text" pInputText placeholder="Rechercher par numéro de police" [(ngModel)]="searchPolice" (keyup.enter)="rechercher()">
-                    <button pButton icon="pi pi-search" class="p-button-primary" (click)="rechercher()"></button>
-                    <button pButton label="Réinitialiser" icon="pi pi-refresh" class="p-button-secondary" (click)="resetSearch()"></button>
+            <!-- ✅ Une seule ligne avec 4 colonnes -->
+            <div class="search-row-4cols">
+                <div class="search-field">
+                    <label>CODEINTE <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchCodeInte" placeholder="Ex: 220" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>N° Police <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchNumPolice" placeholder="Ex: 10100009" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>Code Risque <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchCodeRisq" placeholder="Ex: 1100" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>Code Membre <span class="optional">(Optionnel)</span></label>
+                    <input type="text" [(ngModel)]="searchCodeMemb" placeholder="Ex: 31" class="p-inputtext">
+                </div>
+                <div class="search-button">
+                    <button pButton type="button" icon="pi pi-search" label="Rechercher" class="p-button-primary"
+                            (click)="rechercher()" [loading]="rechercheEnCours"></button>
                 </div>
             </div>
 
-            <!-- Filtre par statut -->
-            <div class="filter-bar">
-                <div class="filter-options">
-                    <button
-                            *ngFor="let option of filterOptions"
-                            pButton
-                            [label]="option.label"
-                            [class.active]="currentFilter === option.value"
-                            class="filter-btn"
-                            (click)="onFilterChange(option.value)">
-                    </button>
-                </div>
+            <div class="search-actions">
+                <button pButton type="button" label="Réinitialiser" icon="pi pi-refresh" class="p-button-secondary"
+                        (click)="resetSearch()"></button>
+            </div>
+
+            <small class="info-text">
+                <i class="pi pi-info-circle"></i>
+                Les champs CODEINTE, N° Police et Code Risque sont obligatoires.
+                Le Code Membre est optionnel (pour filtrer par bénéficiaire spécifique).
+            </small>
+        </div>
+        <!-- Message d'information -->
+        <div class="info-banner">
+            <i class="pi pi-info-circle"></i>
+            <div>
+                <strong>📋 Information :</strong> Cliquez sur une consultation pour voir les détails des examens.
             </div>
         </div>
 
-        <p-table
-                [value]="filteredExamens"
-                [loading]="loading"
-                [paginator]="true"
-                [rows]="10"
-                [rowsPerPageOptions]="[5,10,20,50]"
-                responsiveLayout="scroll"
-                styleClass="p-datatable-sm">
+        <!-- Message si aucun examen -->
+        <div *ngIf="getConsultationsList().length === 0 && !loading && !rechercheEnCours" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <h3>Aucun examen trouvé</h3>
+            <p>Aucun examen n'a été trouvé pour ces critères.</p>
+            <div class="empty-state-actions">
+                <button pButton label="📞 Contacter l'UAB" icon="pi pi-phone" class="p-button-warning"
+                        (click)="contacterUAB()"></button>
+                <button pButton label="🔄 Nouvelle recherche" icon="pi pi-search" class="p-button-primary"
+                        (click)="resetSearch()"></button>
+            </div>
+        </div>
 
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 50px">#</th>
-                    <th>N° Bulletin</th>
-                    <th>Patient</th>
-                    <th>N° Police</th>
-                    <th>Examen</th>
-                    <th>Code</th>
-                    <th>Instructions</th>
-                    <th>Statut paiement</th>
-                    <th style="width: 120px">Action</th>
-                </tr>
-            </ng-template>
+        <!-- Loading -->
+        <div *ngIf="loading" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Recherche en cours...</span>
+        </div>
 
-            <ng-template pTemplate="body" let-examen let-i="rowIndex">
-                <tr>
-                    <td>{{ i + 1 }}</td>
-                    <td><span class="numero-bulletin">{{ examen.numeroBulletin }}</span></td>
-                    <td>
-                        <div class="patient-cell">
-                            <i class="pi pi-user"></i>
-                            <span>{{ examen.patientPrenom }} {{ examen.patientNom }}</span>
+        <!-- Liste des consultations regroupées -->
+        <div class="consultations-list" *ngIf="getConsultationsList().length > 0 && !loading">
+            <div *ngFor="let group of getConsultationsList()" class="consultation-card">
+                <!-- En-tête de la consultation (clic pour afficher/masquer) -->
+                <div class="consultation-header" (click)="toggleConsultation(group.consultation.id)">
+                    <div class="consultation-info">
+                        <i class="pi pi-folder-open"></i>
+                        <div>
+                            <div class="consultation-title">
+                                Consultation N° {{ group.consultation.numeroFeuille }}
+                            </div>
+                            <div class="consultation-details">
+                                <span><i class="pi pi-user"></i> {{ group.consultation.patientPrenom }} {{ group.consultation.patientNom }}</span>
+                                <span><i class="pi pi-id-card"></i> Police: {{ group.consultation.patientPolice }}</span>
+                                <span><i class="pi pi-tag"></i> CODEINTE: {{ group.consultation.codeInte }}</span>
+                                <span><i class="pi pi-qrcode"></i> Code Risque: {{ group.consultation.codeRisq }}</span>
+                            </div>
                         </div>
-                    </td>
-                    <td><strong class="police-number">{{ examen.patientPolice }}</strong></td>
-                    <td>{{ examen.examenNom }}</td>
-                    <td>{{ examen.codeActe }}</td>
-                    <td>{{ examen.instructions || '-' }}</td>
-                    <td>
-                        <span *ngIf="examen.paye" class="status-paid">
-                            <i class="pi pi-check-circle"></i>
-                            Réglé
-                        </span>
-                        <span *ngIf="!examen.paye" class="status-unpaid">
+                    </div>
+                    <div class="consultation-stats">
+                        <div class="examens-badge">
+                            <i class="pi pi-flask"></i>
+                            <span class="badge-count">{{ group.totalExamens }}</span>
+                            <span class="badge-label">examen(s)</span>
+                        </div>
+                        <div *ngIf="getNonPayeCount(group) > 0" class="pending-badge">
                             <i class="pi pi-clock"></i>
-                            En attente
-                        </span>
-                    </td>
-                    <td>
-                        <!-- Bouton pour caissier -->
-                        <button
-                                *ngIf="isCaissier"
-                                pButton
-                                label="Encaisser"
-                                icon="pi pi-credit-card"
-                                class="p-button-success p-button-sm"
-                                [disabled]="examen.paye"
-                                (click)="action(examen)">
-                        </button>
+                            <span>{{ getNonPayeCount(group) }} non payé(s)</span>
+                        </div>
+                        <div *ngIf="getNonRealiseCount(group) > 0" class="pending-badge">
+                            <i class="pi pi-play"></i>
+                            <span>{{ getNonRealiseCount(group) }} à réaliser</span>
+                        </div>
+                        <i class="pi" [ngClass]="isConsultationExpanded(group.consultation.id) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                    </div>
+                </div>
 
-                        <!-- Bouton pour biologiste -->
-                        <button
-                                *ngIf="isBiologiste"
-                                pButton
-                                label="Réaliser"
-                                icon="pi pi-play"
-                                class="p-button-primary p-button-sm"
-                                [disabled]="!examen.paye"
-                                (click)="action(examen)">
-                        </button>
+                <!-- Corps de la consultation - Liste des examens (affiché si cliqué) -->
+                <div class="consultation-body" *ngIf="isConsultationExpanded(group.consultation.id)">
+                    <div class="examens-table">
+                        <div class="table-header">
+                            <div class="col-examen">Examen</div>
+                            <div class="col-code">Code</div>
+                            <div class="col-validation">Validation UAB</div>
+                            <div class="col-paiement">Paiement</div>
+                            <div class="col-realisation">Réalisation</div>
+                            <div class="col-action">Action</div>
+                        </div>
 
-                        <!-- Bouton pour les autres rôles -->
-                        <button
-                                *ngIf="!isCaissier && !isBiologiste"
-                                pButton
-                                label="Voir"
-                                icon="pi pi-eye"
-                                class="p-button-secondary p-button-sm"
-                                (click)="action(examen)">
-                        </button>
-                    </td>
-                </tr>
-            </ng-template>
+                        <div *ngFor="let examen of group.examens" class="table-row">
+                            <div class="col-examen">
+                                <strong>{{ examen.examenNom }}</strong>
+                            </div>
+                            <div class="col-code">{{ examen.codeActe || '-' }}</div>
+                            <div class="col-validation">
+                                <span class="status-badge"
+                                      [ngClass]="getValidationStatusClass(examen.validationUab)">
+                                    <i [class]="getValidationIcon(examen.validationUab)"></i>
+                                    {{ getValidationLabel(examen.validationUab) }}
+                                </span>
+                            </div>
+                            <div class="col-paiement">
+                                <span *ngIf="examen.paye" class="status-paid">
+                                    <i class="pi pi-check-circle"></i> Payé
+                                </span>
+                                <span *ngIf="!examen.paye && examen.validationUab === 'OUI'" class="status-unpaid">
+                                    <i class="pi pi-clock"></i> En attente
+                                </span>
+                                <span *ngIf="!examen.paye && examen.validationUab !== 'OUI'" class="status-blocked">
+                                    <i class="pi pi-lock"></i> Bloqué
+                                </span>
+                            </div>
+                            <div class="col-realisation">
+                                <span *ngIf="examen.realise" class="status-realised">
+                                    <i class="pi pi-check-circle"></i> Réalisé
+                                </span>
+                                <span *ngIf="!examen.realise && examen.paye" class="status-pending">
+                                    <i class="pi pi-clock"></i> En attente
+                                </span>
+                                <span *ngIf="!examen.realise && !examen.paye && examen.validationUab === 'OUI'" class="status-blocked">
+                                    <i class="pi pi-lock"></i> Paiement req.
+                                </span>
+                                <span *ngIf="!examen.realise && examen.validationUab !== 'OUI'" class="status-blocked">
+                                    <i class="pi pi-lock"></i> Validation req.
+                                </span>
+                            </div>
+                            <div class="col-action">
+                                <!-- Caisse: Bouton Encaisser -->
+                                <button *ngIf="isCaissier && examen.validationUab === 'OUI' && !examen.paye"
+                                        pButton label="💰 Encaisser" icon="pi pi-credit-card"
+                                        class="p-button-success p-button-sm"
+                                        (click)="$event.stopPropagation(); payer(examen)">
+                                </button>
 
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="9" class="empty-message">
-                        <i class="pi pi-inbox"></i>
-                        <p>Aucun examen trouvé</p>
-                        <small>Modifiez vos critères de recherche ou réinitialisez les filtres</small>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+                                <!-- Biologiste: Bouton Réaliser -->
+                                <button *ngIf="isBiologiste && examen.validationUab === 'OUI' && examen.paye && !examen.realise"
+                                        pButton label="🔬 Réaliser" icon="pi pi-play"
+                                        class="p-button-primary p-button-sm"
+                                        (click)="$event.stopPropagation(); realiser(examen)">
+                                </button>
+
+                                <!-- En attente validation UAB -->
+                                <button *ngIf="examen.validationUab === 'EN_ATTENTE'"
+                                        pButton label="⏳ Contacter UAB" icon="pi pi-phone"
+                                        class="p-button-warning p-button-sm"
+                                        (click)="$event.stopPropagation(); contacterUAB(examen)">
+                                </button>
+
+                                <!-- Rejeté -->
+                                <span *ngIf="examen.validationUab === 'NON'" class="rejected-text">
+                                    <i class="pi pi-ban"></i> Rejeté
+                                </span>
+
+                                <!-- Déjà payé (caisse) -->
+                                <span *ngIf="isCaissier && examen.validationUab === 'OUI' && examen.paye" class="already-text">
+                                    <i class="pi pi-check-circle"></i> Payé
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

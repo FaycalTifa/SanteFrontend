@@ -1,4 +1,6 @@
 <!-- pages/components/medecin/prescriptions/prescriptions.component.html -->
+<p-confirmDialog></p-confirmDialog>
+
 <div class="prescriptions-container">
     <div class="prescription-card">
         <div class="card-header">
@@ -42,22 +44,29 @@
                 </div>
                 <div class="form-field">
                     <label>Actes médicaux effectués</label>
-                    <textarea rows="2" formControlName="actesMedicaux" placeholder="Consultation, examen clinique..."></textarea>
+                    <textarea rows="2" formControlName="actesMedicaux"
+                              placeholder="Consultation, examen clinique..."></textarea>
                 </div>
             </div>
 
             <!-- Médicaments -->
-            <div class="form-section">
+            <div class="form-section medicaments-section">
                 <div class="section-header">
                     <h3>Prescriptions Médicaments</h3>
-                    <button type="button" class="add-button" (click)="addMedicament()">+ Ajouter</button>
+                    <button type="button" class="add-button" (click)="addMedicament()">
+                        <i class="pi pi-plus"></i> Ajouter
+                    </button>
                 </div>
 
                 <div formArrayName="prescriptionsMedicaments">
-                    <div *ngFor="let med of medicamentsArray.controls; let i = index" [formGroupName]="i" class="prescription-item">
+                    <div *ngFor="let med of medicamentsArray.controls; let i = index"
+                         [formGroupName]="i"
+                         class="prescription-item medicament-item">
                         <div class="item-header">
                             <span class="item-number">Médicament {{ i + 1 }}</span>
-                            <button type="button" class="remove-btn" (click)="removeMedicament(i)">🗑️</button>
+                            <button type="button" class="remove-btn" (click)="removeMedicament(i)">
+                                <i class="pi pi-trash"></i>
+                            </button>
                         </div>
                         <div class="item-fields">
                             <div class="full-width">
@@ -68,16 +77,28 @@
                                                [formControlName]="'medicamentNom'"
                                                (input)="searchMedicament($event, i)"
                                                (focus)="activeMedicamentIndex = i"
-                                               (blur)="activeMedicamentIndex = -1"
-                                               placeholder="Tapez au moins 2 lettres...">
-                                        <div class="suggestions-dropdown" *ngIf="filteredMedicaments.length > 0 && activeMedicamentIndex === i">
-                                            <div *ngFor="let med of filteredMedicaments" class="suggestion" (click)="selectMedicament(med, i)">
-                                                <div class="suggestion-name">{{ med.nom }} {{ med.dosage }}</div>
-                                                <div class="suggestion-detail">{{ med.forme }} - {{ med.prixReference | number }} FCFA</div>
+                                               placeholder="Tapez au moins 2 lettres..."
+                                               autocomplete="off">
+                                        <div class="suggestions-dropdown"
+                                             *ngIf="filteredMedicaments.length > 0 && activeMedicamentIndex === i">
+                                            <div *ngFor="let med of filteredMedicaments"
+                                                 class="suggestion"
+                                                 [class.excluded]="med.exclusion === 'OUI'"
+                                                 (mousedown)="selectMedicament(med, i)">
+                                                <div class="suggestion-name">
+                                                    {{ med.nom }} {{ med.dosage }}
+                                                    <span *ngIf="med.exclusion === 'OUI'" class="exclusion-badge">🚫 EXCLU</span>
+                                                    <span *ngIf="med.exclusion !== 'OUI'" class="authorized-badge">✓ Autorisé</span>
+                                                </div>
+                                                <div class="suggestion-detail">{{ med.forme }}
+                                                    - {{ med.prixReference | number }} FCFA
+                                                </div>
                                             </div>
-                                            <div class="suggestion new-item" (click)="createAndSelectMedicament(medicamentsArray.at(i)?.get('medicamentNom')?.value, i)">
+                                            <div class="suggestion new-item"
+                                                 (mousedown)="createAndSelectMedicament(medicamentsArray.at(i)?.get('medicamentNom')?.value, i)">
                                                 <i class="pi pi-plus-circle"></i>
-                                                Créer "{{ medicamentsArray.at(i)?.get('medicamentNom')?.value }}" et l'ajouter au référentiel
+                                                Créer "{{ medicamentsArray.at(i)?.get('medicamentNom')?.value }}" et
+                                                l'ajouter au référentiel
                                             </div>
                                         </div>
                                     </div>
@@ -92,13 +113,15 @@
                             <div>
                                 <div class="form-field">
                                     <label>Quantité *</label>
-                                    <input type="number" formControlName="quantitePrescitee" placeholder="Ex: 14">
+                                    <input type="number" formControlName="quantitePrescitee" placeholder="Ex: 14"
+                                           min="1">
                                 </div>
                             </div>
                             <div class="full-width">
                                 <div class="form-field">
                                     <label>Instructions</label>
-                                    <textarea rows="2" formControlName="instructions" placeholder="Mode d'administration..."></textarea>
+                                    <textarea rows="2" formControlName="instructions"
+                                              placeholder="Mode d'administration..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -107,17 +130,23 @@
             </div>
 
             <!-- Examens -->
-            <div class="form-section">
+            <div class="form-section examens-section">
                 <div class="section-header">
                     <h3>Prescriptions Examens</h3>
-                    <button type="button" class="add-button" (click)="addExamen()">+ Ajouter</button>
+                    <button type="button" class="add-button" (click)="addExamen()">
+                        <i class="pi pi-plus"></i> Ajouter
+                    </button>
                 </div>
 
                 <div formArrayName="prescriptionsExamens">
-                    <div *ngFor="let exam of examensArray.controls; let i = index" [formGroupName]="i" class="prescription-item">
+                    <div *ngFor="let exam of examensArray.controls; let i = index"
+                         [formGroupName]="i"
+                         class="prescription-item examen-item">
                         <div class="item-header">
                             <span class="item-number">Examen {{ i + 1 }}</span>
-                            <button type="button" class="remove-btn" (click)="removeExamen(i)">🗑️</button>
+                            <button type="button" class="remove-btn" (click)="removeExamen(i)">
+                                <i class="pi pi-trash"></i>
+                            </button>
                         </div>
                         <div class="item-fields">
                             <div class="full-width">
@@ -128,16 +157,32 @@
                                                [formControlName]="'examenNom'"
                                                (input)="searchExamen($event, i)"
                                                (focus)="activeExamenIndex = i"
-                                               (blur)="activeExamenIndex = -1"
-                                               placeholder="Tapez au moins 2 lettres...">
-                                        <div class="suggestions-dropdown" *ngIf="filteredExamens.length > 0 && activeExamenIndex === i">
-                                            <div *ngFor="let exam of filteredExamens" class="suggestion" (click)="selectExamen(exam, i)">
-                                                <div class="suggestion-name">{{ exam.nom }}</div>
-                                                <div class="suggestion-detail">Code: {{ exam.code }} - {{ exam.prixReference | number }} FCFA</div>
+                                               placeholder="Tapez au moins 2 lettres..."
+                                               autocomplete="off">
+                                        <div class="suggestions-dropdown"
+                                             *ngIf="filteredExamens.length > 0 && activeExamenIndex === i">
+                                            <div *ngFor="let exam of filteredExamens"
+                                                 class="suggestion"
+                                                 [class.need-validation]="exam.validation === 'OUI'"
+                                                 (mousedown)="selectExamen(exam, i)">
+                                                <div class="suggestion-name">
+                                                    {{ exam.nom }}
+                                                    <span *ngIf="exam.validation === 'OUI'" class="validation-badge">
+                                                        <i class="pi pi-shield"></i> Autorisation UAB requise
+                                                    </span>
+                                                    <span *ngIf="exam.validation !== 'OUI'" class="normal-badge">
+                                                        <i class="pi pi-check-circle"></i> Sans autorisation
+                                                    </span>
+                                                </div>
+                                                <div class="suggestion-detail">Code: {{ exam.code }}
+                                                    - {{ exam.prixReference | number }} FCFA
+                                                </div>
                                             </div>
-                                            <div class="suggestion new-item" (click)="createAndSelectExamen(examensArray.at(i)?.get('examenNom')?.value, i)">
+                                            <div class="suggestion new-item"
+                                                 (mousedown)="createAndSelectExamen(examensArray.at(i)?.get('examenNom')?.value, i)">
                                                 <i class="pi pi-plus-circle"></i>
-                                                Créer "{{ examensArray.at(i)?.get('examenNom')?.value }}" et l'ajouter au référentiel
+                                                Créer "{{ examensArray.at(i)?.get('examenNom')?.value }}" et l'ajouter
+                                                au référentiel
                                             </div>
                                         </div>
                                     </div>
@@ -152,7 +197,8 @@
                             <div class="full-width">
                                 <div class="form-field">
                                     <label>Instructions</label>
-                                    <textarea rows="2" formControlName="instructions" placeholder="Préparations spéciales..."></textarea>
+                                    <textarea rows="2" formControlName="instructions"
+                                              placeholder="Préparations spéciales..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -161,7 +207,9 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-cancel" (click)="router.navigate(['/medecin/consultations-attente'])">Annuler</button>
+                <button type="button" class="btn-cancel" (click)="router.navigate(['/medecin/consultations-attente'])">
+                    Annuler
+                </button>
                 <button type="submit" class="btn-save" [disabled]="loading">
                     {{ loading ? 'Enregistrement...' : 'Enregistrer prescriptions' }}
                 </button>
@@ -169,3 +217,13 @@
         </form>
     </div>
 </div>
+
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>
+

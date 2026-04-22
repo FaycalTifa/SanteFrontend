@@ -1,0 +1,141 @@
+<!-- pages/components/caisse-hopital/plafonnements/plafonnements.component.html -->
+<div class="plafonnements-container">
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-chart-line"></i>
+            </div>
+            <div class="header-content">
+                <h2>Consultation des plafonnements</h2>
+                <p>Visualisez tous les plafonnements d'une police (consultations, actes, hospitalisation)</p>
+            </div>
+        </div>
+
+        <!-- Formulaire de recherche -->
+        <div class="search-section">
+            <form [formGroup]="searchForm" (ngSubmit)="rechercher()">
+                <div class="search-row">
+                    <div class="search-field">
+                        <label>CODEINTE <span class="required">*</span></label>
+                        <input type="text" formControlName="codeInte" placeholder="Ex: 220" class="p-inputtext">
+                        <small class="p-error" *ngIf="searchForm.get('codeInte')?.invalid && searchForm.get('codeInte')?.touched">
+                            CODEINTE requis
+                        </small>
+                    </div>
+                    <div class="search-field">
+                        <label>N° Police <span class="required">*</span></label>
+                        <input type="text" formControlName="numPolice" placeholder="Ex: 10100009" class="p-inputtext">
+                        <small class="p-error" *ngIf="searchForm.get('numPolice')?.invalid && searchForm.get('numPolice')?.touched">
+                            N° Police requis
+                        </small>
+                    </div>
+
+                    <div class="search-actions">
+                        <button pButton icon="pi pi-search" label="Rechercher" class="p-button-primary"
+                                type="submit" [loading]="rechercheEnCours"></button>
+                        <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-secondary"
+                                type="button" (click)="resetSearch()"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Message d'information -->
+        <div class="info-banner">
+            <i class="pi pi-info-circle"></i>
+            <div>
+                <strong>📋 Plafonnements par catégorie :</strong>
+                <span class="cate-badge cate-100">100 - Consultations générales</span>
+                <span class="cate-badge cate-101">101 - Consultations spécialisées</span>
+                <span class="cate-badge cate-102">102 - Actes techniques</span>
+                <span class="cate-badge cate-103">103 - Hospitalisation</span>
+                <span class="cate-badge cate-104">104 - Urgences</span>
+            </div>
+        </div>
+
+        <!-- Résultats -->
+        <div *ngIf="plafonnements.length > 0" class="results-section">
+            <!-- Filtres supplémentaires -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <div class="filter-field">
+                        <label>Code prestation</label>
+                        <input type="text" [(ngModel)]="filterCodePres" (input)="appliquerFiltres()"
+                               placeholder="Filtrer par code..." class="p-inputtext p-inputtext-sm">
+                    </div>
+                    <div class="filter-field">
+                        <label>Libellé</label>
+                        <input type="text" [(ngModel)]="filterLibelle" (input)="appliquerFiltres()"
+                               placeholder="Filtrer par libellé..." class="p-inputtext p-inputtext-sm">
+                    </div>
+                    <button pButton icon="pi pi-times" label="Effacer filtres" class="p-button-secondary p-button-sm"
+                            (click)="resetFiltres()"></button>
+                </div>
+            </div>
+
+            <!-- Résumé -->
+            <div class="summary-card">
+                <div class="summary-item">
+                    <span class="summary-label">Total plafonnements</span>
+                    <span class="summary-value">{{ filteredPlafonnements.length }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Montant total plafond</span>
+                    <span class="summary-value">{{ getTotalPlafond() | number }} FCFA</span>
+                </div>
+            </div>
+
+            <!-- Tableau des plafonnements -->
+            <p-table [value]="filteredPlafonnements" [paginator]="true" [rows]="10"
+                     [rowsPerPageOptions]="[5,10,20,50]" responsiveLayout="scroll"
+                     styleClass="p-datatable-sm">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>CODEINTE</th>
+                        <th>N° Police</th>
+                        <th>Code Prestation</th>
+                        <th>Libellé Prestation</th>
+                        <th>Montant Plafond</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-plafond>
+                    <tr>
+                        <td>{{ plafond.CODEINTE }}</td>
+                        <td><strong>{{ plafond.NUMEPOLI }}</strong></td>
+                        <td><span class="code-pres-badge">{{ plafond.CODEPRES }}</span></td>
+                        <td>{{ plafond.LIBEPRES }}</td>
+                        <td class="montant-cell">
+                            <strong>{{ plafond.VALEPLAF | number }} FCFA</strong>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="empty-message">
+                            <i class="pi pi-inbox"></i>
+                            <p>Aucun plafonnement trouvé</p>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- État vide -->
+        <div *ngIf="plafonnements.length === 0 && !loading && !rechercheEnCours" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <h3>Aucune donnée</h3>
+            <p>Veuillez saisir un numéro de police et un CODEINTE pour visualiser les plafonnements.</p>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="loading-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Chargement des plafonnements...</span>
+        </div>
+    </div>
+</div>

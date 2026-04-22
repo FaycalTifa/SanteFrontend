@@ -1,12 +1,13 @@
+// laboratoire.service.ts
 import { Injectable } from '@angular/core';
-import {Observable} from 'rxjs';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {LaboratoireRealisationRequest, PrescriptionExamen} from '../../models/prescription';
-import {PaiementLaboratoire} from '../../models/laboratoire';
-import {AuthService} from '../auth/auth.service';
+import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { LaboratoireRealisationRequest, PrescriptionExamen } from '../../models/prescription';
+import { PaiementLaboratoire } from '../../models/laboratoire';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class LaboratoireService {
 
@@ -14,8 +15,33 @@ export class LaboratoireService {
 
     constructor(
         private http: HttpClient,
-        private authService: AuthService  // ← AJOUTER
+        private authService: AuthService
     ) {}
+
+    private getHeaders(): HttpHeaders {
+        const token = this.authService.getToken();
+        return new HttpHeaders({
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        });
+    }
+
+    // ✅ NOUVELLE MÉTHODE : Recherche par CODEINTE, police et code risque
+    // services/laboratoire/laboratoire.service.ts
+    /**
+     * Rechercher des examens par CODEINTE, police, code risque et codeMemb (optionnel)
+     */
+    rechercherParCriteres(numPolice: string, codeInte: string, codeRisq: string, codeMemb?: string): Observable<PrescriptionExamen[]> {
+        let params = new HttpParams();
+        if (numPolice) { params = params.set('numPolice', numPolice); }
+        if (codeInte) { params = params.set('codeInte', codeInte); }
+        if (codeRisq) { params = params.set('codeRisq', codeRisq); }
+        if (codeMemb) { params = params.set('codeMemb', codeMemb); }  // ✅ Ajouter codeMemb
+
+        console.log('Paramètres recherche laboratoire:', { numPolice, codeInte, codeRisq, codeMemb });
+
+        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/recherche-complete`, { headers: this.getHeaders(), params });
+    }
 
     getExamensEnAttente(): Observable<PrescriptionExamen[]> {
         const token = this.authService.getToken();
@@ -25,14 +51,15 @@ export class LaboratoireService {
         return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/examens-attente`, { headers });
     }
 
-    rechercherParPolice(numeroPolice: string): Observable<PrescriptionExamen[]> {
+    // services/laboratoire/laboratoire.service.ts - Ajouter
+
+    getExamensValidesNonPayes(): Observable<PrescriptionExamen[]> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${token}`
         });
-        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/recherche/${numeroPolice}`, { headers });
+        return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/caissier/examens-valides`, { headers });
     }
-
     getExamenById(id: number): Observable<PrescriptionExamen> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({
@@ -41,7 +68,6 @@ export class LaboratoireService {
         return this.http.get<PrescriptionExamen>(`${this.baseUrl}/examens/${id}`, { headers });
     }
 
-    // laboratoire.service.ts
     realiserExamen(request: { prescriptionId: number; resultats: any[] }): Observable<PrescriptionExamen> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({
@@ -59,27 +85,15 @@ export class LaboratoireService {
         return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/historique`, { headers });
     }
 
-   /* enregistrerPaiement(paiement: any): Observable<PrescriptionExamen> {
-        const token = this.authService.getToken();
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${token}`
-        });
-        return this.http.post<PrescriptionExamen>(`${this.baseUrl}/paiement`, paiement, { headers });
-    }
-*/
     enregistrerPaiement(paiement: any): Observable<PrescriptionExamen> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
         });
-        // ✅ Utiliser le bon endpoint /caissier/paiement
         return this.http.post<PrescriptionExamen>(`${this.baseUrl}/caissier/paiement`, paiement, { headers });
     }
 
-    /**
-     * Récupérer les examens en attente de paiement (pour caissier laboratoire)
-     */
     getExamensEnAttentePaiement(): Observable<PrescriptionExamen[]> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({
@@ -88,9 +102,6 @@ export class LaboratoireService {
         return this.http.get<PrescriptionExamen[]>(`${this.baseUrl}/caissier/examens-attente-paiement`, { headers });
     }
 
-    /**
-     * Récupérer les examens payés en attente de réalisation (pour biologiste)
-     */
     getExamensPayesEnAttente(): Observable<PrescriptionExamen[]> {
         const token = this.authService.getToken();
         const headers = new HttpHeaders({

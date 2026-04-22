@@ -504,3 +504,260 @@ $danger: #ef4444;
     }
   }
 }
+
+// prescriptions.component.scss - Ajouter
+.suggestions-dropdown {
+  .suggestion {
+    .suggestion-name {
+      .exclusion-badge {
+        background: #dc2626;
+        color: white;
+        font-size: 0.6rem;
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+        margin-left: 0.5rem;
+      }
+    }
+  }
+}
+
+// prescriptions.component.scss - Ajouter ces styles
+.validation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #f59e0b;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.65rem;
+  margin-left: 0.5rem;
+
+  i {
+    font-size: 0.6rem;
+  }
+}
+
+.normal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #10b981;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.65rem;
+  margin-left: 0.5rem;
+
+  i {
+    font-size: 0.6rem;
+  }
+}
+
+.authorized-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #10b981;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.65rem;
+  margin-left: 0.5rem;
+
+  i {
+    font-size: 0.6rem;
+  }
+}
+
+.exclusion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #dc2626;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.65rem;
+  margin-left: 0.5rem;
+
+  i {
+    font-size: 0.6rem;
+  }
+}
+
+.suggestion {
+  &.need-validation {
+    background-color: #fef3c7;
+    border-left: 3px solid #f59e0b;
+
+    &:hover {
+      background-color: #fde68a;
+    }
+  }
+
+  &.excluded {
+    background-color: #fee2e2;
+    opacity: 0.8;
+
+    &:hover {
+      background-color: #fecaca;
+    }
+  }
+}
+// ============================================
+// STYLES SPÉCIFIQUES POUR LA SECTION MÉDICAMENTS
+// ============================================
+
+// Section Médicaments - Bordure et fond bleu clair
+.form-section {
+  &.medicaments-section {
+    border-left: 4px solid #3b82f6;
+    background: linear-gradient(to right, #eff6ff, transparent);
+
+    .section-header {
+      h3 {
+        color: #1e40af;
+
+        &::before {
+          content: "💊 ";
+        }
+      }
+
+      .add-button {
+        background: #3b82f6;
+        color: white;
+        border-radius: 2rem;
+        padding: 0.4rem 1rem;
+
+        &:hover {
+          background: #2563eb;
+        }
+      }
+    }
+  }
+}
+
+// Item Médicament - Bordure et ombre
+.prescription-item {
+  &.medicament-item {
+    border-left: 3px solid #3b82f6;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+
+    .item-header {
+      .item-number {
+        background: #3b82f6;
+        color: white;
+        border: none;
+      }
+    }
+  }
+}
+
+// ============================================
+// STYLES SPÉCIFIQUES POUR LA SECTION EXAMENS
+// ============================================
+
+// Section Examens - Bordure et fond vert clair
+.form-section {
+  &.examens-section {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(to right, #ecfdf5, transparent);
+
+    .section-header {
+      h3 {
+        color: #065f46;
+
+        &::before {
+          content: "🔬 ";
+        }
+      }
+
+      .add-button {
+        background: #10b981;
+        color: white;
+        border-radius: 2rem;
+        padding: 0.4rem 1rem;
+
+        &:hover {
+          background: #059669;
+        }
+      }
+    }
+  }
+}
+
+// Item Examen - Bordure et ombre
+.prescription-item {
+  &.examen-item {
+    border-left: 3px solid #10b981;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+
+    .item-header {
+      .item-number {
+        background: #10b981;
+        color: white;
+        border: none;
+      }
+    }
+  }
+}
+
+// ============================================
+// STYLES POUR LES BOUTONS D'AJOUT SPÉCIFIQUES
+// ============================================
+
+.add-button {
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 0.8rem;
+    margin-right: 0.25rem;
+  }
+}
+
+// Style pour le bouton d'ajout de médicament
+.medicaments-section .add-button {
+  background: #3b82f6;
+  box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  }
+}
+
+// Style pour le bouton d'ajout d'examen
+.examens-section .add-button {
+  background: #10b981;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  }
+}
+
+// ============================================
+// STYLES POUR LES BOUTONS DE SUPPRESSION
+// ============================================
+
+.remove-btn {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+// Suppression médicament
+.medicament-item .remove-btn:hover {
+  color: #3b82f6;
+}
+
+// Suppression examen
+.examen-item .remove-btn:hover {
+  color: #10b981;
+}

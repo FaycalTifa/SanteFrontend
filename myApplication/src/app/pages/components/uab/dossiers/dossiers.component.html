@@ -120,13 +120,14 @@
                     </div>
                 </div>
 
-                <div class="filter-actions">
-                    <button pButton icon="pi pi-search" label="Rechercher" class="p-button-primary" (click)="search()"></button>
-                    <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-secondary" (click)="reset()"></button>
-                    <div class="export-buttons">
-                        <button pButton icon="pi pi-file-excel" label="Excel" class="p-button-success" (click)="exportToExcelXLSX()"></button>
-                        <button pButton icon="pi pi-file" label="CSV" class="p-button-info" (click)="exportToExcel()"></button>
-                    </div>
+
+            </div>
+            <div class="filter-actions">
+                <button pButton icon="pi pi-search" label="Rechercher" class="p-button-primary" (click)="search()"></button>
+                <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-secondary" (click)="reset()"></button>
+                <div class="export-buttons">
+                    <button pButton icon="pi pi-file-excel" label="Excel" class="p-button-success" (click)="exportToExcelXLSX()"></button>
+                    <button pButton icon="pi pi-file" label="CSV" class="p-button-info" (click)="exportToExcel()"></button>
                 </div>
             </div>
         </div>
@@ -200,7 +201,8 @@
                                     icon="pi pi-eye"
                                     pTooltip="Voir le dossier"
                                     class="p-button-rounded p-button-text p-button-info"
-                                    [routerLink]="['/uab/validation', dossier.id, dossier.type]">
+                                    [routerLink]="['/uab/validation', dossier.id]"
+                                    [queryParams]="{ type: dossier.type }">
                             </button>
                             <button *ngIf="canValidate(dossier)"
                                     pButton
@@ -254,3 +256,12 @@
         <button pButton label="Valider" icon="pi pi-check" class="p-button-success" (click)="confirmerValidation()"></button>
     </ng-template>
 </p-dialog>
+<!-- examens-attente.component.html - Ajouter au début -->
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>

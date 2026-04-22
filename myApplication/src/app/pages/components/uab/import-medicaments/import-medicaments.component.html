@@ -1,0 +1,132 @@
+<!-- pages/components/uab/import-medicaments/import-medicaments.component.html -->
+<!-- pages/components/uab/import-medicaments/import-medicaments.component.html -->
+<div class="import-container">
+    <p-toast position="top-right"></p-toast>
+
+    <!-- SECTION MÉDICAMENTS -->
+    <div class="card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-upload"></i>
+            </div>
+            <div class="header-content">
+                <h2>Import des médicaments</h2>
+                <p>Importez le fichier CSV contenant la liste des médicaments et leurs exclusions</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="info-card">
+                <i class="pi pi-info-circle"></i>
+                <div>
+                    <strong>Format du fichier CSV :</strong>
+                    <ul>
+                        <li>Colonne A : NOM du médicament</li>
+                        <li>Colonne B : EXCLUSION (OUI ou NON)</li>
+                        <li>La première ligne doit contenir les en-têtes "NOM;EXCLUSION"</li>
+                        <li>Séparateur : point-virgule (;) ou virgule (,)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="upload-area">
+                <input type="file"
+                       id="medicamentFileInput"
+                       (change)="onMedicamentFileSelected($event)"
+                       accept=".csv"
+                       class="file-input">
+                <label for="medicamentFileInput" class="file-label">
+                    <i class="pi pi-cloud-upload"></i>
+                    <span>Sélectionner un fichier CSV pour médicaments</span>
+                </label>
+            </div>
+
+            <div *ngIf="medicamentFile" class="selected-file">
+                <i class="pi pi-file"></i>
+                <span>{{ medicamentFile.name }} ({{ (medicamentFile.size / 1024).toFixed(2) }} KB)</span>
+                <button pButton icon="pi pi-times" class="p-button-rounded p-button-text" (click)="clearMedicamentFile()"></button>
+            </div>
+
+            <div class="form-actions">
+                <button pButton
+                        label="Importer médicaments"
+                        icon="pi pi-upload"
+                        class="p-button-primary"
+                        [loading]="medicamentUploading"
+                        [disabled]="!medicamentFile"
+                        (click)="importerMedicaments()">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION EXAMENS -->
+    <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-upload"></i>
+            </div>
+            <div class="header-content">
+                <h2>Import des examens</h2>
+                <p>Importez le fichier CSV contenant la liste des examens et leurs validations</p>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="info-card">
+                <i class="pi pi-info-circle"></i>
+                <div>
+                    <strong>Format du fichier CSV :</strong>
+                    <ul>
+                        <li>Colonne A : CODE de l'examen</li>
+                        <li>Colonne B : NOM de l'examen</li>
+                        <li>Colonne C : VALIDATION (OUI ou NON)</li>
+                        <li>La première ligne doit contenir les en-têtes "CODE;NOM;VALIDATION"</li>
+                        <li>Séparateur : point-virgule (;) ou virgule (,)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="upload-area">
+                <input type="file"
+                       id="examenFileInput"
+                       (change)="onExamenFileSelected($event)"
+                       accept=".csv"
+                       class="file-input">
+                <label for="examenFileInput" class="file-label">
+                    <i class="pi pi-cloud-upload"></i>
+                    <span>Sélectionner un fichier CSV pour examens</span>
+                </label>
+            </div>
+
+            <div *ngIf="examenFile" class="selected-file">
+                <i class="pi pi-file"></i>
+                <span>{{ examenFile.name }} ({{ (examenFile.size / 1024).toFixed(2) }} KB)</span>
+                <button pButton icon="pi pi-times" class="p-button-rounded p-button-text" (click)="clearExamenFile()"></button>
+            </div>
+
+            <div class="form-actions">
+                <button pButton
+                        label="Importer examens"
+                        icon="pi pi-upload"
+                        class="p-button-primary"
+                        [loading]="examenUploading"
+                        [disabled]="!examenFile"
+                        (click)="importerExamens()">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- examens-attente.component.html - Ajouter au début -->
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>

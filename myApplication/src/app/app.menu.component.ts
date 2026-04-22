@@ -44,6 +44,15 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-chart-line',
                 routerLink: ['/structure/dashboard']
             });
+
+            // ✅ Ajouter Plafonnements pour ADMIN_STRUCTURE
+            menuItems.push({
+                label: 'PARAMÈTRES',
+                icon: 'pi pi-fw pi-cog',
+                items: [
+                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] }
+                ]
+            });
         }
 
         // ==================== UAB_ADMIN (ADMIN) ====================
@@ -54,9 +63,12 @@ export class AppMenuComponent implements OnInit {
                 items: [
                     { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
                     { label: 'Gestion des dossiers', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers'] },
-                    { label: 'Paramètres', icon: 'pi pi-cog', routerLink: ['/uab/parametres/medicaments'] },
+                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
+                    { label: 'Validation examen', icon: 'pi pi-users', routerLink: ['/uab/Validation/examen'] },
+                    { label: 'Import Medicament', icon: 'pi pi-users', routerLink: ['/uab/parametres/import-medicaments'] },
+                    { label: 'Utilisateurs', icon: 'pi pi-cog', routerLink: ['/uab/parametres/utilisateurs'] },
+                    { label: 'Taux Couverture', icon: 'pi pi-building', routerLink: ['uab/parametres/taux-couverture'] },
                     { label: 'Structures', icon: 'pi pi-building', routerLink: ['/uab/parametres/structures'] },
-                    { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: ['/uab/parametres/utilisateurs'] },
                 ]
             });
         }
@@ -68,7 +80,7 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-user-md',
                 items: [
                     { label: 'Mes consultations', icon: 'pi pi-list', routerLink: ['/medecin/mes-consultations'] },
-                    { label: 'Interprétations', icon: 'pi pi-file', routerLink: ['/medecin/interpretations'] },
+                    { label: 'Demande en attente', icon: 'pi pi-file', routerLink: ['/medecin/demandes-attente'] },
                 ]
             });
         }
@@ -80,6 +92,7 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-money-bill',
                 items: [
                     { label: 'Nouvelle consultation', icon: 'pi pi-plus', routerLink: ['/caisse-hopital'] },
+                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/caisse-hopital/historique'] },
                 ]
             });
@@ -115,7 +128,8 @@ export class AppMenuComponent implements OnInit {
                 label: 'LABORATOIRE',
                 icon: 'pi pi-fw pi-flask',
                 items: [
-                    { label: 'Réalisations', icon: 'pi pi-play', routerLink: ['/laboratoire/realisation'] },
+                    { label: 'Examens en attente', icon: 'pi pi-clock', routerLink: ['/laboratoire/examens-attente'] },
+                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/laboratoire/historique'] },
                 ]
             });
@@ -127,8 +141,8 @@ export class AppMenuComponent implements OnInit {
                 label: 'CAISSE LABORATOIRE',
                 icon: 'pi pi-fw pi-money-bill',
                 items: [
-                 { label: 'Examens en attente', icon: 'pi pi-clock', routerLink: ['/laboratoire/examens-attente'] },
-                    // { label: 'Encaissement', icon: 'pi pi-credit-card', routerLink: ['/laboratoire/caisse'] },
+                    { label: 'Examens en attente', icon: 'pi pi-clock', routerLink: ['/laboratoire/examens-attente'] },
+                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/laboratoire/historique'] },
                 ]
             });

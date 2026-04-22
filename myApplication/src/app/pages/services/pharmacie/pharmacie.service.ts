@@ -1,15 +1,16 @@
+// services/pharmacie/pharmacie.service.ts
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {PharmacieDelivranceRequest, PrescriptionMedicament} from '../../models/prescription';
-import {AuthService} from '../auth/auth.service';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { PharmacieDelivranceRequest, PrescriptionMedicament } from '../../models/prescription';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class PharmacieService {
 
-    pprivate; baseUrl = 'http://localhost:8080/api/pharmacie';
+    private baseUrl = 'http://localhost:8080/api/pharmacie';
 
     constructor(
         private http: HttpClient,
@@ -24,6 +25,23 @@ export class PharmacieService {
         });
     }
 
+
+    // services/pharmacie/pharmacie.service.ts
+    /**
+     * ✅ RECHERCHE PAR CRITÈRES (CODEINTE, police, code risque, codeMemb optionnel)
+     */
+    rechercherParPoliceEtCodeInte(numPolice: string, codeInte: string, codeRisq: string, codeMemb?: string): Observable<PrescriptionMedicament[]> {
+        let params = new HttpParams();
+        if (numPolice) params = params.set('numPolice', numPolice);
+        if (codeInte) params = params.set('codeInte', codeInte);
+        if (codeRisq) params = params.set('codeRisq', codeRisq);
+        if (codeMemb) params = params.set('codeMemb', codeMemb);  // ✅ Ajouter codeMemb
+
+        console.log('Paramètres recherche pharmacie:', { numPolice, codeInte, codeRisq, codeMemb });
+
+        return this.http.get<PrescriptionMedicament[]>(`${this.baseUrl}/recherche-complete`, { headers: this.getHeaders(), params });
+    }
+
     /**
      * Récupérer les prescriptions en attente
      */
@@ -33,8 +51,9 @@ export class PharmacieService {
             { headers: this.getHeaders() }
         );
     }
+
     /**
-     * ✅ Rechercher des prescriptions par numéro de police
+     * Rechercher des prescriptions par numéro de police
      */
     getPrescriptionsByPolice(numeroPolice: string): Observable<PrescriptionMedicament[]> {
         return this.http.get<PrescriptionMedicament[]>(
@@ -61,16 +80,11 @@ export class PharmacieService {
         );
     }
 
-    // pharmacie.service.ts
     /**
      * Récupérer TOUTES les prescriptions (délivrées et non délivrées)
      */
     getAllPrescriptions(): Observable<PrescriptionMedicament[]> {
-        const token = this.authService.getToken();
-        const headers = new HttpHeaders({
-            Authorization: `Bearer ${token}`
-        });
-        return this.http.get<PrescriptionMedicament[]>(`${this.baseUrl}/pharmacie/toutes-prescriptions`, { headers });
+        return this.http.get<PrescriptionMedicament[]>(`${this.baseUrl}/toutes-prescriptions`, { headers: this.getHeaders() });
     }
 
     /**

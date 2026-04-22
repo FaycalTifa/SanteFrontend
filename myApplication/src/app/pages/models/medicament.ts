@@ -6,5 +6,6 @@ export interface Medicament {
     dosage: string;
     forme: string;
     prixReference: number;
+    exclusion: string;  // 'OUI' ou 'NON'
     actif: boolean;
 }

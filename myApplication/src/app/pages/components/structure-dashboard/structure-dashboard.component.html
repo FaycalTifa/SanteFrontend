@@ -63,7 +63,7 @@
     </div>
 
     <!-- Graphique d'évolution -->
-    <div class="card chart-card" *ngIf="chartData">
+   <!-- <div class="card chart-card" *ngIf="chartData">
         <div class="card-header">
             <h3>Évolution mensuelle</h3>
         </div>
@@ -74,7 +74,7 @@
                     type="line">
             </canvas>
         </div>
-    </div>
+    </div>-->
 
     <!-- Détail par année et mois -->
     <div class="card">
@@ -156,4 +156,13 @@
 
 <div *ngIf="loading" class="loading-container">
     <p-progressSpinner></p-progressSpinner>
+</div>
+<!-- examens-attente.component.html - Ajouter au début -->
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
 </div>

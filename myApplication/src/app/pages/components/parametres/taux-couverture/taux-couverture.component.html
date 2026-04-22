@@ -7,132 +7,49 @@
                     <i class="pi pi-percentage" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
                     <div>
                         <h2>Gestion des taux de couverture</h2>
-                        <p>Paramétrage des pourcentages de remboursement par police</p>
+                        <p>Paramétrage des pourcentages de remboursement</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Onglets -->
-            <p-tabView>
-                <!-- Onglet 1: Liste des taux -->
-                <p-tabPanel header="Taux de couverture">
-                    <div class="toolbar">
-                        <button pButton label="Nouveau taux" icon="pi pi-plus" class="p-button-primary" (click)="openNewTaux()"></button>
-                        <button pButton label="Associer à une police" icon="pi pi-link" class="p-button-secondary" (click)="openAssociationDialog()"></button>
-                    </div>
+            <div class="toolbar">
+                <button pButton label="Nouveau taux" icon="pi pi-plus" class="p-button-primary" (click)="openNewTaux()"></button>
+            </div>
 
-                    <p-table
-                            [value]="tauxList"
-                            [loading]="loading"
-                            [paginator]="true"
-                            [rows]="10"
-                            [rowsPerPageOptions]="[5,10,20]"
-                            responsiveLayout="scroll">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Code</th>
-                                <th>Libellé</th>
-                                <th>Taux (%)</th>
-                                <th>Description</th>
-                                <th>Statut</th>
-                                <th style="width: 120px">Actions</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-taux>
-                            <tr>
-                                <td><strong>{{ taux.code }}</strong></td>
-                                <td>{{ taux.libelle }}</td>
-                                <td>
-                                    <span class="taux-value">{{ taux.tauxPourcentage }}%</span>
-                                </td>
-                                <td>{{ taux.description }}</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="getStatusSeverity(taux.actif)">
-                                        {{ getStatusLabel(taux.actif) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editTaux(taux)" pTooltip="Modifier"></button>
-                                    <button *ngIf="taux.actif" pButton icon="pi pi-ban" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTaux(taux)" pTooltip="Désactiver"></button>
-                                    <button *ngIf="!taux.actif" pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success" (click)="activerTaux(taux)" pTooltip="Activer"></button>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="emptymessage">
-                            <tr>
-                                <td colspan="6" class="text-center">Aucun taux de couverture enregistré</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </p-tabPanel>
-
-                <!-- Onglet 2: Recherche par police -->
-                <p-tabPanel header="Recherche par police">
-                    <div class="search-section">
-                        <div class="p-fluid">
-                            <div class="p-field p-grid">
-                                <label class="p-col-12 p-md-2">Numéro police</label>
-                                <div class="p-col-12 p-md-8">
-                                    <input type="text" pInputText [(ngModel)]="policeRecherchee" placeholder="Saisir le numéro de police">
-                                </div>
-                                <div class="p-col-12 p-md-2">
-                                    <button pButton label="Rechercher" icon="pi pi-search" class="p-button-primary" (click)="rechercherPolice()"></button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div *ngIf="policeInfo" class="police-info">
-                            <h3>Informations police</h3>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="label">Police :</span>
-                                    <span class="value">{{ policeInfo.numeroPolice }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Assuré :</span>
-                                    <span class="value">{{ policeInfo.prenomAssure }} {{ policeInfo.nomAssure }}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Taux actuel :</span>
-                                    <span class="value highlight">{{ policeInfo.tauxPourcentage }}%</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Validité :</span>
-                                    <span class="value">du {{ policeInfo.dateDebut | date:'dd/MM/yyyy' }} au {{ policeInfo.dateFin | date:'dd/MM/yyyy' || 'Illimitée' }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div *ngIf="historiqueTaux.length > 0" class="historique-section">
-                            <h3>Historique des taux</h3>
-                            <p-table [value]="historiqueTaux" responsiveLayout="scroll">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Date début</th>
-                                        <th>Date fin</th>
-                                        <th>Taux</th>
-                                        <th>Libellé</th>
-                                        <th>Statut</th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr>
-                                        <td>{{ item.dateDebut | date:'dd/MM/yyyy' }}</td>
-                                        <td>{{ item.dateFin | date:'dd/MM/yyyy' || 'En cours' }}</td>
-                                        <td><strong>{{ item.tauxPourcentage }}%</strong></td>
-                                        <td>{{ item.tauxLibelle }}</td>
-                                        <td>
-                                            <span class="status-badge" [ngClass]="item.actif ? 'status-success' : 'status-danger'">
-                                                {{ item.actif ? 'Actif' : 'Inactif' }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                    </div>
-                </p-tabPanel>
-            </p-tabView>
+            <p-table
+                    [value]="tauxList"
+                    [loading]="loading"
+                    [paginator]="true"
+                    [rows]="10"
+                    [rowsPerPageOptions]="[5,10,20]"
+                    responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Code</th>
+                        <th>Libellé</th>
+                        <th>Taux (%)</th>
+                        <th style="width: 120px">Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-taux>
+                    <tr>
+                        <td><strong>{{ taux.code }}</strong></td>
+                        <td>{{ taux.libelle }}</td>
+                        <td>
+                            <span class="taux-value">{{ taux.tauxPourcentage }}%</span>
+                        </td>
+                        <td>
+                            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text" (click)="editTaux(taux)" pTooltip="Modifier"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" (click)="deleteTaux(taux)" pTooltip="Supprimer"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="4" class="text-center">Aucun taux de couverture enregistré</td>
+                    </tr>
+                </ng-template>
+            </p-table>
         </div>
     </div>
 </div>
@@ -157,7 +74,7 @@
             <div class="field">
                 <label for="libelle">Libellé *</label>
                 <input id="libelle" type="text" pInputText formControlName="libelle">
-                <small class="p-error" *ngIf="tauxForm.get('libelle')?.invalid && tauxForm.get('libelle')?.touched">
+                <small class="p-error" *ngif="tauxForm.get('libelle')?.invalid && tauxForm.get('libelle')?.touched">
                     Libellé requis (max 100 caractères)
                 </small>
             </div>
@@ -172,11 +89,6 @@
                     Taux entre 0 et 100%
                 </small>
             </div>
-
-            <div class="field">
-                <label for="description">Description</label>
-                <textarea id="description" rows="3" pInputTextarea formControlName="description"></textarea>
-            </div>
         </div>
     </form>
     <ng-template pTemplate="footer">
@@ -184,81 +96,14 @@
         <button pButton label="Enregistrer" icon="pi pi-save" class="p-button-primary" (click)="saveTaux()" [loading]="loading"></button>
     </ng-template>
 </p-dialog>
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
 
-<!-- Dialog Association Police - Taux -->
-<p-dialog
-        header="Associer un taux à une police"
-        [(visible)]="displayAssociationDialog"
-        [modal]="true"
-        [style]="{width: '600px'}"
-        [draggable]="false">
-    <form [formGroup]="associationForm">
-        <div class="p-fluid">
-            <div class="field">
-                <label for="numeroPolice">Numéro de police *</label>
-                <input id="numeroPolice" type="text" pInputText formControlName="numeroPolice" placeholder="Ex: 13000000">
-                <small class="p-error" *ngIf="associationForm.get('numeroPolice')?.invalid && associationForm.get('numeroPolice')?.touched">
-                    Numéro de police requis
-                </small>
-            </div>
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>
+<p-confirmDialog></p-confirmDialog>
 
-            <div *ngIf="policeInfo" class="info-box">
-                <div class="info-title">Informations police</div>
-                <div class="info-content">
-                    <div><strong>Assuré :</strong> {{ policeInfo.prenomAssure }} {{ policeInfo.nomAssure }}</div>
-                    <div><strong>Taux actuel :</strong> {{ policeInfo.tauxPourcentage }}% ({{ policeInfo.tauxLibelle }})</div>
-                </div>
-            </div>
 
-            <div class="field">
-                <label for="tauxId">Taux à appliquer *</label>
-                <p-dropdown
-                        id="tauxId"
-                        formControlName="tauxId"
-                        [options]="tauxList"
-                        optionLabel="libelle"
-                        optionValue="id"
-                        placeholder="Sélectionnez un taux"
-                        [style]="{'width': '100%'}">
-                    <ng-template let-taux pTemplate="item">
-                        <div class="taux-option">
-                            <span class="taux-value">{{ taux.tauxPourcentage }}%</span>
-                            <span class="taux-label"> - {{ taux.libelle }}</span>
-                            <span class="taux-code"> ({{ taux.code }})</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-            </div>
-
-            <div class="p-grid">
-                <div class="p-col-12 p-md-6">
-                    <div class="field">
-                        <label for="dateDebut">Date de début *</label>
-                        <p-calendar id="dateDebut" formControlName="dateDebut" dateFormat="dd/mm/yy"></p-calendar>
-                    </div>
-                </div>
-                <div class="p-col-12 p-md-6">
-                    <div class="field">
-                        <label for="dateFin">Date de fin</label>
-                        <p-calendar id="dateFin" formControlName="dateFin" dateFormat="dd/mm/yy"></p-calendar>
-                    </div>
-                </div>
-            </div>
-
-            <div *ngIf="historiqueTaux.length > 0" class="historique-box">
-                <div class="historique-title">Historique des taux pour cette police</div>
-                <ul>
-                    <li *ngFor="let item of historiqueTaux">
-                        <span class="date">{{ item.dateDebut | date:'dd/MM/yyyy' }} - {{ item.dateFin | date:'dd/MM/yyyy' || 'En cours' }}</span>
-                        <span class="taux">{{ item.tauxPourcentage }}%</span>
-                        <span class="status" [class.active]="item.actif">{{ item.actif ? 'Actif' : 'Inactif' }}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </form>
-    <ng-template pTemplate="footer">
-        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayAssociationDialog = false"></button>
-        <button pButton label="Enregistrer" icon="pi pi-save" class="p-button-primary" (click)="saveAssociation()" [loading]="loading"></button>
-    </ng-template>
-</p-dialog>

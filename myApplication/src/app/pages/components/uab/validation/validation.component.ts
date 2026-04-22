@@ -38,6 +38,12 @@ export class ValidationComponent implements OnInit {
         this.consultationService.getById(this.consultationId).subscribe({
             next: (data) => {
                 this.consultation = data;
+                console.log('=== DONNÉES REÇUES DE L\'API ===');
+                console.log('Consultation complète:', JSON.stringify(data, null, 2));
+                console.log('structureNom:', data.structureNom);
+                console.log('medecinNom:', data.medecinNom);
+                console.log('structureId:', data.structureId);
+                console.log('medecinId:', data.medecinId);
                 this.loading = false;
                 console.log('Consultation chargée:', data);
             },

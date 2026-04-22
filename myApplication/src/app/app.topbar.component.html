@@ -1,7 +1,9 @@
-<div class="layout-topbar shadow-4">
+<!-- app.topbar.component.html -->
+<div class="layout-topbar">
     <div class="layout-topbar-left">
         <a class="layout-topbar-logo" routerLink="/dashboard">
-            <img id="app-logo" src="assets/layout/images/logo/logo.png" alt="Logo">
+            <img id="app-logo" src="assets/layout/images/logo/UAB.jpeg" alt="UAB Assurances" style="height: 40px;">
+            <span class="logo-text">UAB ASSURANCES</span>
         </a>
 
         <button class="layout-menu-button" (click)="appMain.onMenuButtonClick($event)" pRipple>
@@ -13,53 +15,12 @@
         </button>
     </div>
 
-    <div class="layout-topbar-right" [class.layout-topbar-mobile-active]="mobileMenuActive">
-        <!-- Notifications -->
-        <div class="notifications-wrapper" *ngIf="notificationsCount > 0">
-            <button class="notifications-btn" (click)="toggleNotifications($event)" pRipple>
-                <span class="notification-badge">
-                    <i class="pi pi-bell"></i>
-                    <span class="notification-count" *ngIf="notificationsCount > 0">
-                        {{notificationsCount > 99 ? '99+' : notificationsCount}}
-                    </span>
-                </span>
-            </button>
-
-            <div class="notifications-panel" *ngIf="activeNotificationsPanel"
-                 [@topbarActionPanelAnimation]>
-                <div class="panel-header">
-                    <span>Notifications</span>
-                    <span class="count-badge">{{notificationsCount}}</span>
-                </div>
-                <div class="panel-content">
-                    <div class="notification-item" *ngFor="let notif of notifications">
-                        <div class="notification-icon">
-                            <i class="pi pi-bell"></i>
-                        </div>
-                        <div class="notification-details">
-                            <div class="notification-title">{{notif.title}}</div>
-                            <div class="notification-message">{{notif.message}}</div>
-                            <div class="notification-date">{{notif.date | date:'dd/MM/yyyy HH:mm'}}</div>
-                        </div>
-                    </div>
-                    <div class="empty-notifications" *ngIf="notifications.length === 0">
-                        <i class="pi pi-inbox"></i>
-                        <p>Aucune notification</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- User Info & Logout -->
+    <div class="layout-topbar-right">
         <div class="user-wrapper">
             <div class="user-info">
                 <div class="user-details" *ngIf="currentUser">
-                    <div class="user-name">
-                        {{currentUser.prenom}} {{currentUser.nom | uppercase}}
-                    </div>
-                    <div class="user-role">
-                        {{getRoleLabel(currentUser.role)}}
-                    </div>
+                    <div class="user-name">{{currentUser.prenom}} {{currentUser.nom | uppercase}}</div>
+                    <div class="user-role">{{getRoleLabel(currentUser.roles?.[0] || currentUser.role)}}</div>
                 </div>
                 <div class="user-details" *ngIf="!currentUser">
                     <div class="user-name">Non connecté</div>
@@ -75,8 +36,7 @@
         </div>
     </div>
 </div>
-
-<!-- Dialog de déconnexion -->
+<!-- ✅ Dialogue de confirmation -->
 <p-dialog header="Déconnexion" [(visible)]="displayLogoutDialog" [modal]="true"
           [style]="{width: '90%', maxWidth: '400px'}" [draggable]="false">
     <div class="text-center p-3">

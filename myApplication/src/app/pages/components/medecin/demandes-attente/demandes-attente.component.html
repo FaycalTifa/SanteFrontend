@@ -1,0 +1,206 @@
+<!-- pages/components/medecin/demandes-attente/demandes-attente.component.html -->
+<div class="demandes-container">
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="header-icon">
+                <i class="pi pi-clock"></i>
+            </div>
+            <div class="header-content">
+                <h2>Suivi des demandes de validation UAB</h2>
+                <p>Consultez l'état de vos demandes d'examens (en attente, validées, rejetées)</p>
+            </div>
+        </div>
+
+        <!-- Barre de recherche -->
+        <div class="search-section">
+            <!-- ✅ 4 champs sur la même ligne -->
+            <div class="search-row-4cols">
+                <div class="search-field">
+                    <label>CODEINTE <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchCodeInte" placeholder="Ex: 220" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>N° Police <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchNumPolice" placeholder="Ex: 10100009" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>Code Risque (CODERISQ) <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="searchCodeRisq" placeholder="Ex: 1100" class="p-inputtext">
+                </div>
+                <div class="search-field">
+                    <label>Code Membre <span class="optional">(Optionnel)</span></label>
+                    <input type="text" [(ngModel)]="searchCodeMemb" placeholder="Ex: 31" class="p-inputtext">
+                </div>
+                <div class="search-button-group">
+                    <button pButton type="button" icon="pi pi-search" label="Rechercher"
+                            class="p-button-primary" (click)="rechercher()" [loading]="rechercheEnCours">
+                    </button>
+                    <button pButton type="button" label="Réinitialiser" icon="pi pi-refresh"
+                            class="p-button-secondary" (click)="resetSearch()">
+                    </button>
+                </div>
+            </div>
+
+            <small class="info-text">
+                <i class="pi pi-info-circle"></i>
+                Les champs CODEINTE, N° Police et Code Risque sont obligatoires.
+                Le Code Membre est optionnel (pour filtrer par bénéficiaire spécifique).
+            </small>
+        </div>
+        <!-- Message d'information -->
+        <div class="info-banner">
+            <i class="pi pi-info-circle"></i>
+            <div>
+                <strong>📋 Suivi des demandes :</strong>
+                Cette page affiche toutes vos demandes de validation d'examens.
+                <span class="badge-pending">🟡 En attente</span> = Validation en cours,
+                <span class="badge-validated">🟢 Validé</span> = Examen disponible au laboratoire,
+                <span class="badge-rejected">🔴 Rejeté</span> = Demande refusée.
+            </div>
+        </div>
+
+        <!-- État vide -->
+        <div *ngIf="demandes.length === 0 && !loading && !rechercheEnCours" class="empty-state">
+            <i class="pi pi-inbox"></i>
+            <h3>Aucune demande trouvée</h3>
+            <p>Aucune demande de validation d'examen n'a été trouvée avec ces critères.</p>
+            <div class="empty-actions">
+                <button pButton label="📞 Contacter l'UAB" icon="pi pi-phone"
+                        class="p-button-warning" (click)="contacterUAB()">
+                </button>
+            </div>
+        </div>
+
+        <!-- Liste des demandes -->
+        <div class="demandes-list" *ngIf="demandes.length > 0">
+            <div *ngFor="let demande of filteredDemandes" class="demande-card">
+                <!-- En-tête avec statut -->
+                <div class="demande-header">
+                    <div class="demande-badge">
+                        <span class="status-badge" [style.background]="getStatusBgColor(demande.validationUab)"
+                              [style.color]="getStatusTextColor(demande.validationUab)">
+                            <i [class]="getStatusIcon(demande.validationUab)"></i>
+                            {{ getStatusLabel(demande.validationUab) }}
+                        </span>
+                        <span class="demande-date">
+                            <i class="pi pi-calendar"></i>
+                            Demandé le {{ demande.datePrescription | date:'dd/MM/yyyy' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Corps de la carte -->
+                <div class="demande-body">
+                    <div class="demande-info">
+                        <div class="info-group">
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="pi pi-user"></i>
+                                    Patient
+                                </div>
+                                <div class="info-value">
+                                    {{ demande.patientPrenom }} {{ demande.patientNom }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="pi pi-id-card"></i>
+                                    N° Police
+                                </div>
+                                <div class="info-value highlight">
+                                    {{ demande.patientPolice }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="pi pi-tag"></i>
+                                    CODEINTE
+                                </div>
+                                <div class="info-value">
+                                    {{ demande.codeInte || '-' }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="pi pi-qrcode"></i>
+                                    Code Risque
+                                </div>
+                                <div class="info-value">
+                                    {{ demande.codeRisq || '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-group">
+                            <div class="info-item full-width">
+                                <div class="info-label">
+                                    <i class="pi pi-microscope"></i>
+                                    Examen demandé
+                                </div>
+                                <div class="info-value examen-nom">
+                                    {{ demande.examenNom }}
+                                    <span class="code-acte" *ngIf="demande.codeActe">({{ demande.codeActe }})</span>
+                                </div>
+                            </div>
+                            <div class="info-item full-width" *ngIf="demande.instructions">
+                                <div class="info-label">
+                                    <i class="pi pi-comment"></i>
+                                    Instructions
+                                </div>
+                                <div class="info-value instructions">
+                                    {{ demande.instructions }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message d'état selon le statut -->
+                        <div class="status-message" [style.background]="getStatusBgColor(demande.validationUab)">
+                            <i [class]="getStatusIcon(demande.validationUab)"></i>
+                            <span>
+        <ng-container [ngSwitch]="demande.validationUab">
+            <ng-container *ngSwitchCase="'EN_ATTENTE'">
+                ⏳ Cette demande est en attente de validation par l'UAB. Vous serez informé dès qu'une décision sera prise.
+            </ng-container>
+            <ng-container *ngSwitchCase="'OUI'">
+                ✅ Cette demande a été validée par l'UAB. L'examen peut maintenant être réalisé par le laboratoire.
+            </ng-container>
+            <ng-container *ngSwitchCase="'NON'">
+                ❌ Cette demande a été rejetée par l'UAB. Motif : {{ demande.motifRejet || 'Non spécifié' }}
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+                ❓ Le statut de cette demande est inconnu. Veuillez contacter l'UAB.
+            </ng-container>
+        </ng-container>
+    </span>
+                        </div>
+
+                        <!-- Bouton consulter (pas de paiement) -->
+                        <div class="demande-actions">
+                            <button pButton
+                                    icon="pi pi-eye"
+                                    label="Consulter la consultation"
+                                    class="p-button-info"
+                                    (click)="consulterConsultation(demande)">
+                            </button>
+                            <button pButton
+                                    *ngIf="demande.validationUab === 'EN_ATTENTE'"
+                                    icon="pi pi-phone"
+                                    label="Contacter l'UAB"
+                                    class="p-button-warning p-button-outlined"
+                                    (click)="contacterUAB(demande)">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message de chargement -->
+        <div *ngIf="loading" class="loading-container">
+            <p-progressSpinner></p-progressSpinner>
+            <p>Chargement des demandes...</p>
+        </div>
+    </div>
+</div>

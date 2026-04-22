@@ -133,6 +133,10 @@ import {ProgressSpinnerModule} from "primeng/progressspinner";
 import {UtilisateursComponent} from "./pages/components/uab/utilisateurs/utilisateurs.component";
 import {AuthInterceptor} from "./pages/core/interceptors/interceptors.interceptor";
 import { FooterComponent } from './footer/footer.component';
+import { PlafonnementComponent } from './pages/components/uab/plafonnement/plafonnement.component';
+import { ImportMedicamentsComponent } from './pages/components/uab/import-medicaments/import-medicaments.component';
+import { ValidationExamensComponent } from './pages/components/uab/validation-examens/validation-examens.component';
+import { DemandesAttenteComponent } from './pages/components/medecin/demandes-attente/demandes-attente.component';
 
 FullCalendarModule.registerPlugins([
     dayGridPlugin,
@@ -261,6 +265,10 @@ FullCalendarModule.registerPlugins([
         CaisseLaboratoireComponent,
         StructureDashboardComponent,
         FooterComponent,
+        PlafonnementComponent,
+        ImportMedicamentsComponent,
+        ValidationExamensComponent,
+        DemandesAttenteComponent,
     ],
     providers: [
         {provide: LocationStrategy, useClass: HashLocationStrategy},

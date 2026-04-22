@@ -25,6 +25,10 @@ import { GuardsGuard } from './pages/core/guards/guards.guard';
 import { StructureDashboardComponent } from './pages/components/structure-dashboard/structure-dashboard.component';
 import { UtilisateursComponent } from './pages/components/uab/utilisateurs/utilisateurs.component';
 import { StructuresComponent } from "./pages/components/structures/structures.component";
+import {PlafonnementComponent} from "./pages/components/uab/plafonnement/plafonnement.component";
+import {ImportMedicamentsComponent} from "./pages/components/uab/import-medicaments/import-medicaments.component";
+import {DemandesAttenteComponent} from "./pages/components/medecin/demandes-attente/demandes-attente.component";
+import {ValidationExamensComponent} from "./pages/components/uab/validation-examens/validation-examens.component";
 
 @NgModule({
     imports: [
@@ -75,6 +79,13 @@ import { StructuresComponent } from "./pages/components/structures/structures.co
                     {
                         path: 'medecin/interpretations',
                         component: InterpretationResultatsComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['MEDECIN'] }
+                    },
+                    // app-routing.module.ts
+                    {
+                        path: 'medecin/demandes-attente',
+                        component: DemandesAttenteComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['MEDECIN'] }
                     },
@@ -144,8 +155,22 @@ import { StructuresComponent } from "./pages/components/structures/structures.co
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
+                    // app-routing.module.ts
+                    {
+                        path: 'uab/parametres/import-medicaments',
+                        component: ImportMedicamentsComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
                     {
                         path: 'uab/validation/:id',
+                        component: ValidationComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
+                    // app-routing.module.ts
+                    {
+                        path: 'uab/validation/:id/:type',
                         component: ValidationComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
@@ -167,6 +192,18 @@ import { StructuresComponent } from "./pages/components/structures/structures.co
                         component: TauxCouvertureComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
+                    },
+                    {
+                        path: 'uab/Validation/examen',
+                        component: ValidationExamensComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
+                    {
+                        path: 'caisse-hopital/plafonnements',
+                        component: PlafonnementComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['CAISSIER_HOPITAL'] }
                     },
                     {
                         path: 'uab/parametres/utilisateurs',

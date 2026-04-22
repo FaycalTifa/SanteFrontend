@@ -1,0 +1,219 @@
+// pages/components/caisse-hopital/plafonnements/plafonnements.component.scss
+
+.plafonnements-container {
+  padding: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .header-icon i {
+    font-size: 2rem;
+  }
+
+  .header-content h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+  }
+
+  .header-content p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.8rem;
+  }
+}
+
+.search-section {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+
+  .search-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .search-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.5rem;
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  .search-field input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+  }
+
+  .search-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #e0f2fe;
+  border-left: 4px solid #0284c7;
+  flex-wrap: wrap;
+
+  i {
+    font-size: 1.25rem;
+    color: #0284c7;
+  }
+
+  .cate-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+    margin: 0.2rem;
+  }
+}
+
+.cate-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.cate-100 { background: #dbeafe; color: #1e40af; }
+.cate-101 { background: #d1fae5; color: #065f46; }
+.cate-102 { background: #fef3c7; color: #92400e; }
+.cate-103 { background: #fce7f3; color: #9d174d; }
+.cate-104 { background: #fed7aa; color: #9a3412; }
+.cate-default { background: #f1f5f9; color: #475569; }
+
+.code-pres-badge {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.montant-cell {
+  font-weight: 600;
+  color: #059669;
+}
+
+.results-section {
+  padding: 1rem;
+}
+
+.filters-bar {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+
+  .filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+
+    .filter-field {
+      flex: 1;
+      min-width: 150px;
+
+      label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+.summary-card {
+  display: flex;
+  gap: 1rem;
+  background: #f0fdf4;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #bbf7d0;
+
+  .summary-item {
+    flex: 1;
+    text-align: center;
+
+    .summary-label {
+      display: block;
+      font-size: 0.7rem;
+      color: #047857;
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-value {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #065f46;
+    }
+  }
+}
+
+.empty-state, .loading-state {
+  text-align: center;
+  padding: 2rem;
+
+  i {
+    font-size: 2rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .summary-card {
+    flex-direction: column;
+  }
+}

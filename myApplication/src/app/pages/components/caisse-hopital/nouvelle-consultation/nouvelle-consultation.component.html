@@ -12,6 +12,61 @@
         </div>
 
         <form [formGroup]="consultationForm" (ngSubmit)="onSubmit()">
+            <!-- Recherche Police -->
+            <!-- Recherche Police -->
+            <!-- Recherche Police -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-search"></i>
+                    <span>Recherche Police</span>
+                </div>
+
+                <!-- 4 colonnes pour les inputs -->
+                <div class="form-row-4cols-inputs">
+                    <div class="form-field">
+                        <label for="codeInte">CODEINTE <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-barcode"></i>
+                            <input id="codeInte" type="text" formControlName="codeInte" placeholder="Ex: 220">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="numeroPolice">N° Police <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-id-card"></i>
+                            <input id="numeroPolice" type="text" formControlName="numeroPolice" placeholder="Ex: 10100009">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="codeRisq">Code Risque <span class="required">*</span></label>
+                        <div class="input-icon">
+                            <i class="pi pi-tags"></i>
+                            <input id="codeRisq" type="number" formControlName="codeRisq" placeholder="Ex: 1100">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="codeMemb">Code Membre</label>
+                        <div class="input-icon">
+                            <i class="pi pi-tags"></i>
+                            <input id="codeMemb" type="number" formControlName="codeMemb" placeholder="Ex: 31">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton sur la ligne suivante -->
+                <div class="form-row-button">
+                    <div class="form-field search-button">
+                        <button type="button" pButton label="Rechercher" icon="pi pi-search"
+                                class="p-button-primary" [loading]="rechercheEnCours"
+                                (click)="rechercher()">
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Informations Patient -->
             <div class="form-section">
                 <div class="section-title">
@@ -20,23 +75,6 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-field">
-                        <label for="numeroPolice">N° Police <span class="required">*</span></label>
-                        <div class="input-icon">
-                            <i class="pi pi-id-card"></i>
-                            <input
-                                    id="numeroPolice"
-                                    type="text"
-                                    formControlName="numeroPolice"
-                                    placeholder="Ex: 12000000"
-                                    (blur)="rechercherPatientParPolice()">
-                        </div>
-                        <small class="info-text">
-                            <i class="pi pi-info-circle"></i>
-                            Saisissez le numéro de police pour rechercher un patient existant
-                        </small>
-                    </div>
-
                     <div class="form-field">
                         <label for="nomPatient">Nom <span class="required">*</span></label>
                         <div class="input-icon">
@@ -49,55 +87,85 @@
                         <label for="prenomPatient">Prénom <span class="required">*</span></label>
                         <div class="input-icon">
                             <i class="pi pi-user"></i>
-                            <input id="prenomPatient" type="text" formControlName="prenomPatient" placeholder="Ex: Moussa">
+                            <input id="prenomPatient" type="text" formControlName="prenomPatient"
+                                   placeholder="Ex: Moussa">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="telephonePatient">Téléphone</label>
+                        <div class="input-icon">
+                            <i class="pi pi-phone"></i>
+                            <input id="telephonePatient" type="tel" formControlName="telephonePatient"
+                                   placeholder="XX XX XX XX XX">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="telephonePatient">Téléphone</label>
-                        <div class="input-icon">
-                            <i class="pi pi-phone"></i>
-                            <input id="telephonePatient" type="tel" formControlName="telephonePatient" placeholder="XX XX XX XX XX">
-                        </div>
-                    </div>
-
-                    <div class="form-field">
                         <label for="dateNaissance">Date de naissance</label>
-                        <p-calendar id="dateNaissance" formControlName="dateNaissance" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
+                        <p-calendar id="dateNaissance" formControlName="dateNaissance" dateFormat="dd/mm/yy"
+                                    [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
                     </div>
 
                     <div class="form-field">
                         <label for="dateConsultation">Date consultation <span class="required">*</span></label>
-                        <p-calendar id="dateConsultation" formControlName="dateConsultation" dateFormat="dd/mm/yy" [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
+                        <p-calendar id="dateConsultation" formControlName="dateConsultation" dateFormat="dd/mm/yy"
+                                    [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
                     </div>
-                </div>
-
-                <!-- Message si patient trouvé -->
-                <div *ngIf="patientTrouve" class="patient-found-message">
-                    <i class="pi pi-check-circle"></i>
-                    <div class="patient-info">
-                        <strong>Patient trouvé :</strong> {{ patientTrouve.prenom }} {{ patientTrouve.nom }}
-                        <span class="patient-phone">Tél: {{ patientTrouve.telephone }}</span>
-                        <span class="patient-dob" *ngIf="patientTrouve.dateNaissance">Né le: {{ patientTrouve.dateNaissance | date:'dd/MM/yyyy' }}</span>
-                    </div>
-                </div>
-
-                <!-- Message de recherche en cours -->
-                <div *ngIf="recherchePatientEnCours" class="patient-searching">
-                    <i class="pi pi-spin pi-spinner"></i>
-                    Recherche du patient par numéro de police...
-                </div>
-
-                <!-- Message si patient non trouvé -->
-                <div *ngIf="patientNonTrouve && !recherchePatientEnCours" class="patient-not-found">
-                    <i class="pi pi-info-circle"></i>
-                    Aucun patient trouvé avec ce numéro de police. Vous pouvez créer un nouveau patient.
                 </div>
             </div>
 
-            <!-- Sélection du taux de couverture -->
+            <!-- Section Plafonnement -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="pi pi-chart-line"></i>
+                    <span>Plafonnement</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field full-width">
+                        <label>Plafond applicable</label>
+                        <div *ngIf="!plafonnementSelectionne" class="no-plafond-message">
+                            <i class="pi pi-info-circle"></i>
+                            <span>Aucun plafond sélectionné. Veuillez rechercher une police d'abord.</span>
+                        </div>
+                        <div *ngIf="plafonnementSelectionne" class="plafond-info-card">
+                            <div class="plafond-header">
+                                <i class="pi pi-check-circle"></i>
+                                <span>Plafond appliqué</span>
+                            </div>
+                            <div class="plafond-content">
+                                <div class="plafond-item">
+                                    <span class="label">Type :</span>
+                                    <span class="value">{{ plafonnementSelectionne.LIBEPRES }}</span>
+                                </div>
+                                <div class="plafond-item">
+                                    <span class="label">Code :</span>
+                                    <span class="value">{{ plafonnementSelectionne.CODEPRES }}</span>
+                                </div>
+                                <div class="plafond-item">
+                                    <span class="label">Montant max :</span>
+                                    <span class="value">{{ plafonnementSelectionne.VALEPLAF | number }} FCFA</span>
+                                </div>
+                                <div class="plafond-item" *ngIf="calculerTotal() > plafonnementSelectionne.VALEPLAF">
+                                    <span class="label label-warning">Dépassement :</span>
+                                    <span class="value warning">{{ calculerTotal() - plafonnementSelectionne.VALEPLAF | number }}
+                                        FCFA</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Champs cachés pour le plafonnement -->
+                <input type="hidden" formControlName="codePres">
+                <input type="hidden" formControlName="libellePres">
+                <input type="hidden" formControlName="montantPlafond">
+            </div>
+
+            <!-- Taux de couverture -->
             <div class="form-section">
                 <div class="section-title">
                     <i class="pi pi-percentage"></i>
@@ -107,15 +175,9 @@
                 <div class="form-row">
                     <div class="form-field">
                         <label for="tauxId">Sélectionnez le taux <span class="required">*</span></label>
-                        <p-dropdown
-                                id="tauxId"
-                                formControlName="tauxId"
-                                [options]="tauxDisponibles"
-                                optionLabel="libelle"
-                                optionValue="id"
-                                placeholder="Choisissez un taux"
-                                [style]="{'width': '100%'}"
-                                [filter]="true">
+                        <p-dropdown id="tauxId" formControlName="tauxId" [options]="tauxDisponibles"
+                                    optionLabel="libelle" optionValue="id" placeholder="Choisissez un taux"
+                                    [style]="{'width': '100%'}" [filter]="true">
                             <ng-template let-taux pTemplate="item">
                                 <div class="taux-option">
                                     <span class="taux-value">{{ taux.tauxPourcentage }}%</span>
@@ -123,10 +185,6 @@
                                 </div>
                             </ng-template>
                         </p-dropdown>
-                        <small class="info-text">
-                            <i class="pi pi-info-circle"></i>
-                            Sélectionnez le taux applicable pour cette police
-                        </small>
                     </div>
                 </div>
             </div>
@@ -143,7 +201,8 @@
                         <label for="prixConsultation">Prix consultation (FCFA) <span class="required">*</span></label>
                         <div class="input-icon">
                             <i class="pi pi-tag"></i>
-                            <input id="prixConsultation" type="number" formControlName="prixConsultation" placeholder="0" min="0">
+                            <input id="prixConsultation" type="number" formControlName="prixConsultation"
+                                   placeholder="0" min="0">
                             <span class="currency">FCFA</span>
                         </div>
                     </div>
@@ -158,7 +217,6 @@
                     </div>
                 </div>
 
-                <!-- Récapitulatif du paiement -->
                 <div class="total-card" *ngIf="tauxSelectionne">
                     <div class="total-info">
                         <div class="total-label">
@@ -185,19 +243,162 @@
                         <span>Le patient paiera le ticket modérateur à l'hôpital</span>
                     </div>
                 </div>
-
-                <!-- Message si aucun taux sélectionné -->
-                <div *ngIf="!tauxSelectionne && consultationForm.get('tauxId')?.touched" class="error-message">
-                    <i class="pi pi-exclamation-triangle"></i>
-                    Veuillez sélectionner un taux de couverture
-                </div>
             </div>
 
-            <!-- Actions du formulaire -->
+            <!-- Actions -->
             <div class="form-actions">
-                <button type="button" pButton label="Annuler" icon="pi pi-times" class="p-button-secondary" (click)="resetForm()"></button>
-                <button type="submit" pButton label="Enregistrer consultation" [loading]="loading" icon="pi pi-save" class="p-button-primary" [disabled]="consultationForm.invalid || !tauxSelectionne || loading"></button>
+                <!-- Ajouter dans le template, à côté du bouton Enregistrer -->
+                <div class="form-actions">
+                    <button type="button" pButton label="Annuler" icon="pi pi-times" class="p-button-secondary"
+                            (click)="resetForm()"></button>
+                    <button type="button" pButton label="Aperçu" icon="pi pi-eye" class="p-button-info"
+                            (click)="afficherResume()"></button>
+                    <button type="submit" pButton label="Enregistrer consultation" [loading]="loading"
+                            icon="pi pi-save" class="p-button-primary"
+                            [disabled]="consultationForm.invalid || !tauxSelectionne || loading">
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Dialogue de sélection du plafond -->
+<p-dialog header="Sélectionner le plafond applicable" [(visible)]="showPlafondDialog"
+          [modal]="true" [style]="{width: '550px'}" [draggable]="false">
+    <div class="dialog-content">
+        <div class="section-title">
+            <i class="pi pi-chart-line"></i>
+            <span>Choisissez le type de consultation</span>
+        </div>
+
+        <div class="plafonds-list">
+            <div *ngFor="let plafond of plafonnementsDisponibles"
+                 class="plafond-card"
+                 (click)="selectionnerPlafonnement(plafond)">
+                <div class="plafond-icon">
+                    <i class="pi pi-tag"></i>
+                </div>
+                <div class="plafond-info">
+                    <div class="plafond-code">{{ plafond.CODEPRES }}</div>
+                    <div class="plafond-libelle">{{ plafond.LIBEPRES }}</div>
+                    <div class="plafond-montant">{{ plafond.VALEPLAF | number }} FCFA</div>
+                </div>
+                <button pButton icon="pi pi-check" class="p-button-rounded p-button-success p-button-sm"></button>
+            </div>
+        </div>
+    </div>
+</p-dialog>
+
+<!-- Dialogue des résultats de recherche -->
+<p-dialog header="Résultats de la recherche" [(visible)]="showResultatDialog"
+          [modal]="true" [style]="{width: '700px'}" [draggable]="false">
+    <div class="dialog-content">
+        <!-- Police trouvée -->
+        <div class="police-header" *ngIf="policeTrouvee">
+            <div class="police-info">
+                <i class="pi pi-id-card"></i>
+                <div>
+                    <div class="police-number">Police: <strong>{{ policeTrouvee.NUMEPOLI }}</strong></div>
+                    <div class="police-codeinte">CODEINTE: {{ policeTrouvee.CODEINTE }}</div>
+                </div>
+            </div>
+            <div class="raissoci-info">
+                <i class="pi pi-building"></i>
+                <div class="raissoci-name">{{ policeTrouvee.RAISSOCI }}</div>
+            </div>
+        </div>
+
+        <!-- Assuré principal -->
+        <div class="assure-principal-section" *ngIf="assurePrincipal">
+            <div class="section-title">
+                <i class="pi pi-star"></i>
+                <span>Assuré principal</span>
+                <span class="section-badge">Titulaire du contrat</span>
+            </div>
+            <div class="principal-card" (click)="selectionnerAssurePrincipal()">
+                <div class="principal-icon">
+                    <i class="pi pi-crown"></i>
+                </div>
+                <div class="principal-info">
+                    <div class="principal-name">{{ assurePrincipal.LIBERISQ }}</div>
+                    <div class="principal-details">
+                        <span class="principal-code">Risque: {{ assurePrincipal.CODERISQ }}</span>
+                        <span class="principal-date"
+                              *ngIf="assurePrincipal.DATENAIS">Né le: {{ assurePrincipal.DATENAIS | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                </div>
+                <button pButton icon="pi pi-check" label="Sélectionner" class="p-button-success p-button-sm"></button>
+            </div>
+        </div>
+
+        <!-- Bénéficiaires -->
+        <div class="beneficiaires-section" *ngIf="beneficiaires && beneficiaires.length > 0">
+            <div class="section-title">
+                <i class="pi pi-users"></i>
+                <span>Bénéficiaires</span>
+                <span class="section-badge">{{ beneficiaires.length }} personne(s)</span>
+            </div>
+
+            <!-- Barre de recherche -->
+            <div class="search-bar">
+                <div class="input-icon">
+                    <i class="pi pi-search"></i>
+                    <input type="text"
+                           [(ngModel)]="searchBeneficiaireTerm"
+                           (input)="filtrerBeneficiaires()"
+                           placeholder="Rechercher un bénéficiaire..."
+                           class="search-input">
+                </div>
+                <button *ngIf="searchBeneficiaireTerm"
+                        type="button"
+                        pButton
+                        icon="pi pi-times"
+                        class="p-button-rounded p-button-text"
+                        (click)="resetFiltre()">
+                </button>
+            </div>
+
+            <!-- Liste des bénéficiaires -->
+            <div class="beneficiaires-list">
+                <div *ngFor="let benef of beneficiairesFiltres" class="beneficiaire-card"
+                     (click)="selectionnerBeneficiaire(benef)">
+                    <div class="beneficiaire-avatar">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <div class="beneficiaire-info">
+                        <div class="beneficiaire-name">{{ benef.NOM_MEMB }}</div>
+                        <div class="beneficiaire-details">
+                            <span class="beneficiaire-code">Membre: {{ benef.CODERISQ }}</span>
+                            <span class="beneficiaire-date"
+                                  *ngIf="benef.DATENAIS">Né le: {{ benef.DATENAIS | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                    </div>
+                    <button pButton icon="pi pi-check" label="Sélectionner"
+                            class="p-button-success p-button-sm"></button>
+                </div>
+            </div>
+
+            <div *ngIf="beneficiairesFiltres.length === 0" class="empty-list">
+                <i class="pi pi-inbox"></i>
+                <p>Aucun bénéficiaire trouvé</p>
+            </div>
+        </div>
+
+        <!-- Message si aucun bénéficiaire -->
+        <div *ngIf="(!beneficiaires || beneficiaires.length === 0) && !assurePrincipal" class="empty-list">
+            <i class="pi pi-inbox"></i>
+            <p>Aucune donnée trouvée pour ces critères</p>
+        </div>
+    </div>
+</p-dialog>
+<!-- examens-attente.component.html - Ajouter au début -->
+<div class="laboratoire-container">
+    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <!-- reste du template -->
+    </div>
+</div>
+<p-confirmDialog></p-confirmDialog>

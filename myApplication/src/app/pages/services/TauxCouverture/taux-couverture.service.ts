@@ -9,55 +9,33 @@ import {HttpClient} from '@angular/common/http';
 })
 export class TauxCouvertureService {
 
-    private baseUrl = 'http://localhost:8080/api';
+    private baseUrl = 'http://localhost:8080/api/taux-couverture';
 
     constructor(private http: HttpClient) {}
 
-    // Taux de couverture
-    // Récupérer tous les taux actifs
+    // Récupérer tous les taux
     getAllTaux(): Observable<TauxCouverture[]> {
-        return this.http.get<TauxCouverture[]>(`${this.baseUrl}/taux-couverture`);
+        return this.http.get<TauxCouverture[]>(`${this.baseUrl}`);
     }
 
     // Récupérer un taux par ID
     getTauxById(id: number): Observable<TauxCouverture> {
-        return this.http.get<TauxCouverture>(`${this.baseUrl}/taux-couverture/${id}`);
+        return this.http.get<TauxCouverture>(`${this.baseUrl}/${id}`);
     }
 
     // Créer un nouveau taux
     createTaux(taux: TauxCouverture): Observable<TauxCouverture> {
-        return this.http.post<TauxCouverture>(`${this.baseUrl}/taux-couverture`, taux);
+        return this.http.post<TauxCouverture>(`${this.baseUrl}`, taux);
     }
 
     // Modifier un taux
     updateTaux(id: number, taux: TauxCouverture): Observable<TauxCouverture> {
-        return this.http.put<TauxCouverture>(`${this.baseUrl}/taux-couverture/${id}`, taux);
+        return this.http.put<TauxCouverture>(`${this.baseUrl}/${id}`, taux);
     }
 
-    // Désactiver un taux
-    desactiverTaux(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.baseUrl}/taux-couverture/${id}`);
+    // Supprimer un taux
+    deleteTaux(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}`);
     }
-
-    // Activer un taux
-    activerTaux(id: number): Observable<void> {
-        return this.http.put<void>(`${this.baseUrl}/taux-couverture/${id}/activer`, {});
+    
     }
-
-    // ========== ASSOCIATION POLICE - TAUX ==========
-
-    // Récupérer le taux actif d'une police
-    getTauxActifByPolice(numeroPolice: string): Observable<PoliceTaux> {
-        return this.http.get<PoliceTaux>(`${this.baseUrl}/polices-taux/actif/${numeroPolice}`);
-    }
-
-    // Récupérer l'historique des taux d'une police
-    getHistoriqueTauxPolice(numeroPolice: string): Observable<PoliceTaux[]> {
-        return this.http.get<PoliceTaux[]>(`${this.baseUrl}/polices-taux/historique/${numeroPolice}`);
-    }
-
-    // Assigner un taux à une police
-    assignerTaux(request: PoliceTauxRequest): Observable<PoliceTaux> {
-        return this.http.post<PoliceTaux>(`${this.baseUrl}/polices-taux`, request);
-    }
-}

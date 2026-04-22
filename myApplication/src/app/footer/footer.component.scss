@@ -1,0 +1,53 @@
+// footer.component.scss
+.app-footer {
+  background: #0a2472;
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
+  border-top: 2px solid #1e40af;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+
+  .footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+
+    .footer-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+
+      i {
+        font-size: 0.9rem;
+      }
+
+      &.footer-brand i { color: #60a5fa; }
+      &.footer-copyright i { color: #34d399; }
+      &.footer-developer i { color: #fbbf24; }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .app-footer {
+    padding: 0.5rem 1rem;
+
+    .footer-container {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.5rem;
+
+      .footer-section {
+        justify-content: center;
+      }
+    }
+  }
+}
