@@ -102,6 +102,7 @@
                     </p-dropdown>
                 </div>
 
+                <!-- dossiers.component.html - Section filtre structure -->
                 <div class="filter-field">
                     <label>
                         <i class="pi pi-building"></i>
@@ -118,9 +119,14 @@
                             [showClear]="true">
                         <ng-template let-structure pTemplate="item">
                             <div class="structure-option">
-                                <i class="pi pi-building"></i>
+                                <i class="pi pi-building" [style.color]="getStructureTypeColor(structure.type)"></i>
                                 <span>{{ structure.nom }}</span>
-                                <span class="structure-type" *ngIf="structure.type">({{ structure.type }})</span>
+                                <span class="structure-type" [ngClass]="getStructureTypeClass(structure.type)">
+                    {{ getTypeLabel(structure.type) }}
+                </span>
+                                <span class="structure-status" *ngIf="!structure.actif">
+                    <i class="pi pi-ban"></i> Inactif
+                </span>
                             </div>
                         </ng-template>
                     </p-dropdown>

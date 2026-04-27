@@ -6,6 +6,8 @@ import { UabService } from '../../../services/uab/uab.service';
 import { CacheService } from '../../../services/cache/cache.service';
 import {Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
+import {Structure} from '../../../models/structure';
+import {StructureService} from '../../../services/structure/structure.service';
 
 @Component({
     selector: 'app-dossiers',
@@ -25,6 +27,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
     selectedStatut = '';
     dateDebut: Date | null = null;
     dateFin: Date | null = null;
+    structures: Structure[] = [];
 
     // Options pour les dropdowns
     typeDossiers = [
@@ -41,7 +44,6 @@ export class DossiersComponent implements OnInit, OnDestroy {
         { label: 'Rejeté', value: 'REJETEE_UAB' }
     ];
 
-    structures: any[] = [];
 
     // Dialog validation rapide
     displayValidationDialog = false;
@@ -67,6 +69,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
         private router: Router,
         private route: ActivatedRoute,
         private messageService: MessageService,
+        private structureService: StructureService,
         private cacheService: CacheService,
         private confirmationService: ConfirmationService
     ) {}
@@ -103,6 +106,8 @@ export class DossiersComponent implements OnInit, OnDestroy {
         this.setupDebounceSearch();
     }
 
+
+
     // ✅ Configuration du debounce pour la recherche
     setupDebounceSearch(): void {
         this.searchSubject.pipe(
@@ -122,6 +127,35 @@ export class DossiersComponent implements OnInit, OnDestroy {
     }
 
     loadStructures(): void {
+        // Vérifier le cache
+        const cachedStructures = this.cacheService.get('structures_list');
+        if (cachedStructures) {
+            this.structures = cachedStructures;
+            console.log('Structures chargées depuis le cache:', this.structures.length);
+            return;
+        }
+
+        // Charger depuis l'API
+        this.structureService.getAllStructures().subscribe({
+            next: (data) => {
+                // ✅ Ne garder que les structures actives
+                this.structures = data.filter(s => s.actif === true);
+                this.cacheService.set('structures_list', this.structures, 30 * 60 * 1000);
+                console.log('Structures chargées depuis l\'API:', this.structures.length);
+            },
+            error: (error) => {
+                console.error('Erreur chargement structures:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Impossible de charger la liste des structures'
+                });
+            }
+        });
+    }
+
+
+    loadStructurest(): void {
         // ✅ Mise en cache des structures (peuvent être mises en cache longtemps)
         const cachedStructures = this.cacheService.get('structures_list');
         if (cachedStructures) {
@@ -407,12 +441,36 @@ export class DossiersComponent implements OnInit, OnDestroy {
     // ==================== MÉTHODES DE TYPE ====================
 
     getTypeLabel(type: string): string {
-        const labels: { [key: string]: string } = {
-            CONSULTATION: 'Consultation',
-            PRESCRIPTION_MEDICAMENT: 'Médicament',
-            PRESCRIPTION_EXAMEN: 'Examen'
+        const types: { [key: string]: string } = {
+            HOPITAL: 'Hôpital',
+            CLINIQUE: 'Clinique',
+            PHARMACIE: 'Pharmacie',
+            LABORATOIRE: 'Laboratoire',
+            CABINET_MEDICAL: 'Cabinet Médical',
+            AUTRE: 'Autre'
         };
-        return labels[type] || type;
+        return types[type] || type || 'Structure';
+    }
+    getStructureTypeClass(type: string): string {
+        const classes: { [key: string]: string } = {
+            HOPITAL: 'type-hopital',
+            CLINIQUE: 'type-clinique',
+            PHARMACIE: 'type-pharmacie',
+            LABORATOIRE: 'type-laboratoire',
+            CABINET_MEDICAL: 'type-cabinet'
+        };
+        return classes[type] || 'type-default';
+    }
+
+    getStructureTypeColor(type: string): string {
+        const colors: { [key: string]: string } = {
+            HOPITAL: '#3b82f6',
+            CLINIQUE: '#10b981',
+            PHARMACIE: '#f59e0b',
+            LABORATOIRE: '#8b5cf6',
+            CABINET_MEDICAL: '#ec4899'
+        };
+        return colors[type] || '#6b7280';
     }
 
     getTypeClass(dossier: any): string {
