@@ -42,7 +42,9 @@ export class AppMenuComponent implements OnInit {
             menuItems.push({
                 label: 'TABLEAU DE BORD',
                 icon: 'pi pi-fw pi-chart-line',
-                routerLink: ['/structure/dashboard']
+                items: [
+                    { label: 'Dashboard structure', icon: 'pi pi-chart-line', routerLink: ['/structure/dashboard'] }
+                ]
             });
 
             // ✅ Ajouter Plafonnements pour ADMIN_STRUCTURE
@@ -56,6 +58,9 @@ export class AppMenuComponent implements OnInit {
         }
 
         // ==================== UAB_ADMIN (ADMIN) ====================
+        // app.menu.component.ts - Corriger la route pour Validation examen
+
+// ==================== UAB_ADMIN (ADMIN) ====================
         if (hasRole('UAB_ADMIN')) {
             menuItems.push({
                 label: 'ADMINISTRATION',
@@ -64,10 +69,10 @@ export class AppMenuComponent implements OnInit {
                     { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
                     { label: 'Gestion des dossiers', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers'] },
                     { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
-                    { label: 'Validation examen', icon: 'pi pi-users', routerLink: ['/uab/Validation/examen'] },
-                    { label: 'Import Medicament', icon: 'pi pi-users', routerLink: ['/uab/parametres/import-medicaments'] },
-                    { label: 'Utilisateurs', icon: 'pi pi-cog', routerLink: ['/uab/parametres/utilisateurs'] },
-                    { label: 'Taux Couverture', icon: 'pi pi-building', routerLink: ['uab/parametres/taux-couverture'] },
+                    { label: 'Validation examen', icon: 'pi pi-building', routerLink: ['/uab/validation/examen'] },
+                    { label: 'Import Medicament', icon: 'pi pi-upload', routerLink: ['/uab/parametres/import-medicaments'] },
+                    { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: ['/uab/parametres/utilisateurs'] },
+                    { label: 'Taux Couverture', icon: 'pi pi-percentage', routerLink: ['/uab/parametres/taux-couverture'] },
                     { label: 'Structures', icon: 'pi pi-building', routerLink: ['/uab/parametres/structures'] },
                 ]
             });

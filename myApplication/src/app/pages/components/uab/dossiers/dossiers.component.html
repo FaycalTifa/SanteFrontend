@@ -1,5 +1,7 @@
 <!-- pages/components/uab/dossiers/dossiers.component.html -->
 <div class="uab-container">
+    <p-toast position="top-right"></p-toast>
+
     <div class="card">
         <div class="card-header">
             <div class="header-title">
@@ -9,24 +11,44 @@
                 <div>
                     <h2>Gestion des dossiers</h2>
                     <p>Consultez, validez et suivez les dossiers de tiers payant</p>
+                    <div *ngIf="selectedMois" class="active-month-filter">
+                        <i class="pi pi-calendar"></i>
+                        Filtré par : {{ selectedNomMois }} {{ selectedAnnee }}
+                    </div>
                 </div>
             </div>
+
+            <!-- ✅ NOUVEAU RÉCAPITULATIF AVEC MONTANTS -->
             <div class="stats-badge">
                 <div class="stat-item">
-                    <span class="stat-label">Total</span>
+                    <span class="stat-label">Total Dossier</span>
                     <span class="stat-value">{{ filteredDossiers.length }}</span>
+                    <span class="stat-amount" *ngIf="getMontantTotalRemboursable() > 0">
+
+                    </span>
                 </div>
                 <div class="stat-item warning">
-                    <span class="stat-label">En attente</span>
-                    <span class="stat-value">{{ getStatutCount('COMPLET') }}</span>
+                    <span class="stat-label">RemBoursable</span>
+                    <span class="stat-value">{{ getStatutCount('VALIDEE_UAB') }}</span>
+                    <span class="stat-amount" *ngIf="getMontantRemboursableParStatut('VALIDEE_UAB') > 0">
+                          {{ getMontantRemboursableParStatut('VALIDEE_UAB') | number }} FCFA
+                    </span>
                 </div>
                 <div class="stat-item success">
                     <span class="stat-label">Validés</span>
                     <span class="stat-value">{{ getStatutCount('VALIDEE_UAB') }}</span>
+                    <span class="stat-amount remboursable" *ngIf="getMontantRemboursableParStatut('VALIDEE_UAB') > 0">
+                        <i class="pi pi-check-circle"></i>
+                        {{ getMontantRemboursableParStatut('VALIDEE_UAB') | number }} FCFA
+                    </span>
                 </div>
                 <div class="stat-item danger">
                     <span class="stat-label">Rejetés</span>
-                    <span class="stat-value">{{ getStatutCount('REJETEE') }}</span>
+                    <span class="stat-value">{{ getStatutCount('REJETEE_UAB') }}</span>
+                    <span class="stat-amount rejected" *ngIf="getMontantTotalRejetes() > 0">
+                        <i class="pi pi-times-circle"></i>
+                        {{ getMontantTotalRejetes() | number }} FCFA
+                    </span>
                 </div>
             </div>
         </div>
@@ -37,7 +59,15 @@
                 <i class="pi pi-filter"></i>
                 <span class="filters-label">Filtres appliqués :</span>
                 <span class="filters-list">{{ getFiltresActifsMessage() }}</span>
-                <button pButton icon="pi pi-times" label="Effacer tous les filtres" class="p-button-text p-button-sm clear-filters" (click)="reset()"></button>
+
+                <!-- ✅ Bouton pour enlever le filtre mois spécifiquement -->
+                <button *ngIf="selectedMois" pButton icon="pi pi-times"
+                        label="Enlever filtre mois"
+                        class="p-button-text p-button-sm clear-filters"
+                        (click)="resetMoisFilter()"></button>
+
+                <button pButton icon="pi pi-times" label="Effacer tous les filtres"
+                        class="p-button-text p-button-sm clear-filters" (click)="reset()"></button>
             </div>
         </div>
 
@@ -49,7 +79,8 @@
                         <i class="pi pi-id-card"></i>
                         Numéro de police
                     </label>
-                    <input type="text" pInputText [(ngModel)]="searchPolice" placeholder="Rechercher par police..." (keyup.enter)="search()">
+                    <input type="text" pInputText [(ngModel)]="searchPolice" placeholder="Rechercher par police..."
+                           (keyup.enter)="search()">
                 </div>
 
                 <div class="filter-field">
@@ -119,40 +150,43 @@
                         <p-calendar [(ngModel)]="dateFin" placeholder="Date fin" dateFormat="dd/mm/yy"></p-calendar>
                     </div>
                 </div>
-
-
             </div>
             <div class="filter-actions">
-                <button pButton icon="pi pi-search" label="Rechercher" class="p-button-primary" (click)="search()"></button>
-                <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-secondary" (click)="reset()"></button>
+                <button pButton icon="pi pi-search" label="Rechercher" class="p-button-primary"
+                        (click)="search()"></button>
+                <button pButton icon="pi pi-refresh" label="Réinitialiser" class="p-button-secondary"
+                        (click)="reset()"></button>
                 <div class="export-buttons">
-                    <button pButton icon="pi pi-file-excel" label="Excel" class="p-button-success" (click)="exportToExcelXLSX()"></button>
-                    <button pButton icon="pi pi-file" label="CSV" class="p-button-info" (click)="exportToExcel()"></button>
+                    <button pButton icon="pi pi-file-excel" label="Excel" class="p-button-success"
+                            (click)="exportToExcelXLSX()"></button>
+                    <button pButton icon="pi pi-file" label="CSV" class="p-button-info"
+                            (click)="exportToExcel()"></button>
                 </div>
             </div>
         </div>
 
         <!-- Tableau des dossiers -->
-        <p-table
-                [value]="filteredDossiers"
-                [loading]="loading"
-                [paginator]="true"
-                [rows]="10"
-                [rowsPerPageOptions]="[5,10,20,50]"
-                responsiveLayout="scroll"
-                styleClass="p-datatable-sm">
+        <p-table [value]="filteredDossiers"
+                 [loading]="loading"
+                 [paginator]="true"
+                 [rows]="pageSize"
+                 [rowsPerPageOptions]="[5,10,20,50,100]"
+                 [totalRecords]="totalRecords"
+                 [lazy]="true"
+                 (onLazyLoad)="onPageChange($event)"
+                 responsiveLayout="scroll"
+                 styleClass="p-datatable-sm">
 
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width: 50px">#</th>
-                    <th>N° Document</th>
                     <th>Date</th>
                     <th>Patient</th>
-                    <th>N° Police</th>
+                    <th>Informations Police</th>
                     <th>Structure émettrice</th>
                     <th>Type</th>
                     <th>Montant total</th>
-                    <th>Pris en charge</th>
+                    <th>Pris en charge UAB</th>
                     <th>Ticket modérateur</th>
                     <th>Statut</th>
                     <th style="width: 100px">Action</th>
@@ -161,53 +195,70 @@
 
             <ng-template pTemplate="body" let-dossier let-i="rowIndex">
                 <tr>
-                    <td>{{ i + 1 }}</td>
-                    <td><span class="numero-document">{{ dossier.numeroFeuille || dossier.numero }}</span></td>
-                    <td>{{ dossier.dateConsultation || dossier.dateCreation | date:'dd/MM/yyyy' }}</td>
-                    <td>
-                        <div class="patient-cell">
-                            <span>{{ dossier.prenomPatient }} {{ dossier.nomPatient }}</span>
-                        </div>
+                    <td class="text-center">{{ i + 1 }}</td>
+                    <td class="date-cell">
+                        <span>{{ dossier.dateConsultation || dossier.dateCreation | date:'dd/MM/yyyy' }}</span>
                     </td>
-                    <td><strong class="police-number">{{ dossier.numeroPolice }}</strong></td>
-                    <td>
-                        <div class="structure-cell">
-                            <div>
-                                <span class="structure-nom">{{ dossier.structureNom || '-' }}</span>
-                                <span class="structure-type-badge" *ngIf="dossier.structureType">
-                                    {{ dossier.structureType }}
-                                </span>
+                    <td class="patient-cell">
+                        <div class="patient-info">
+                            <div class="patient-name">
+                                {{ dossier.patientPrenom || dossier.prenomPatient || '-' }}
+                                {{ dossier.patientNom || dossier.nomPatient || '-' }}
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td class="police-cell">
+                        <div class="police-info">
+                            <div class="police-badge">
+                                <strong>
+                                    {{ dossier.codeInte || '-' }}-{{ dossier.patientPolice || dossier.numeroPolice || '-' }}-{{ dossier.codeRisq || '-' }}
+                                </strong>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="structure-cell">
+                        <div class="structure-info">
+                            <div class="structure-nom">{{ dossier.structureNom || '-' }}</div>
+                        </div>
+                    </td>
+                    <td class="type-cell">
                         <span class="type-badge" [class]="getTypeClass(dossier)">
                             <i [class]="getTypeIcon(dossier)"></i>
-                            {{ getTypeLabel(dossier.type || 'CONSULTATION') }}
+                            {{ getTypeLabel(dossier.type) }}
                         </span>
                     </td>
-                    <td>{{ dossier.montantTotalHospitalier || dossier.montantTotal | number }} FCFA</td>
-                    <td class="pris-en-charge">{{ dossier.montantPrisEnCharge | number }} FCFA</td>
-                    <td class="ticket">{{ dossier.montantTicketModerateur | number }} FCFA</td>
-                    <td>
+                    <td class="text-right montant-cell">
+                        <strong>{{ (dossier.montantTotalHospitalier || dossier.montantTotal || 0) | number }}</strong>
+                        <small>FCFA</small>
+                    </td>
+                    <td class="text-right pris-en-charge">
+                        <i class="pi pi-check-circle" [class.validated]="dossier.validationUab === true"></i>
+                        <strong>{{ (dossier.montantPrisEnCharge || 0) | number }}</strong>
+                        <small>FCFA</small>
+                    </td>
+                    <td class="text-right ticket">
+                        <i class="pi pi-money-bill"></i>
+                        <strong>{{ (dossier.montantTicketModerateur || 0) | number }}</strong>
+                        <small>FCFA</small>
+                    </td>
+                    <td class="status-cell">
                         <span class="status-badge" [ngClass]="getStatusClass(dossier)">
                             <i [class]="getStatusIcon(dossier)"></i>
                             {{ getStatusLabel(dossier) }}
                         </span>
                     </td>
-                    <td>
+                    <td class="action-cell">
                         <div class="action-buttons">
                             <button pButton
                                     icon="pi pi-eye"
                                     pTooltip="Voir le dossier"
                                     class="p-button-rounded p-button-text p-button-info"
-                                    [routerLink]="['/uab/validation', dossier.id]"
-                                    [queryParams]="{ type: dossier.type }">
+                                    (click)="voirDossier(dossier)">
                             </button>
                             <button *ngIf="canValidate(dossier)"
                                     pButton
                                     icon="pi pi-check"
-                                    pTooltip="Valider rapidement"
+                                    pTooltip="Valider"
                                     class="p-button-rounded p-button-text p-button-success"
                                     (click)="validerRapidement(dossier)">
                             </button>
@@ -218,7 +269,7 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="12" class="empty-message">
+                    <td colspan="11" class="empty-message">
                         <i class="pi pi-inbox"></i>
                         <p>Aucun dossier trouvé</p>
                         <small>Modifiez vos critères de recherche ou réinitialisez les filtres</small>
@@ -244,24 +295,17 @@
         <h3>Confirmer la validation</h3>
         <p>Voulez-vous vraiment valider ce dossier ?</p>
         <div class="dossier-info">
-            <div><strong>Patient :</strong> {{ selectedDossier?.prenomPatient }} {{ selectedDossier?.nomPatient }}</div>
+            <div><strong>Patient :</strong> {{ selectedDossier?.patientPrenom }} {{ selectedDossier?.patientNom }}</div>
             <div><strong>Type :</strong> {{ getTypeLabel(selectedDossier?.type) }}</div>
             <div><strong>Structure :</strong> {{ selectedDossier?.structureNom }}</div>
-            <div><strong>Montant :</strong> {{ selectedDossier?.montantTotalHospitalier || selectedDossier?.montantTotal | number }} FCFA</div>
+            <div><strong>Montant UAB :</strong> <span class="highlight">{{ (selectedDossier?.montantPrisEnCharge || 0) | number }} FCFA</span></div>
         </div>
     </div>
 
     <ng-template pTemplate="footer">
-        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text" (click)="displayValidationDialog = false"></button>
-        <button pButton label="Valider" icon="pi pi-check" class="p-button-success" (click)="confirmerValidation()"></button>
+        <button pButton label="Annuler" icon="pi pi-times" class="p-button-text"
+                (click)="displayValidationDialog = false"></button>
+        <button pButton label="Valider et rembourser" icon="pi pi-check" class="p-button-success"
+                (click)="confirmerValidation()"></button>
     </ng-template>
 </p-dialog>
-<!-- examens-attente.component.html - Ajouter au début -->
-<div class="laboratoire-container">
-    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
-    <p-toast position="top-right"></p-toast>
-
-    <div class="card">
-        <!-- reste du template -->
-    </div>
-</div>

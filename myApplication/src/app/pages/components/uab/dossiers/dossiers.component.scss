@@ -85,6 +85,7 @@ $gray-900: #0f172a;
       }
     }
 
+    // ✅ STATS BADGE AVEC MONTANTS
     .stats-badge {
       display: flex;
       gap: 1rem;
@@ -112,10 +113,30 @@ $gray-900: #0f172a;
 
         .stat-value {
           display: block;
-          font-size: 1.5rem;
+          font-size: 1.8rem;
           font-weight: 700;
           color: white;
           line-height: 1.2;
+        }
+
+        .stat-amount {
+          display: block;
+          font-size: 1rem;
+          color: rgba(255, 255, 255, 0.8);
+          margin-top: 0.25rem;
+
+          i {
+            font-size: 0.6rem;
+            margin-right: 0.2rem;
+          }
+
+          &.remboursable {
+            color: #34d399;
+          }
+
+          &.rejected {
+            color: #f87171;
+          }
         }
 
         &.warning .stat-value { color: #fbbf24; }
@@ -260,9 +281,6 @@ $gray-900: #0f172a;
     }
   }
 
-  // ============================================
-  // BOUTONS D'ACTION - BIEN ALIGNÉS
-  // ============================================
   .filter-actions {
     display: flex;
     align-items: center;
@@ -273,7 +291,6 @@ $gray-900: #0f172a;
     padding-top: 1.5rem;
     margin-top: 0.5rem;
 
-    // Groupe de boutons de recherche
     > button {
       padding: 0.7rem 1.5rem;
       font-size: 0.85rem;
@@ -314,7 +331,6 @@ $gray-900: #0f172a;
       }
     }
 
-    // Groupe des boutons d'export
     .export-buttons {
       display: flex;
       align-items: center;
@@ -357,124 +373,225 @@ $gray-900: #0f172a;
 }
 
 // ============================================
-// TABLEAU
+// TABLEAU AVEC BORDURES
 // ============================================
-.p-datatable {
-  .numero-document {
-    font-family: monospace;
-    font-weight: 600;
-    color: $primary;
+::ng-deep {
+  .p-datatable.p-datatable-gridlines {
+    .p-datatable-thead > tr > th {
+      border: 1px solid #cbd5e1 !important;
+      border-bottom: 2px solid #3b82f6 !important;
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #475569;
+    }
+
+    .p-datatable-tbody > tr > td {
+      border: 1px solid #e2e8f0 !important;
+      padding: 0.75rem 1rem;
+      vertical-align: middle;
+    }
+
+    .p-datatable-tbody > tr:hover > td {
+      background-color: #f1f5f9;
+    }
+  }
+}
+
+// ============================================
+// CELLULES DU TABLEAU
+// ============================================
+
+// Cellule date
+.date-cell {
+  white-space: nowrap;
+
+  i {
+    margin-right: 0.5rem;
+    color: #3b82f6;
     font-size: 0.8rem;
   }
 
-  .patient-cell, .structure-cell {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  span {
+    font-size: 0.8rem;
+  }
+}
 
-    i {
-      color: $gray-400;
-      font-size: 0.8rem;
+// Cellule patient
+.patient-cell {
+  .patient-info {
+    .patient-name {
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 0.85rem;
     }
   }
+}
 
-  .police-number {
-    font-family: monospace;
-    background: $gray-100;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
+// Cellule police
+.police-cell {
+  .police-info {
+    .police-badge {
+      strong {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #1e293b;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        display: inline-block;
+      }
+    }
+  }
+}
+
+// Cellule structure
+.structure-cell {
+  .structure-info {
+    .structure-nom {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+  }
+}
+
+// Cellule type
+.type-cell {
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
     font-weight: 500;
-  }
 
-  .pris-en-charge {
-    color: $success;
-    font-weight: 600;
-  }
+    i {
+      font-size: 0.7rem;
+    }
 
-  .ticket {
-    color: $warning;
-    font-weight: 600;
+    &.type-consultation {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    &.type-medicament {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    &.type-examen {
+      background: #fef3c7;
+      color: #92400e;
+    }
   }
 }
 
-// ============================================
-// TYPES DE DOSSIER
-// ============================================
-.type-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 2rem;
-  font-size: 0.7rem;
-  font-weight: 500;
+// Cellule montant
+.montant-cell, .pris-en-charge, .ticket {
+  white-space: nowrap;
+
+  strong {
+    font-size: 0.85rem;
+  }
+
+  small {
+    font-size: 0.6rem;
+    margin-left: 0.25rem;
+    color: #64748b;
+  }
 
   i {
     font-size: 0.7rem;
-  }
-
-  &.type-consultation {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  &.type-medicament {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  &.type-examen {
-    background: #fef3c7;
-    color: #92400e;
+    margin-right: 0.25rem;
   }
 }
 
-// ============================================
-// STATUTS
-// ============================================
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 2rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+.pris-en-charge {
+  color: #10b981;
 
-  i {
+  strong {
+    color: #10b981;
+  }
+
+  i.validated {
+    color: #22c55e;
+  }
+}
+
+.ticket {
+  color: #f59e0b;
+
+  strong {
+    color: #f59e0b;
+  }
+}
+
+// Cellule statut
+.status-cell {
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 2rem;
     font-size: 0.7rem;
-  }
+    font-weight: 600;
 
-  &.status-success {
-    background: #d1fae5;
-    color: #065f46;
-  }
+    i {
+      font-size: 0.7rem;
+    }
 
-  &.status-warning {
-    background: #fed7aa;
-    color: #92400e;
-  }
+    &.status-success {
+      background: #d1fae5;
+      color: #065f46;
+    }
 
-  &.status-danger {
-    background: #fee2e2;
-    color: #991b1b;
+    &.status-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    &.status-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
   }
 }
 
-// ============================================
-// ACTIONS
-// ============================================
-.action-buttons {
-  display: flex;
-  gap: 0.25rem;
+// Cellule action
+.action-cell {
+  .action-buttons {
+    display: flex;
+    gap: 0.25rem;
 
-  button {
-    transition: all 0.2s;
+    button {
+      width: 2rem;
+      height: 2rem;
+      transition: all 0.2s;
 
-    &:hover {
-      transform: scale(1.1);
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      &.p-button-info {
+        color: #3b82f6;
+
+        &:hover {
+          background: #eff6ff;
+        }
+      }
+
+      &.p-button-success {
+        color: #10b981;
+
+        &:hover {
+          background: #ecfdf5;
+        }
+      }
     }
   }
 }
@@ -551,11 +668,27 @@ $gray-900: #0f172a;
         color: $gray-800;
       }
 
+      .highlight {
+        color: $success;
+        font-weight: 600;
+      }
+
       &:last-child {
         margin-bottom: 0;
       }
     }
   }
+}
+
+// ============================================
+// UTILITAIRES
+// ============================================
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }
 
 // ============================================
@@ -594,6 +727,7 @@ $gray-900: #0f172a;
   .stats-badge {
     width: 100%;
     justify-content: space-around;
+    flex-wrap: wrap;
   }
 
   .filters-info {
@@ -645,8 +779,12 @@ $gray-900: #0f172a;
     gap: 0.25rem;
 
     button {
-      width: 100%;
+      width: 100% !important;
     }
+  }
+
+  .police-cell .police-info .police-badge strong {
+    font-size: 0.7rem;
   }
 }
 
@@ -671,33 +809,75 @@ $gray-900: #0f172a;
     background: $gray-400;
   }
 }
+// dossiers.component.scss - Ajouter
 
-// ============================================
-// OVERRIDES PRIMENG
-// ============================================
-::ng-deep {
-  .p-datatable {
-    .p-datatable-thead > tr > th {
-      background: $gray-50;
-      color: $gray-500;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.875rem 1rem;
-      border-bottom: 1px solid $gray-200;
+// dossiers.component.scss - Version ultra visible
+
+.active-month-filter {
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 2rem;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  i {
+    font-size: 1rem;
+    color: #ffffff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  }
+
+  .filter-text {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+
+    .filter-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.8);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .p-datatable-tbody > tr > td {
-      padding: 0.875rem 1rem;
-      font-size: 0.8rem;
-      color: $gray-800;
-      border-bottom: 1px solid $gray-100;
-      vertical-align: middle;
+    .filter-value {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+  }
+
+  .clear-month-btn {
+    margin-left: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    border-radius: 1.5rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    i {
+      font-size: 0.7rem;
+      margin-right: 0.25rem;
     }
 
-    .p-datatable-tbody > tr:hover {
-      background: $gray-50;
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.02);
     }
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
   }
 }

@@ -1,16 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { ConsultationService } from '../../../services/consultation/consultation.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import * as XLSX from 'xlsx';
-import { StructureService } from '../../../services/structure/structure.service';
+// pages/components/uab/dossiers/dossiers.component.ts - VERSION OPTIMISÉE
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { UabService } from '../../../services/uab/uab.service';
+import { CacheService } from '../../../services/cache/cache.service';
+import {Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged, takeUntil} from 'rxjs/operators';
 
 @Component({
     selector: 'app-dossiers',
     templateUrl: './dossiers.component.html',
     styleUrls: ['./dossiers.component.scss']
 })
-export class DossiersComponent implements OnInit {
+export class DossiersComponent implements OnInit, OnDestroy {
 
     dossiers: any[] = [];
     filteredDossiers: any[] = [];
@@ -18,87 +20,120 @@ export class DossiersComponent implements OnInit {
 
     // Filtres
     searchPolice = '';
-    selectedStatut = '';
-    selectedStructureId: number | null = null;
-    selectedStructureNom = '';
     selectedTypeDossier = '';
+    selectedStructureId: number | null = null;
+    selectedStatut = '';
     dateDebut: Date | null = null;
     dateFin: Date | null = null;
-    selectedAnnee: number | null = null;
-    selectedMois: number | null = null;
 
-    selectedDossier: any = null;
-    displayValidationDialog = false;
-
-    structures: any[] = [];
-
+    // Options pour les dropdowns
     typeDossiers = [
-        { label: '📋 Tous', value: '' },
-        { label: '🏥 Consultation', value: 'CONSULTATION' },
-        { label: '💊 Prescription Médicament', value: 'PRESCRIPTION_MEDICAMENT' },
-        { label: '🔬 Prescription Examen', value: 'PRESCRIPTION_EXAMEN' }
+        { label: 'Tous les types', value: '' },
+        { label: 'Consultation', value: 'CONSULTATION' },
+        { label: 'Prescription Médicament', value: 'PRESCRIPTION_MEDICAMENT' },
+        { label: 'Prescription Examen', value: 'PRESCRIPTION_EXAMEN' }
     ];
 
     statuts = [
-        { label: '📋 Tous', value: '' },
-        { label: '⏳ En attente de validation UAB', value: 'COMPLET' },
-        { label: '✅ Validés UAB', value: 'VALIDEE_UAB' },
-        { label: '❌ Rejetés', value: 'REJETEE' },
-        { label: '💊 En attente délivrance', value: 'EN_ATTENTE_DELIVRANCE' },
-        { label: '✅ Délivré', value: 'DELIVRE' },
-        { label: '🔬 En attente paiement', value: 'EN_ATTENTE_PAIEMENT' },
-        { label: '💰 Payé', value: 'PAYE' },
-        { label: '✅ Réalisé', value: 'REALISE' }
+        { label: 'Tous les statuts', value: '' },
+        { label: 'En attente', value: 'EN_ATTENTE' },
+        { label: 'Validé UAB', value: 'VALIDEE_UAB' },
+        { label: 'Rejeté', value: 'REJETEE_UAB' }
     ];
 
+    structures: any[] = [];
+
+    // Dialog validation rapide
+    displayValidationDialog = false;
+    selectedDossier: any = null;
+
+    // ✅ PAGINATION
+    totalRecords = 0;
+    currentPage = 0;
+    pageSize = 10;
+    rowsPerPageOptions = [5, 10, 20, 50, 100];
+
+    // Ajouter ces propriétés dans la classe
+    selectedMois: number | null = null;
+    selectedAnnee: number | null = null;
+    selectedNomMois = '';
+
+    // ✅ Debounce pour la recherche
+    private searchSubject = new Subject<string>();
+    private destroy$ = new Subject<void>();
+
     constructor(
-        private consultationService: ConsultationService,
-        private structureService: StructureService,
-        private route: ActivatedRoute,
+        private uabService: UabService,
         private router: Router,
-        private messageService: MessageService
+        private route: ActivatedRoute,
+        private messageService: MessageService,
+        private cacheService: CacheService,
+        private confirmationService: ConfirmationService
     ) {}
 
     ngOnInit(): void {
         this.loadStructures();
+        this.loadDossiers();
+        this.setupDebounceSearch();
+
+        // Récupérer les paramètres d'URL si présents
         this.route.queryParams.subscribe(params => {
-            this.selectedStatut = params.statut || '';
-            this.searchPolice = params.police || '';
-
-            // ✅ Récupérer l'ID de la structure (prioritaire)
-            this.selectedStructureId = params.structureId ? +params.structureId : null;
-            this.selectedStructureNom = params.structureNom || '';
-
-            // ✅ Si on a un ID, on récupère le nom correspondant
-            if (this.selectedStructureId && !this.selectedStructureNom) {
-                const structure = this.structures.find(s => s.id === this.selectedStructureId);
-                if (structure) {
-                    this.selectedStructureNom = structure.nom;
-                }
+            if (params.structureId) {
+                this.selectedStructureId = +params.structureId;
+            }
+            if (params.statut) {
+                this.selectedStatut = params.statut;
+            }
+            if (params.structureNom) {
+                // Pour affichage
+                console.log('Filtre structure:', params.structureNom);
             }
 
-            this.selectedTypeDossier = params.type || '';
-            this.selectedAnnee = params.annee ? +params.annee : null;
-            this.selectedMois = params.mois ? +params.mois : null;
+            // ✅ NOUVEAU: Récupérer les filtres de mois
+            if (params.mois) {
+                this.selectedMois = +params.mois;
+                this.selectedAnnee = params.annee ? +params.annee : new Date().getFullYear();
+                this.selectedNomMois = params.nomMois || '';
+                console.log(`Filtre mois appliqué: ${this.selectedNomMois} ${this.selectedAnnee}`);
+            }
 
-            console.log('Filtres reçus:', {
-                structureId: this.selectedStructureId,
-                structureNom: this.selectedStructureNom,
-                type: this.selectedTypeDossier,
-                annee: this.selectedAnnee,
-                mois: this.selectedMois
-            });
+            this.loadDossiers();
+        });
 
+        this.setupDebounceSearch();
+    }
+
+    // ✅ Configuration du debounce pour la recherche
+    setupDebounceSearch(): void {
+        this.searchSubject.pipe(
+            debounceTime(500), // Attendre 500ms après la dernière frappe
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(searchTerm => {
+            this.searchPolice = searchTerm;
+            this.currentPage = 0; // Reset à la première page
             this.loadDossiers();
         });
     }
 
-
+    // ✅ Appelé à chaque frappe dans le champ de recherche
+    onSearchInput(event: any): void {
+        this.searchSubject.next(event.target.value);
+    }
 
     loadStructures(): void {
-        this.structureService.getAllStructures().subscribe({
+        // ✅ Mise en cache des structures (peuvent être mises en cache longtemps)
+        const cachedStructures = this.cacheService.get('structures_list');
+        if (cachedStructures) {
+            this.structures = cachedStructures;
+            console.log('Structures chargées depuis le cache');
+            return;
+        }
+
+        this.uabService.getStructures().subscribe({
             next: (data) => {
                 this.structures = data;
+                this.cacheService.set('structures_list', data, 30 * 60 * 1000); // Cache 30 minutes
             },
             error: (error) => {
                 console.error('Erreur chargement structures:', error);
@@ -106,320 +141,356 @@ export class DossiersComponent implements OnInit {
         });
     }
 
-    // ✅ Ajoutez une méthode pour charger les dossiers avec debug
+    // ✅ Version optimisée avec pagination
+    // dossiers.component.ts - Modifier loadDossiers()
+
     loadDossiers(): void {
         this.loading = true;
-        this.consultationService.getAllDossiersUAB(this.selectedStatut || undefined, this.searchPolice || undefined).subscribe({
-            next: (data) => {
-                console.log('=== TOUS LES DOSSIERS UAB ===');
-                console.log('Nombre total:', data.length);
 
-                // Afficher les structures disponibles pour debug
-                const structuresUniques = [...new Set(data.map(d => d.structureNom))];
-                console.log('Structures disponibles dans les dossiers:', structuresUniques);
+        // Construire les filtres
+        const filters: any = {};
+        if (this.selectedStatut) { filters.statut = this.selectedStatut; }
+        if (this.searchPolice) { filters.numeroPolice = this.searchPolice; }
+        if (this.selectedStructureId) { filters.structureId = this.selectedStructureId; }
 
-                this.dossiers = data.map(d => ({
-                    ...d,
-                    structureType: this.getStructureTypeFromNom(d.structureNom)
-                }));
+        // Appel API paginé
+        this.uabService.getAllDossiersPaginated(this.currentPage, this.pageSize, filters.statut, filters.numeroPolice)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response) => {
+                    this.dossiers = response.content;
 
-                console.log('Filtre structure demandé:', this.selectedStructureNom);
-                console.log('Structures disponibles:', structuresUniques);
+                    // ✅ APPLIQUER LE FILTRE MOIS IMMÉDIATEMENT
+                    let filtered = [...this.dossiers];
 
-                this.applyFilters();
-                this.loading = false;
-            },
-            error: (error) => {
-                this.loading = false;
-                console.error('Erreur chargement:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les dossiers'
-                });
-            }
-        });
+                    // ✅ Filtre par mois si présent
+                    if (this.selectedMois && this.selectedAnnee) {
+                        filtered = filtered.filter(d => {
+                            const date = new Date(d.dateCreation || d.dateConsultation);
+                            const dossierMois = date.getMonth() + 1;
+                            const dossierAnnee = date.getFullYear();
+                            return dossierMois === this.selectedMois && dossierAnnee === this.selectedAnnee;
+                        });
+                        console.log(`✅ Filtre mois appliqué: ${this.selectedNomMois} ${this.selectedAnnee}, résultant: ${filtered.length} dossiers`);
+                    }
+
+                    // ✅ Appliquer les autres filtres
+                    if (this.selectedTypeDossier) {
+                        filtered = filtered.filter(d => d.type === this.selectedTypeDossier);
+                    }
+
+                    if (this.selectedStructureId) {
+                        filtered = filtered.filter(d => d.structureId === this.selectedStructureId);
+                    }
+
+                    if (this.selectedStatut) {
+                        filtered = filtered.filter(d => this.getStatusValue(d) === this.selectedStatut);
+                    }
+
+                    this.filteredDossiers = filtered;
+                    this.totalRecords = filtered.length;
+                    this.loading = false;
+                    console.log(`Dossiers chargés: page ${this.currentPage}, total après filtres: ${this.totalRecords}`);
+                },
+                error: (error) => {
+                    console.error('Erreur chargement paginé:', error);
+                    this.loadDossiersLegacy();
+                }
+            });
     }
 
-    getStructureTypeFromNom(nom: string): string {
-        if (!nom) { return 'Inconnu'; }
-        const nomLower = nom.toLowerCase();
-        if (nomLower.includes('clinique') || nomLower.includes('hôpital') || nomLower.includes('centre médical')) {
-            return 'Hôpital';
-        }
-        if (nomLower.includes('pharmacie')) {
-            return 'Pharmacie';
-        }
-        if (nomLower.includes('laboratoire') || nomLower.includes('labo')) {
-            return 'Laboratoire';
-        }
-        return 'Autre';
+    // ✅ Fallback si la pagination échoue (compatible avec l'ancien code)
+    // dossiers.component.ts - Modifier loadDossiersLegacy()
+    loadDossiersLegacy(): void {
+        this.uabService.getAllDossiers(this.selectedStatut, this.searchPolice)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (data) => {
+                    this.dossiers = data;
+                    let filtered = [...data];
+
+                    // ✅ Filtre par mois si présent
+                    if (this.selectedMois && this.selectedAnnee) {
+                        filtered = filtered.filter(d => {
+                            const date = new Date(d.dateCreation || d.dateConsultation);
+                            const dossierMois = date.getMonth() + 1;
+                            const dossierAnnee = date.getFullYear();
+                            return dossierMois === this.selectedMois && dossierAnnee === this.selectedAnnee;
+                        });
+                        console.log(`✅ Filtre mois Legacy appliqué: ${this.selectedNomMois} ${this.selectedAnnee}`);
+                    }
+
+                    // ✅ Appliquer les autres filtres
+                    if (this.selectedTypeDossier) {
+                        filtered = filtered.filter(d => d.type === this.selectedTypeDossier);
+                    }
+
+                    if (this.selectedStructureId) {
+                        filtered = filtered.filter(d => d.structureId === this.selectedStructureId);
+                    }
+
+                    this.filteredDossiers = filtered;
+                    this.totalRecords = filtered.length;
+                    this.loading = false;
+                },
+                error: (error) => {
+                    this.loading = false;
+                    console.error('Erreur chargement dossiers:', error);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erreur',
+                        detail: 'Impossible de charger les dossiers'
+                    });
+                }
+            });
     }
 
-    applyFilters(): void {
-        let result = [...this.dossiers];
-
-        console.log('=== APPLICATION DES FILTRES ===');
-        console.log('Dossiers avant filtrage:', result.length);
-        console.log('Filtre structureNom:', this.selectedStructureNom);
-        console.log('Filtre structureId:', this.selectedStructureId);
-
-        console.log('=== APPLICATION DES FILTRES ===');
-        console.log('Filtre structureId:', this.selectedStructureId);
-        console.log('Filtre structureNom:', this.selectedStructureNom);
-
-        // ✅ Filtre par ID de structure (le plus précis)
-        if (this.selectedStructureId) {
-            result = result.filter(d => d.structureId === this.selectedStructureId);
-            console.log('Après filtre structureId:', result.length);
-        }
-        // ✅ Fallback: filtre par nom de structure
-        else if (this.selectedStructureNom) {
-            result = result.filter(d => d.structureNom === this.selectedStructureNom);
-            console.log('Après filtre structureNom:', result.length);
-        }
-
-        // ✅ Afficher les structures trouvées pour debug
-        const structuresTrouvees = [...new Set(result.map(d => d.structureNom))];
-        console.log('Structures dans les résultats:', structuresTrouvees);
-
-        // ✅ Filtre par type de dossier
-        if (this.selectedTypeDossier) {
-            result = result.filter(d => d.type === this.selectedTypeDossier);
-            console.log('Après filtre type:', result.length);
-        }
-
-        // ✅ Filtre par structure (basé sur le nom de la structure émettrice)
-        if (this.selectedStructureNom) {
-            result = result.filter(d => d.structureNom === this.selectedStructureNom);
-            console.log('Après filtre structureNom:', result.length);
-            console.log('Structures trouvées:', result.map(d => d.structureNom));
-        } else if (this.selectedStructureId) {
-            const structure = this.structures.find(s => s.id === this.selectedStructureId);
-            if (structure) {
-                result = result.filter(d => d.structureNom === structure.nom);
-                console.log('Après filtre structureId:', result.length);
-            }
-        }
-
-        // ✅ Filtre par année
-        if (this.selectedAnnee) {
-            result = result.filter(d => {
-                const date = new Date(d.dateConsultation || d.dateCreation);
-                return date.getFullYear() === this.selectedAnnee;
-            });
-            console.log('Après filtre année:', result.length);
-        }
-
-        // ✅ Filtre par mois
-        if (this.selectedMois) {
-            result = result.filter(d => {
-                const date = new Date(d.dateConsultation || d.dateCreation);
-                return date.getMonth() + 1 === this.selectedMois;
-            });
-            console.log('Après filtre mois:', result.length);
-        }
-
-        // ✅ Filtre par recherche police
-        if (this.searchPolice) {
-            result = result.filter(d =>
-                d.numeroPolice?.toLowerCase().includes(this.searchPolice.toLowerCase())
-            );
-            console.log('Après filtre police:', result.length);
-        }
-
-        // ✅ Filtre par statut
-        if (this.selectedStatut) {
-            result = result.filter(d => {
-                if (this.selectedStatut === 'COMPLET') {
-                    return !d.validationUab && d.statut !== 'REJETEE' && d.statut !== 'DELIVRE' && d.statut !== 'REALISE';
-                }
-                if (this.selectedStatut === 'VALIDEE_UAB') {
-                    return d.validationUab === true;
-                }
-                if (this.selectedStatut === 'REJETEE') {
-                    return d.statut === 'REJETEE';
-                }
-                return d.statut === this.selectedStatut;
-            });
-            console.log('Après filtre statut:', result.length);
-        }
-
-        // ✅ Filtre par date
-        if (this.dateDebut) {
-            result = result.filter(d => new Date(d.dateConsultation || d.dateCreation) >= this.dateDebut!);
-        }
-        if (this.dateFin) {
-            const fin = new Date(this.dateFin);
-            fin.setHours(23, 59, 59);
-            result = result.filter(d => new Date(d.dateConsultation || d.dateCreation) <= fin);
-        }
-
-        this.filteredDossiers = result;
-        console.log(`Total après tous filtres: ${this.filteredDossiers.length} dossiers`);
+    // ✅ Changement de page
+    onPageChange(event: any): void {
+        this.currentPage = event.first / event.rows;
+        this.pageSize = event.rows;
+        this.loadDossiers();
     }
-
 
     search(): void {
-        this.applyFilters();
+        this.currentPage = 0;
+        this.loadDossiers();
     }
 
     reset(): void {
         this.searchPolice = '';
-        this.selectedStatut = '';
-        this.selectedStructureId = null;
-        this.selectedStructureNom = '';
         this.selectedTypeDossier = '';
+        this.selectedStructureId = null;
+        this.selectedStatut = '';
         this.dateDebut = null;
         this.dateFin = null;
-        this.selectedAnnee = null;
-        this.selectedMois = null;
+        this.selectedMois = null;      // ✅ Réinitialiser le mois
+        this.selectedAnnee = null;     // ✅ Réinitialiser l'année
+        this.selectedNomMois = '';     // ✅ Réinitialiser le nom du mois
+        this.currentPage = 0;
 
-        // Rediriger vers la même page sans paramètres
-        this.router.navigate(['/uab/dossiers']);
+        this.cacheService.remove('dossiers_search');
         this.loadDossiers();
     }
 
-    hasActiveFilters(): boolean {
-        return !!(this.searchPolice ||
-            this.selectedStructureId ||
-            this.selectedStructureNom ||
-            this.selectedStatut ||
-            this.selectedTypeDossier ||
-            this.dateDebut ||
-            this.dateFin ||
-            this.selectedAnnee ||
-            this.selectedMois);
-    }
+    // ✅ applyFilters conservé pour la compatibilité avec le fallback
+    applyFilters(): void {
+        let result = [...this.dossiers];
 
-    getFiltresActifsMessage(): string {
-        const filtres = [];
-        if (this.selectedStructureNom) { filtres.push(`Structure: ${this.selectedStructureNom}`); }
-        if (this.selectedAnnee) { filtres.push(`Année: ${this.selectedAnnee}`); }
-        if (this.selectedMois) { filtres.push(`Mois: ${this.getNomMois(this.selectedMois)}`); }
-        if (this.selectedStatut === 'COMPLET') { filtres.push('Statut: En attente de validation'); }
-        if (this.selectedStatut === 'VALIDEE_UAB') { filtres.push('Statut: Validés UAB'); }
-        if (this.selectedStatut === 'REJETEE') { filtres.push('Statut: Rejetés'); }
-        if (this.selectedTypeDossier) { filtres.push(`Type: ${this.getTypeLabel(this.selectedTypeDossier)}`); }
-        if (this.searchPolice) { filtres.push(`Police: ${this.searchPolice}`); }
-        if (this.dateDebut || this.dateFin) {
-            const debut = this.dateDebut ? this.dateDebut.toLocaleDateString() : 'début';
-            const fin = this.dateFin ? this.dateFin.toLocaleDateString() : 'fin';
-            filtres.push(`Période: ${debut} - ${fin}`);
+        // Filtre par numéro de police
+        if (this.searchPolice) {
+            const police = this.searchPolice.toLowerCase();
+            result = result.filter(d =>
+                (d.patientPolice && d.patientPolice.toLowerCase().includes(police)) ||
+                (d.numeroPolice && d.numeroPolice.toLowerCase().includes(police))
+            );
         }
 
-        return filtres.length > 0 ? filtres.join(' • ') : 'Tous les dossiers';
-    }
-
-    getNomMois(mois: number | null): string {
-        if (!mois) { return ''; }
-        const moisNoms = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return moisNoms[mois - 1];
-    }
-
-    getTypeLabel(type: string): string {
-        const typeObj = this.typeDossiers.find(t => t.value === type);
-        return typeObj ? typeObj.label : 'Consultation';
-    }
-
-    getTypeIconByValue(type: string): string {
-        switch (type) {
-            case 'CONSULTATION': return 'pi pi-file';
-            case 'PRESCRIPTION_MEDICAMENT': return 'pi pi-tablets';
-            case 'PRESCRIPTION_EXAMEN': return 'pi pi-microscope';
-            default: return 'pi pi-folder-open';
+        // Filtre par type de dossier
+        if (this.selectedTypeDossier) {
+            result = result.filter(d => d.type === this.selectedTypeDossier);
         }
-    }
 
-
-
-    getStatutCount(statut: string): number {
-        return this.filteredDossiers.filter(d => {
-            if (statut === 'COMPLET') { return !d.validationUab && d.statut !== 'REJETEE' && d.statut !== 'DELIVRE' && d.statut !== 'REALISE'; }
-            if (statut === 'VALIDEE_UAB') { return d.validationUab === true; }
-            if (statut === 'REJETEE') { return d.statut === 'REJETEE'; }
-            return false;
-        }).length;
-    }
-
-    getTypeClass(dossier: any): string {
-        const type = dossier.type || 'CONSULTATION';
-        switch (type) {
-            case 'CONSULTATION': return 'type-consultation';
-            case 'PRESCRIPTION_MEDICAMENT': return 'type-medicament';
-            case 'PRESCRIPTION_EXAMEN': return 'type-examen';
-            default: return 'type-default';
+        // Filtre par structure
+        if (this.selectedStructureId) {
+            result = result.filter(d => d.structureId === this.selectedStructureId);
         }
-    }
 
-    getTypeIcon(dossier: any): string {
-        const type = dossier.type || 'CONSULTATION';
-        switch (type) {
-            case 'CONSULTATION': return 'pi pi-file';
-            case 'PRESCRIPTION_MEDICAMENT': return 'pi pi-tablets';
-            case 'PRESCRIPTION_EXAMEN': return 'pi pi-microscope';
-            default: return 'pi pi-file';
+        // Filtre par statut
+        if (this.selectedStatut) {
+            result = result.filter(d => {
+                const statut = this.getStatusValue(d);
+                return statut === this.selectedStatut;
+            });
         }
+
+        // ✅ NOUVEAU: Filtre par mois et année
+        if (this.selectedMois && this.selectedAnnee) {
+            result = result.filter(d => {
+                const date = new Date(d.dateCreation || d.dateConsultation);
+                const dossierMois = date.getMonth() + 1;
+                const dossierAnnee = date.getFullYear();
+                return dossierMois === this.selectedMois && dossierAnnee === this.selectedAnnee;
+            });
+        }
+
+        // Filtre par période (date début/fin) - priorité au mois si présent
+        if (!this.selectedMois) {
+            if (this.dateDebut) {
+                const dateDebutStr = this.formatDate(this.dateDebut);
+                result = result.filter(d => {
+                    const date = d.dateConsultation || d.dateCreation;
+                    return date && date >= dateDebutStr;
+                });
+            }
+            if (this.dateFin) {
+                const dateFinStr = this.formatDate(this.dateFin);
+                result = result.filter(d => {
+                    const date = d.dateConsultation || d.dateCreation;
+                    return date && date <= dateFinStr;
+                });
+            }
+        }
+
+        this.filteredDossiers = result;
+        this.totalRecords = result.length;
     }
 
-    getStatusClass(dossier: any): string {
-        if (dossier.validationUab === true) { return 'status-success'; }
-        if (dossier.statut === 'REJETEE' || dossier.validationUab === false) { return 'status-danger'; }
-        if (dossier.statut === 'DELIVRE' || dossier.statut === 'REALISE') { return 'status-success'; }
-        if (dossier.statut === 'PAYE') { return 'status-warning'; }
-        return 'status-warning';
-    }
 
-    getStatusIcon(dossier: any): string {
-        if (dossier.validationUab === true) { return 'pi pi-check-circle'; }
-        if (dossier.statut === 'REJETEE' || dossier.validationUab === false) { return 'pi pi-times-circle'; }
-        if (dossier.statut === 'DELIVRE' || dossier.statut === 'REALISE') { return 'pi pi-check-circle'; }
-        if (dossier.statut === 'PAYE') { return 'pi pi-credit-card'; }
-        return 'pi pi-clock';
+    // ==================== MÉTHODES DE STATUT ====================
+
+    getStatusValue(dossier: any): string {
+        if (dossier.validationUab === true) { return 'VALIDEE_UAB'; }
+        if (dossier.validationUab === false) { return 'REJETEE_UAB'; }
+        return 'EN_ATTENTE';
     }
 
     getStatusLabel(dossier: any): string {
-        if (dossier.validationUab === true) { return 'Validé UAB'; }
-        if (dossier.statut === 'REJETEE' || dossier.validationUab === false) { return 'Rejeté'; }
-        if (dossier.statut === 'DELIVRE') { return 'Délivré'; }
-        if (dossier.statut === 'REALISE') { return 'Réalisé'; }
-        if (dossier.statut === 'PAYE') { return 'Payé'; }
-        if (dossier.statut === 'EN_ATTENTE_DELIVRANCE') { return 'Attente délivrance'; }
-        if (dossier.statut === 'EN_ATTENTE_PAIEMENT') { return 'Attente paiement'; }
-        return 'En attente validation';
+        const statut = this.getStatusValue(dossier);
+        const labels: { [key: string]: string } = {
+            EN_ATTENTE: 'En attente',
+            VALIDEE_UAB: 'Validé UAB',
+            REJETEE_UAB: 'Rejeté'
+        };
+        return labels[statut] || 'En attente';
     }
 
+    getStatusClass(dossier: any): string {
+        const statut = this.getStatusValue(dossier);
+        const classes: { [key: string]: string } = {
+            EN_ATTENTE: 'status-warning',
+            VALIDEE_UAB: 'status-success',
+            REJETEE_UAB: 'status-danger'
+        };
+        return classes[statut] || 'status-warning';
+    }
+
+    getStatusIcon(dossier: any): string {
+        const statut = this.getStatusValue(dossier);
+        const icons: { [key: string]: string } = {
+            EN_ATTENTE: 'pi pi-clock',
+            VALIDEE_UAB: 'pi pi-check-circle',
+            REJETEE_UAB: 'pi pi-times-circle'
+        };
+        return icons[statut] || 'pi pi-question-circle';
+    }
+
+    // ==================== STATISTIQUES AVEC MONTANTS ====================
+
+    getStatutCount(statutValue: string): number {
+        return this.filteredDossiers.filter(d => this.getStatusValue(d) === statutValue).length;
+    }
+
+    getMontantRemboursableParStatut(statutValue: string): number {
+        const dossiers = this.filteredDossiers.filter(d => this.getStatusValue(d) === statutValue);
+        return dossiers.reduce((total, d) => total + (d.montantPrisEnCharge || 0), 0);
+    }
+
+    getMontantTotalRemboursable(): number {
+        return this.filteredDossiers
+            .filter(d => this.getStatusValue(d) === 'VALIDEE_UAB')
+            .reduce((total, d) => total + (d.montantPrisEnCharge || 0), 0);
+    }
+
+    getMontantTotalEnAttente(): number {
+        return this.filteredDossiers
+            .filter(d => this.getStatusValue(d) === 'EN_ATTENTE')
+            .reduce((total, d) => total + (d.montantPrisEnCharge || 0), 0);
+    }
+
+    getMontantTotalRejetes(): number {
+        return this.filteredDossiers
+            .filter(d => this.getStatusValue(d) === 'REJETEE_UAB')
+            .reduce((total, d) => total + (d.montantPrisEnCharge || 0), 0);
+    }
+
+    // ==================== MÉTHODES DE TYPE ====================
+
+    getTypeLabel(type: string): string {
+        const labels: { [key: string]: string } = {
+            CONSULTATION: 'Consultation',
+            PRESCRIPTION_MEDICAMENT: 'Médicament',
+            PRESCRIPTION_EXAMEN: 'Examen'
+        };
+        return labels[type] || type;
+    }
+
+    getTypeClass(dossier: any): string {
+        const type = dossier.type;
+        const classes: { [key: string]: string } = {
+            CONSULTATION: 'type-consultation',
+            PRESCRIPTION_MEDICAMENT: 'type-medicament',
+            PRESCRIPTION_EXAMEN: 'type-examen'
+        };
+        return classes[type] || '';
+    }
+
+    getTypeIcon(dossier: any): string {
+        const type = dossier.type;
+        const icons: { [key: string]: string } = {
+            CONSULTATION: 'pi pi-folder-open',
+            PRESCRIPTION_MEDICAMENT: 'pi pi-tablets',
+            PRESCRIPTION_EXAMEN: 'pi pi-microscope'
+        };
+        return icons[type] || 'pi pi-file';
+    }
+
+    getTypeIconByValue(typeValue: string): string {
+        const icons: { [key: string]: string } = {
+            CONSULTATION: 'pi pi-folder-open',
+            PRESCRIPTION_MEDICAMENT: 'pi pi-tablets',
+            PRESCRIPTION_EXAMEN: 'pi pi-microscope'
+        };
+        return icons[typeValue] || 'pi pi-file';
+    }
+
+    // ==================== MÉTHODES DE FILTRES ====================
+
+    hasActiveFilters(): boolean {
+        return !!(this.searchPolice || this.selectedTypeDossier || this.selectedStructureId ||
+            this.selectedStatut || this.dateDebut || this.dateFin);
+    }
+
+    getFiltresActifsMessage(): string {
+        const messages: string[] = [];
+        if (this.searchPolice) { messages.push(`Police: ${this.searchPolice}`); }
+        if (this.selectedTypeDossier) { messages.push(`Type: ${this.getTypeLabel(this.selectedTypeDossier)}`); }
+        if (this.selectedStructureId) {
+            const structure = this.structures.find(s => s.id === this.selectedStructureId);
+            if (structure) { messages.push(`Structure: ${structure.nom}`); }
+        }
+        if (this.selectedStatut) { messages.push(`Statut: ${this.getStatusLabelByValue(this.selectedStatut)}`); }
+
+        // ✅ Afficher le filtre mois
+        if (this.selectedMois && this.selectedNomMois) {
+            messages.push(`Mois: ${this.selectedNomMois} ${this.selectedAnnee}`);
+        }
+
+        if (this.dateDebut && !this.selectedMois) { messages.push(`À partir du: ${this.formatDate(this.dateDebut)}`); }
+        if (this.dateFin && !this.selectedMois) { messages.push(`Jusqu'au: ${this.formatDate(this.dateFin)}`); }
+        return messages.join(' • ');
+    }
+
+    resetMoisFilter(): void {
+        this.selectedMois = null;
+        this.selectedAnnee = null;
+        this.selectedNomMois = '';
+        this.applyFilters();
+    }
+
+    getStatusLabelByValue(statutValue: string): string {
+        const statut = this.statuts.find(s => s.value === statutValue);
+        return statut ? statut.label : statutValue;
+    }
+
+    // ==================== VALIDATION ====================
+
     canValidate(dossier: any): boolean {
-        return dossier.type === 'CONSULTATION' &&
-            !dossier.validationUab &&
-            dossier.statut !== 'REJETEE';
+        const statut = this.getStatusValue(dossier);
+        return statut === 'EN_ATTENTE';
     }
 
     validerRapidement(dossier: any): void {
-        if (dossier.validationUab === true) {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Ce dossier a déjà été validé'
-            });
-            return;
-        }
-        if (dossier.statut === 'REJETEE') {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Ce dossier a été rejeté et ne peut pas être validé'
-            });
-            return;
-        }
-        if (dossier.type !== 'CONSULTATION') {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Seules les consultations peuvent être validées par UAB'
-            });
-            return;
-        }
         this.selectedDossier = dossier;
         this.displayValidationDialog = true;
     }
@@ -428,15 +499,15 @@ export class DossiersComponent implements OnInit {
         if (!this.selectedDossier) { return; }
 
         this.loading = true;
-        this.consultationService.valider(this.selectedDossier.id).subscribe({
-            next: (response) => {
+        this.uabService.validerDossier(this.selectedDossier.id, this.selectedDossier.type).subscribe({
+            next: () => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Succès',
-                    detail: 'Dossier validé avec succès'
+                    detail: `Dossier ${this.getTypeLabel(this.selectedDossier.type)} validé avec succès`
                 });
                 this.displayValidationDialog = false;
-                this.loadDossiers();
+                this.loadDossiers(); // Recharger la liste
                 this.loading = false;
             },
             error: (error) => {
@@ -451,10 +522,33 @@ export class DossiersComponent implements OnInit {
         });
     }
 
-    // dossiers.component.ts - Ajoutez cette méthode
+    // ==================== NAVIGATION ====================
+
+    voirDossier(dossier: any): void {
+        console.log('UAB - Navigation vers validation:', dossier.id, dossier.type);
+        this.router.navigate(['/uab/validation', dossier.id], {
+            queryParams: { type: dossier.type }
+        });
+    }
+
+    // ==================== EXPORT ====================
 
     exportToExcel(): void {
-        if (!this.filteredDossiers || this.filteredDossiers.length === 0) {
+        const data = this.filteredDossiers.map(d => ({
+            Date: d.dateConsultation || d.dateCreation,
+            Patient: `${d.patientPrenom || ''} ${d.patientNom || ''}`,
+            Police: d.patientPolice || d.numeroPolice,
+            CODEINTE: d.codeInte,
+            CODERISQ: d.codeRisq,
+            Structure: d.structureNom,
+            Type: this.getTypeLabel(d.type),
+            'Montant Total': d.montantTotalHospitalier || d.montantTotal,
+            'Pris en charge UAB': d.montantPrisEnCharge,
+            'Ticket modérateur': d.montantTicketModerateur,
+            Statut: this.getStatusLabel(d)
+        }));
+
+        if (data.length === 0) {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Attention',
@@ -462,158 +556,50 @@ export class DossiersComponent implements OnInit {
             });
             return;
         }
-
-        try {
-            // Préparer les données pour l'export
-            const exportData = this.filteredDossiers.map((dossier, index) => ({
-                '#': index + 1,
-                'N° Document': dossier.numeroFeuille || dossier.numero || '',
-                Date: this.formatDate(dossier.dateConsultation || dossier.dateCreation),
-                Patient: `${dossier.prenomPatient || ''} ${dossier.nomPatient || ''}`.trim(),
-                'N° Police': dossier.numeroPolice || '',
-                'Structure émettrice': dossier.structureNom || '',
-                Type: this.getTypeLabel(dossier.type || 'CONSULTATION'),
-                'Montant total (FCFA)': dossier.montantTotalHospitalier || dossier.montantTotal || 0,
-                'Pris en charge (FCFA)': dossier.montantPrisEnCharge || 0,
-                'Ticket modérateur (FCFA)': dossier.montantTicketModerateur || 0,
-                Statut: this.getStatusLabel(dossier),
-                Origine: dossier.origine || ''
-            }));
-
-            // Convertir en CSV
-            const csvContent = this.convertToCSV(exportData);
-
-            // Télécharger le fichier
-            this.downloadCSV(csvContent, `dossiers_uab_${this.getCurrentDate()}.csv`);
-
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: `${this.filteredDossiers.length} dossiers exportés avec succès`
-            });
-        } catch (error) {
-            console.error('Erreur lors de l\'export:', error);
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Erreur lors de l\'export des données'
-            });
-        }
-    }
-
-// Méthode pour exporter en Excel (XLSX)
-    exportToExcelXLSX(): void {
-        if (!this.filteredDossiers || this.filteredDossiers.length === 0) {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Attention',
-                detail: 'Aucune donnée à exporter'
-            });
-            return;
-        }
-
-        try {
-            // Préparer les données
-            const exportData = this.filteredDossiers.map((dossier, index) => ({
-                Numéro: index + 1,
-                Document: dossier.numeroFeuille || dossier.numero || '',
-                Date: this.formatDate(dossier.dateConsultation || dossier.dateCreation),
-                Patient: `${dossier.prenomPatient || ''} ${dossier.nomPatient || ''}`.trim(),
-                Police: dossier.numeroPolice || '',
-                Structure: dossier.structureNom || '',
-                Type: this.getTypeLabel(dossier.type || 'CONSULTATION'),
-                'Montant Total': dossier.montantTotalHospitalier || dossier.montantTotal || 0,
-                'Pris en Charge': dossier.montantPrisEnCharge || 0,
-                'Ticket Modérateur': dossier.montantTicketModerateur || 0,
-                Statut: this.getStatusLabel(dossier),
-                Origine: dossier.origine || ''
-            }));
-
-            // Créer une feuille de calcul
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-            // Ajuster la largeur des colonnes
-            const colWidths = [
-                {wch: 8}, {wch: 15}, {wch: 12}, {wch: 25}, {wch: 15},
-                {wch: 25}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 20}, {wch: 12}
-            ];
-            worksheet['!cols'] = colWidths;
-
-            // Créer le classeur
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Dossiers UAB');
-
-            // Générer le fichier
-            XLSX.writeFile(workbook, `dossiers_uab_${this.getCurrentDate()}.xlsx`);
-
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: `${this.filteredDossiers.length} dossiers exportés avec succès`
-            });
-        } catch (error) {
-            console.error('Erreur lors de l\'export:', error);
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Erreur lors de l\'export des données'
-            });
-        }
-    }
-
-// Méthode utilitaire pour convertir en CSV
-    private convertToCSV(data: any[]): string {
-        if (!data || data.length === 0) { return ''; }
 
         const headers = Object.keys(data[0]);
         const csvRows = [];
-
-        // Ajouter les en-têtes
         csvRows.push(headers.join(','));
-
-        // Ajouter les lignes
         for (const row of data) {
             const values = headers.map(header => {
-                const value = row[header]?.toString() || '';
-                // Échapper les guillemets et les virgules
-                return `"${value.replace(/"/g, '""')}"`;
+                let val = row[header as keyof typeof row];
+                if (val === undefined || val === null) { val = ''; }
+                return `"${String(val).replace(/"/g, '""')}"`;
             });
             csvRows.push(values.join(','));
         }
 
-        return csvRows.join('\n');
+        const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dossiers_uab_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Export réussi',
+            detail: `${data.length} dossiers exportés`
+        });
     }
 
-// Méthode utilitaire pour télécharger le fichier CSV
-    private downloadCSV(csvContent: string, filename: string): void {
-        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    exportToExcelXLSX(): void {
+        this.exportToExcel();
     }
 
-// Méthode utilitaire pour formater la date
-    private formatDate(dateString: string): string {
-        if (!dateString) { return ''; }
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR');
-        } catch {
-            return dateString;
-        }
+    // ==================== UTILITAIRES ====================
+
+    private formatDate(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
-// Méthode utilitaire pour obtenir la date courante
-    private getCurrentDate(): string {
-        const now = new Date();
-        return `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+    // ✅ Nettoyage des subscriptions
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 }

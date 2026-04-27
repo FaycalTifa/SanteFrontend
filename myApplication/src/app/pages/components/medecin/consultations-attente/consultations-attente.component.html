@@ -59,7 +59,7 @@
                     responsiveLayout="scroll">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>N° Feuille</th>
+                        <th>Type</th>
                         <th>Date</th>
                         <th>Patient</th>
                         <th>N° Police</th>
@@ -73,7 +73,7 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-consultation>
                     <tr>
-                        <td>{{ consultation.numeroFeuille }}</td>
+                        <td>{{ consultation.typeConsultation }}</td>
                         <td>{{ consultation.dateConsultation | date:'dd/MM/yyyy' }}</td>
                         <td>{{ consultation.prenomPatient }} {{ consultation.nomPatient }}</td>
                         <td>{{ consultation.numeroPolice }}</td>

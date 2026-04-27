@@ -2,8 +2,8 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
-import {PrescriptionExamen} from "../../../models/prescription";
-import {ValidationExamenService} from "../../../services/validationExamen/validation-examen.service";
+import {PrescriptionExamen} from '../../../models/prescription';
+import {ValidationExamenService} from '../../../services/validationExamen/validation-examen.service';
 
 @Component({
     selector: 'app-validation-examens',

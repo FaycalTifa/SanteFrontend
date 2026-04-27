@@ -157,9 +157,10 @@
                                     <!-- Niveau 4: Liste des structures du mois -->
                                     <div class="month-content" *ngIf="expandedMonth === month.mois">
                                         <div class="structures-list">
+                                            <!-- dashboard.component.html - Modifier la ligne de la structure -->
                                             <div *ngFor="let structure of month.structures"
                                                  class="structure-item"
-                                                 (click)="voirDossiersStructure(structure)">
+                                                 (click)="voirDossiersStructure(structure, month, year.annee)">
                                                 <div class="structure-icon" [style.background]="group.color">
                                                     <i [class]="group.icon"></i>
                                                 </div>

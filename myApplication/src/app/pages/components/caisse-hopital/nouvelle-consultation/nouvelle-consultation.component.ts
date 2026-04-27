@@ -49,6 +49,39 @@ export class NouvelleConsultationComponent implements OnInit {
     searchBeneficiaireTerm = '';
     beneficiairesFiltres: any[] = [];
 
+
+    selectedTypeConsultation = 'GENERALISTE';
+
+    typeConsultationOptions = [
+        {
+            value: 'GENERALISTE',
+            label: '👨‍⚕️ Généraliste',
+            icon: 'pi pi-user',
+            description: 'Consultation générale',
+            color: '#3b82f6'
+        },
+        {
+            value: 'SPECIALISTE',
+            label: '👨‍⚕️ Spécialiste',
+            icon: 'pi pi-star',
+            description: 'Consultation spécialisée',
+            color: '#f59e0b'
+        },
+        {
+            value: 'PROFESSEUR',
+            label: '👨‍🏫 Professeur',
+            icon: 'pi pi-crown',
+            description: 'Consultation avec professeur',
+            color: '#8b5cf6'
+        },
+        {
+            value: 'DENTISTE',
+            label: '🦷 Dentiste',
+            icon: 'pi pi-heart',
+            description: 'Consultation dentaire',
+            color: '#10b981'
+        }
+    ];
     constructor(
         private fb: FormBuilder,
         private consultationService: ConsultationService,
@@ -96,6 +129,52 @@ export class NouvelleConsultationComponent implements OnInit {
         this.consultationForm.get('prixActes')?.valueChanges.subscribe(() => this.calculerMontants());
         this.consultationForm.get('montantPlafond')?.valueChanges.subscribe(() => this.calculerMontants());
     }
+
+
+    // ✅ Méthode pour obtenir l'icône du type
+    getTypeIcon(type: string): string {
+        const option = this.typeConsultationOptions.find(opt => opt.value === type);
+        return option?.icon || 'pi pi-question';
+    }
+
+    getTypeDescription(type: string): string {
+        const option = this.typeConsultationOptions.find(opt => opt.value === type);
+        return option?.description || '';
+    }
+
+    getTypeColor(type: string): string {
+        const option = this.typeConsultationOptions.find(opt => opt.value === type);
+        return option?.color || '#6b7280';
+    }
+
+// ✅ Mettre à jour la méthode onTypeConsultationChange
+    onTypeConsultationChange(): void {
+        const option = this.typeConsultationOptions.find(opt => opt.value === this.selectedTypeConsultation);
+
+        if (option) {
+            // Afficher un message informatif
+            this.messageService.add({
+                severity: 'info',
+                summary: 'Type de consultation',
+                detail: `${option.label} sélectionné`,
+                life: 2000
+            });
+
+            // Mettre à jour le champ libellePres pour information
+            this.consultationForm.patchValue({
+                libellePres: option.label
+            });
+        }
+    }
+
+    // ✅ Méthode pour réinitialiser le type de consultation
+    resetTypeConsultation(): void {
+        this.selectedTypeConsultation = 'GENERALISTE';
+        this.onTypeConsultationChange();
+    }
+
+    // ✅ MÉTHODES POUR L'AFFICHAGE DES CARTES
+
 
     // ✅ Méthode pour afficher les erreurs de validation
     getFormValidationErrors(): any {
@@ -455,7 +534,7 @@ export class NouvelleConsultationComponent implements OnInit {
         const formValue = this.consultationForm.value;
 
         // Déterminer le type de consultation
-        let typeConsultation = 'GENERALISTE';
+        let typeConsultation = this.selectedTypeConsultation;
         if (this.plafonnementSelectionne) {
             const libelle = this.plafonnementSelectionne.LIBEPRES || '';
             if (libelle.toUpperCase().includes('SPECIALISTE')) {

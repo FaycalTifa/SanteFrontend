@@ -1,162 +1,390 @@
 <!-- pages/components/uab/validation/validation.component.html -->
 <p-confirmDialog></p-confirmDialog>
-<div class="p-grid">
-    <div class="p-col-12">
-        <div class="card">
-            <div class="card-header">
-                <div class="header-title">
-                    <i class="pi pi-check-square" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
-                    <div>
-                        <h2>Validation du dossier</h2>
-                        <p>Vérifiez les informations et validez ou rejetez le dossier</p>
+<p-toast position="top-right"></p-toast>
+
+<div class="validation-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <div class="header-icon">
+                    <i class="pi pi-check-square"></i>
+                </div>
+                <div>
+                    <h2>Validation du dossier</h2>
+                    <p>Vérifiez les informations et validez ou rejetez le dossier</p>
+                </div>
+            </div>
+            <div class="header-badge" [ngClass]="{
+                'badge-consultation': dossierType === 'CONSULTATION',
+                'badge-medicament': dossierType === 'PRESCRIPTION_MEDICAMENT',
+                'badge-examen': dossierType === 'PRESCRIPTION_EXAMEN'
+            }">
+                <i class="pi" [ngClass]="{
+                    'pi-folder-open': dossierType === 'CONSULTATION',
+                    'pi-tablets': dossierType === 'PRESCRIPTION_MEDICAMENT',
+                    'pi-microscope': dossierType === 'PRESCRIPTION_EXAMEN'
+                }"></i>
+                <span>{{ getTypeLabel() }}</span>
+                <span class="separator">|</span>
+                <span>{{ getOrigineLabel() }}</span>
+            </div>
+        </div>
+
+        <div *ngIf="dossier && !loading" class="dossier-detail">
+
+            <!-- ==================== SECTION INFORMATIONS GÉNÉRALES (COMMUNE À TOUS) ==================== -->
+            <div class="section">
+                <h3>
+                    <i class="pi pi-info-circle"></i>
+                    <span>Informations générales</span>
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">N° Dossier</span>
+                        <span class="value">{{ dossier.numero }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">N° Police</span>
+                        <span class="value">{{ dossier.patientPolice }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Patient</span>
+                        <span class="value">{{ dossier.patientPrenom }} {{ dossier.patientNom }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Date création</span>
+                        <span class="value">{{ dossier.dateCreation | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Structure</span>
+                        <span class="value">
+                            <i class="pi pi-building"></i>
+                            {{ dossier.structureNom }}
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="dossier.medecinNom">
+                        <span class="label">Médecin prescripteur</span>
+                        <span class="value">
+                            <i class="pi pi-user-md"></i>
+                            {{ dossier.medecinNom }}
+                        </span>
+                    </div>
+                    <div class="info-item" *ngIf="dossier.codeInte">
+                        <span class="label">CODEINTE</span>
+                        <span class="value code-badge">{{ dossier.codeInte }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="dossier.codeRisq">
+                        <span class="label">CODERISQ</span>
+                        <span class="value code-badge">{{ dossier.codeRisq }}</span>
+                    </div><div class="info-item" *ngIf="dossier.codeRisq">
+                        <span class="label">CODERISQ</span>
+                        <span class="value code-badge">{{ dossier.codeRisq }}</span>
                     </div>
                 </div>
             </div>
 
-            <div *ngIf="consultation && !loading" class="dossier-detail">
-                <!-- Informations générales -->
-                <div class="section">
-                    <h3><i class="pi pi-info-circle"></i> Informations générales</h3>
-                    <div class="info-grid">
-                        <div class="info-item"><span class="label">N° Feuille :</span><span class="value">{{ consultation.numeroFeuille }}</span></div>
-                        <div class="info-item"><span class="label">N° Police :</span><span class="value">{{ consultation.numeroPolice }}</span></div>
-                        <div class="info-item"><span class="label">Patient :</span><span class="value">{{ consultation.prenomPatient }} {{ consultation.nomPatient }}</span></div>
-                        <div class="info-item"><span class="label">Date consultation :</span><span class="value">{{ consultation.dateConsultation | date:'dd/MM/yyyy' }}</span></div>
-                        <div class="info-item"><span class="label">Structure :</span><span class="value">{{ consultation.structureNom }}</span></div>
-                        <div class="info-item"><span class="label">Médecin :</span><span class="value">{{ consultation.medecinNom }}</span></div>
+            <!-- ==================== SECTION CONSULTATION (UNIQUEMENT POUR CONSULTATION) ==================== -->
+            <div class="section" *ngIf="dossierType === 'CONSULTATION'">
+                <h3>
+                    <i class="pi pi-stethoscope"></i>
+                    <span>Détails de la consultation</span>
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Nature de la maladie</span>
+                        <span class="value">{{ dossier.natureMaladie || '-' }}</span>
                     </div>
-                </div>
-
-                <!-- Diagnostic -->
-                <div class="section">
-                    <h3><i class="pi pi-stethoscope"></i> Diagnostic</h3>
-                    <div class="info-grid">
-                        <div class="info-item"><span class="label">Nature maladie :</span><span class="value">{{ consultation.natureMaladie }}</span></div>
-                        <div class="info-item"><span class="label">Diagnostic :</span><span class="value">{{ consultation.diagnostic }}</span></div>
-                        <div class="info-item"><span class="label">Actes médicaux :</span><span class="value">{{ consultation.actesMedicaux }}</span></div>
+                    <div class="info-item">
+                        <span class="label">Diagnostic</span>
+                        <span class="value">{{ dossier.diagnostic || '-' }}</span>
                     </div>
-                </div>
-
-                <!-- Facturation Hôpital -->
-                <div class="section">
-                    <h3><i class="pi pi-money-bill"></i> Facturation Hôpital</h3>
-                    <div class="info-grid">
-                        <div class="info-item"><span class="label">Prix consultation :</span><span class="value">{{ consultation.prixConsultation | number }} FCFA</span></div>
-                        <div class="info-item"><span class="label">Prix des actes :</span><span class="value">{{ consultation.prixActes | number }} FCFA</span></div>
-                        <div class="info-item"><span class="label">Total :</span><span class="value">{{ consultation.montantTotalHospitalier | number }} FCFA</span></div>
-                        <div class="info-item"><span class="label">Ticket modérateur patient :</span><span class="value">{{ consultation.montantTicketModerateur | number }} FCFA</span></div>
-                        <div class="info-item"><span class="label">UAB prend en charge :</span><span class="value">{{ consultation.montantPrisEnCharge | number }} FCFA</span></div>
+                    <div class="info-item">
+                        <span class="label">Actes médicaux</span>
+                        <span class="value">{{ dossier.actesMedicaux || '-' }}</span>
                     </div>
-                </div>
-
-                <!-- Prescriptions Médicaments -->
-                <div class="section" *ngIf="consultation.prescriptionsMedicaments?.length">
-                    <h3><i class="pi pi-tablets"></i> Prescriptions Médicaments</h3>
-                    <p-table [value]="consultation.prescriptionsMedicaments" responsiveLayout="scroll">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Médicament</th>
-                                <th>Dosage</th>
-                                <th>Quantité</th>
-                                <th>Prix total</th>
-                                <th>Statut</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-med>
-                            <tr>
-                                <td>{{ med.medicamentNom }}</td>
-                                <td>{{ med.medicamentDosage }}</td>
-                                <td>{{ med.quantitePrescitee }}</td>
-                                <td>{{ med.prixTotal | number }} FCFA</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="med.delivre ? 'status-success' : 'status-warning'">
-                                        {{ med.delivre ? 'Délivré' : 'En attente' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-
-                <!-- Prescriptions Examens -->
-                <div class="section" *ngIf="consultation.prescriptionsExamens?.length">
-                    <h3><i class="pi pi-microscope"></i> Prescriptions Examens</h3>
-                    <p-table [value]="consultation.prescriptionsExamens" responsiveLayout="scroll">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th>Examen</th>
-                                <th>Code</th>
-                                <th>Prix total</th>
-                                <th>Statut</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-exam>
-                            <tr>
-                                <td>{{ exam.examenNom }}</td>
-                                <td>{{ exam.codeActe }}</td>
-                                <td>{{ exam.prixTotal | number }} FCFA</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="exam.realise ? 'status-success' : 'status-warning'">
-                                        {{ exam.realise ? 'Réalisé' : 'En attente' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </div>
-
-                <!-- Résumé -->
-                <div class="section summary">
-                    <h3><i class="pi pi-calculator"></i> Résumé des remboursements</h3>
-                    <div class="summary-card">
-                        <div class="summary-item">
-                            <span>Prise en charge :</span>
-                            <strong>{{ consultation.montantPrisEnCharge | number }} FCFA</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Prise en charge :</span>
-                            <strong>{{ getTotalPharmacie() | number }} FCFA</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Monta :</span>
-                            <strong>{{ getTotalLaboratoire() | number }} FCFA</strong>
-                        </div>
-                        <div class="summary-item total">
-                            <span>TOTAL UAB :</span>
-                            <strong>{{ getTotalGeneral() | number }} FCFA</strong>
-                        </div>
+                    <div class="info-item">
+                        <span class="label">Type</span>
+                        <span class="value">{{ dossier.typeConsultation || '-' }}</span>
                     </div>
-                </div>
-
-                <div class="button-group">
-                    <button pButton icon="pi pi-times" label="Rejeter" class="p-button-danger" (click)="rejeter()"></button>
-                    <button pButton icon="pi pi-check" label="Valider et rembourser" class="p-button-success" (click)="valider()"></button>
                 </div>
             </div>
 
-            <div *ngIf="loading" class="loading-container">
-                <p-progressSpinner></p-progressSpinner>
+            <!-- ==================== SECTION MÉDICAMENT (UNIQUEMENT POUR PRESCRIPTION_MEDICAMENT) ==================== -->
+            <div class="section" *ngIf="dossierType === 'PRESCRIPTION_MEDICAMENT'">
+                <h3>
+                    <i class="pi pi-tablets"></i>
+                    <span>Détails du médicament</span>
+                </h3>
+                <div class="medicament-detail">
+                    <div class="medicament-header">
+                        <i class="pi pi-pill"></i>
+                        <span class="medicament-name">{{ dossier.medicamentNom || 'Médicament non spécifié' }}</span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item" *ngIf="dossier.medicamentDosage">
+                            <span class="label">Dosage</span>
+                            <span class="value">{{ dossier.medicamentDosage }}</span>
+                        </div>
+                        <div class="info-item" *ngIf="dossier.medicamentForme">
+                            <span class="label">Forme</span>
+                            <span class="value">{{ dossier.medicamentForme }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Quantité prescrite</span>
+                            <span class="value">{{ dossier.quantite || dossier.quantitePrescitee }} unité(s)</span>
+                        </div>
+                        <div class="info-item" *ngIf="dossier.quantiteDelivree">
+                            <span class="label">Quantité délivrée</span>
+                            <span class="value">{{ dossier.quantiteDelivree }} unité(s)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Statut délivrance</span>
+                            <span class="value">
+                    <span class="status-badge" [ngClass]="dossier.delivre ? 'status-success' : 'status-warning'">
+                        <i [class]="dossier.delivre ? 'pi pi-check-circle' : 'pi pi-clock'"></i>
+                        {{ dossier.delivre ? 'Délivré' : 'En attente' }}
+                    </span>
+                </span>
+                        </div>
+                        <div class="info-item" *ngIf="dossier.codeInte">
+                            <span class="label">CODEINTE</span>
+                            <span class="value code-badge">{{ dossier.codeInte }}</span>
+                        </div>
+                        <div class="info-item" *ngIf="dossier.codeRisq">
+                            <span class="label">CODERISQ</span>
+                            <span class="value code-badge">{{ dossier.codeRisq }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item full-width" *ngIf="dossier.instructions">
+                        <span class="label">Instructions</span>
+                        <span class="value instructions">{{ dossier.instructions }}</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- ==================== SECTION EXAMEN (UNIQUEMENT POUR PRESCRIPTION_EXAMEN) ==================== -->
+            <div class="section" *ngIf="dossierType === 'PRESCRIPTION_EXAMEN'">
+                <h3>
+                    <i class="pi pi-microscope"></i>
+                    <span>Détails de l'examen</span>
+                </h3>
+                <div class="examen-detail">
+                    <div class="examen-header">
+                        <i class="pi pi-flask"></i>
+                        <span class="examen-name">{{ dossier.examenNom || 'Examen non spécifié' }}</span>
+                        <span class="examen-code" *ngIf="dossier.examenCode">({{ dossier.examenCode }})</span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="label">Statut paiement</span>
+                            <span class="value">
+                                <span class="status-badge" [ngClass]="dossier.paye ? 'status-success' : 'status-warning'">
+                                    <i [class]="dossier.paye ? 'pi pi-check-circle' : 'pi pi-clock'"></i>
+                                    {{ dossier.paye ? 'Payé' : 'En attente' }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Statut réalisation</span>
+                            <span class="value">
+                                <span class="status-badge" [ngClass]="dossier.realise ? 'status-success' : 'status-warning'">
+                                    <i [class]="dossier.realise ? 'pi pi-check-circle' : 'pi pi-clock'"></i>
+                                    {{ dossier.realise ? 'Réalisé' : 'En attente' }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-item" *ngIf="dossier.datePaiement">
+                            <span class="label">Date de paiement</span>
+                            <span class="value">
+                                <i class="pi pi-calendar"></i>
+                                {{ dossier.datePaiement | date:'dd/MM/yyyy' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item full-width" *ngIf="dossier.instructions">
+                        <span class="label">Instructions</span>
+                        <span class="value instructions">{{ dossier.instructions }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PRESCRIPTIONS MÉDICAMENTS ASSOCIÉES (POUR CONSULTATION UNIQUEMENT) ==================== -->
+            <div class="section" *ngIf="dossierType === 'CONSULTATION' && dossier.prescriptionsMedicaments?.length > 0">
+                <h3>
+                    <i class="pi pi-tablets"></i>
+                    <span>Prescriptions médicaments associées</span>
+                    <span class="section-count">{{ dossier.prescriptionsMedicaments.length }}</span>
+                </h3>
+                <div class="prescriptions-list">
+                    <div *ngFor="let med of dossier.prescriptionsMedicaments" class="prescription-card medicament-card">
+                        <div class="prescription-header">
+                            <i class="pi pi-pill"></i>
+                            <span class="prescription-name">{{ med.medicamentNom }}</span>
+                            <span class="prescription-status" [ngClass]="med.delivre ? 'status-delivered' : 'status-pending'">
+                                {{ med.delivre ? 'Délivré' : 'En attente' }}
+                            </span>
+                        </div>
+                        <div class="prescription-body">
+                            <div class="prescription-detail" *ngIf="med.medicamentDosage">
+                                <span class="detail-label">Dosage:</span>
+                                <span>{{ med.medicamentDosage }}</span>
+                            </div>
+                            <div class="prescription-detail" *ngIf="med.medicamentForme">
+                                <span class="detail-label">Forme:</span>
+                                <span>{{ med.medicamentForme }}</span>
+                            </div>
+                            <div class="prescription-detail">
+                                <span class="detail-label">Quantité:</span>
+                                <span>{{ med.quantitePrescitee }} unité(s)</span>
+                            </div>
+                            <div class="prescription-detail" *ngIf="med.quantiteDelivree">
+                                <span class="detail-label">Délivrée:</span>
+                                <span>{{ med.quantiteDelivree }} unité(s)</span>
+                            </div>
+                            <div class="prescription-detail">
+                                <span class="detail-label">Montant UAB:</span>
+                                <span class="amount">{{ med.montantPrisEnCharge | number }} FCFA</span>
+                            </div>
+                        </div>
+                        <div class="prescription-footer" *ngIf="med.instructions">
+                            <i class="pi pi-info-circle"></i>
+                            <span>{{ med.instructions }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PRESCRIPTIONS EXAMENS ASSOCIÉES (POUR CONSULTATION UNIQUEMENT) ==================== -->
+            <div class="section" *ngIf="dossierType === 'CONSULTATION' && dossier.prescriptionsExamens?.length > 0">
+                <h3>
+                    <i class="pi pi-microscope"></i>
+                    <span>Prescriptions examens associées</span>
+                    <span class="section-count">{{ dossier.prescriptionsExamens.length }}</span>
+                </h3>
+                <div class="prescriptions-list">
+                    <div *ngFor="let exam of dossier.prescriptionsExamens" class="prescription-card examen-card">
+                        <div class="prescription-header">
+                            <i class="pi pi-flask"></i>
+                            <span class="prescription-name">{{ exam.examenNom }}</span>
+                            <span class="prescription-status" [ngClass]="exam.realise ? 'status-delivered' : exam.paye ? 'status-paid' : 'status-pending'">
+                                {{ exam.realise ? 'Réalisé' : exam.paye ? 'Payé' : 'En attente' }}
+                            </span>
+                        </div>
+                        <div class="prescription-body">
+                            <div class="prescription-detail" *ngIf="exam.codeActe">
+                                <span class="detail-label">Code acte:</span>
+                                <span>{{ exam.codeActe }}</span>
+                            </div>
+                            <div class="prescription-detail">
+                                <span class="detail-label">Montant UAB:</span>
+                                <span class="amount">{{ exam.montantPrisEnCharge | number }} FCFA</span>
+                            </div>
+                            <div class="prescription-detail" *ngIf="exam.datePaiement">
+                                <span class="detail-label">Payé le:</span>
+                                <span>{{ exam.datePaiement | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                        </div>
+                        <div class="prescription-footer" *ngIf="exam.instructions">
+                            <i class="pi pi-info-circle"></i>
+                            <span>{{ exam.instructions }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SECTION RÉSUMÉ (COMMUNE À TOUS) ==================== -->
+            <div class="section summary-section">
+                <h3>
+                    <i class="pi pi-calculator"></i>
+                    <span>Résumé du remboursement</span>
+                </h3>
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span>Montant total des soins</span>
+                        <span>{{ dossier.montantTotal | number }} FCFA</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ticket modérateur (patient)</span>
+                        <span class="ticket">{{ dossier.montantTicketModerateur | number }} FCFA</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Prise en charge UAB</span>
+                        <span>{{ dossier.montantPrisEnCharge | number }} FCFA</span>
+                    </div>
+                    <div class="summary-row" *ngIf="dossier.motifRejet && dossier.validationUab === false">
+                        <span>Motif du rejet</span>
+                        <span class="reject-reason">{{ dossier.motifRejet }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== BOUTONS D'ACTION ==================== -->
+            <div class="button-group">
+                <button *ngIf="isUABAdmin"
+                        pButton
+                        type="button"
+                        icon="pi pi-times"
+                        label="Rejeter le dossier"
+                        class="p-button-danger btn-reject"
+                        (click)="rejeter()">
+                </button>
+                <!--<button pButton
+                        type="button"
+                        icon="pi pi-check"
+                        label="Valider et rembourser"
+                        class="p-button-success btn-validate"
+                        (click)="valider()">
+                </button>-->
+            </div>
+        </div>
+
+        <!-- ==================== CHARGEMENT ==================== -->
+        <div *ngIf="loading" class="loading-container">
+            <p-progressSpinner></p-progressSpinner>
+            <p>Chargement du dossier...</p>
         </div>
     </div>
 </div>
 
-<p-dialog header="Motif de rejet" [(visible)]="displayRejetDialog" [modal]="true" [style]="{width: '450px'}">
-    <div class="field">
-        <label for="motif">Motif du rejet *</label>
-        <textarea id="motif" rows="3" pInputTextarea [(ngModel)]="motifRejet" placeholder="Expliquez pourquoi ce dossier est rejeté..."></textarea>
+<!-- ==================== DIALOGUE DE REJET ==================== -->
+<p-dialog header="Motif de rejet"
+          [(visible)]="displayRejetDialog"
+          [modal]="true"
+          [style]="{width: '450px'}"
+          [draggable]="false"
+          [closable]="true"
+          [dismissableMask]="true">
+    <div class="reject-dialog">
+        <div class="reject-icon">
+            <i class="pi pi-times-circle"></i>
+        </div>
+        <p class="reject-message">Veuillez indiquer la raison du rejet de ce dossier.</p>
+        <div class="field">
+            <label for="motif">Motif du rejet *</label>
+            <textarea id="motif"
+                      rows="4"
+                      pInputTextarea
+                      [(ngModel)]="motifRejet"
+                      placeholder="Expliquez de manière détaillée pourquoi ce dossier est rejeté..."
+                      [class.ng-invalid]="!motifRejet.trim() && displayRejetDialog">
+            </textarea>
+        </div>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton icon="pi pi-times" label="Annuler" class="p-button-text" (click)="displayRejetDialog = false"></button>
-        <button pButton icon="pi pi-check" label="Confirmer le rejet" class="p-button-danger" (click)="confirmerRejet()"></button>
+        <button pButton
+                type="button"
+                icon="pi pi-times"
+                label="Annuler"
+                class="p-button-text"
+                (click)="displayRejetDialog = false">
+        </button>
+        <button pButton
+                type="button"
+                icon="pi pi-check"
+                label="Confirmer le rejet"
+                class="p-button-danger"
+                [disabled]="!motifRejet.trim()"
+                (click)="confirmerRejet()">
+        </button>
     </ng-template>
 </p-dialog>
-<!-- examens-attente.component.html - Ajouter au début -->
-<div class="laboratoire-container">
-    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
-    <p-toast position="top-right"></p-toast>
-
-    <div class="card">
-        <!-- reste du template -->
-    </div>
-</div>

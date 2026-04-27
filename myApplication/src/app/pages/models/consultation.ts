@@ -20,6 +20,7 @@ export interface Consultation {
     montantTicketModerateur: number;
     montantPayePatient: number;
     natureMaladie: string;
+    medicamentNom: string;
     diagnostic: string;
     actesMedicaux: string;
     medecinNom: string;          // ✅ Déjà présent
@@ -60,6 +61,7 @@ export interface ConsultationPrescriptionRequest {
     natureMaladie: string;
     diagnostic: string;
     actesMedicaux: string;
+    medicamentNom: string;
     prescriptionsMedicaments: PrescriptionMedicamentDTO[];
     prescriptionsExamens: PrescriptionExamenDTO[];
 }

@@ -115,6 +115,33 @@
                                     [showIcon]="true" placeholder="jj/mm/aaaa"></p-calendar>
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="typeConsultation">Type de consultation</label>
+                        <p-dropdown
+                                [options]="typeConsultationOptions"
+                                [(ngModel)]="selectedTypeConsultation"
+                                [ngModelOptions]="{standalone: true}"
+                                (onChange)="onTypeConsultationChange()"
+                                placeholder="Sélectionner le type"
+                                optionLabel="label"
+                                optionValue="value"
+                                [style]="{'width': '100%'}"
+                                [style]="{'width': '100%'}">
+                            <ng-template let-option pTemplate="item">
+                                <div class="type-option">
+                                    <i [class]="option.icon" [style.color]="option.color"></i>
+                                    <span>{{ option.label }}</span>
+                                    <small class="type-desc">{{ option.description }}</small>
+                                </div>
+                            </ng-template>
+                        </p-dropdown>
+                        <small class="field-help">
+                            <i class="pi pi-info-circle"></i>
+                            À titre informatif - Type de consultation
+                        </small>
+                    </div>
+                </div>
             </div>
 
             <!-- Section Plafonnement -->

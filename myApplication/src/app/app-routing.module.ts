@@ -1,4 +1,4 @@
-// app-routing.module.ts - Version corrigée
+// app-routing.module.ts - Version complète et corrigée
 import { RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { AppMainComponent } from './app.main.component';
@@ -25,25 +25,24 @@ import { GuardsGuard } from './pages/core/guards/guards.guard';
 import { StructureDashboardComponent } from './pages/components/structure-dashboard/structure-dashboard.component';
 import { UtilisateursComponent } from './pages/components/uab/utilisateurs/utilisateurs.component';
 import { StructuresComponent } from "./pages/components/structures/structures.component";
-import {PlafonnementComponent} from "./pages/components/uab/plafonnement/plafonnement.component";
-import {ImportMedicamentsComponent} from "./pages/components/uab/import-medicaments/import-medicaments.component";
-import {DemandesAttenteComponent} from "./pages/components/medecin/demandes-attente/demandes-attente.component";
-import {ValidationExamensComponent} from "./pages/components/uab/validation-examens/validation-examens.component";
+import { PlafonnementComponent } from "./pages/components/uab/plafonnement/plafonnement.component";
+import { ImportMedicamentsComponent } from "./pages/components/uab/import-medicaments/import-medicaments.component";
+import { DemandesAttenteComponent } from "./pages/components/medecin/demandes-attente/demandes-attente.component";
+import { ValidationExamensComponent } from "./pages/components/uab/validation-examens/validation-examens.component";
+
+// app-routing.module.ts - Version corrigée
 
 @NgModule({
     imports: [
         RouterModule.forRoot([
-            // ✅ Route Login en dehors du layout (pas de menu)
             { path: 'login', component: LoginComponent },
 
-            // ✅ Routes avec layout (avec menu)
             {
                 path: '', component: AppMainComponent,
                 children: [
-                    // Redirection par défaut après login
                     { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
 
-                    // Caisse Hôpital
+                    // ==================== CAISSE HÔPITAL ====================
                     {
                         path: 'caisse-hopital',
                         component: NouvelleConsultationComponent,
@@ -56,8 +55,14 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['CAISSIER_HOPITAL'] }
                     },
+                    {
+                        path: 'caisse-hopital/plafonnements',
+                        component: PlafonnementComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['CAISSIER_HOPITAL', 'UAB_ADMIN'] }
+                    },
 
-                    // Médecin
+                    // ==================== MÉDECIN ====================
                     {
                         path: 'medecin/consultations-attente',
                         component: ConsultationsAttenteComponent,
@@ -82,7 +87,6 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['MEDECIN'] }
                     },
-                    // app-routing.module.ts
                     {
                         path: 'medecin/demandes-attente',
                         component: DemandesAttenteComponent,
@@ -96,7 +100,7 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         data: { roles: ['MEDECIN'] }
                     },
 
-                    // Pharmacie
+                    // ==================== PHARMACIE ====================
                     {
                         path: 'pharmacie/prescriptions-attente',
                         component: PrescriptionsAttenteComponent,
@@ -116,7 +120,7 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         data: { roles: ['PHARMACIEN', 'CAISSIER_PHARMACIE'] }
                     },
 
-                    // Laboratoire
+                    // ==================== LABORATOIRE ====================
                     {
                         path: 'laboratoire/examens-attente',
                         component: ExamensAttenteComponent,
@@ -142,7 +146,7 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         data: { roles: ['BIOLOGISTE', 'CAISSIER_LABORATOIRE'] }
                     },
 
-                    // UAB
+                    // ==================== UAB (ADMIN) ====================
                     {
                         path: 'uab/dashboard',
                         component: DashboardComponent,
@@ -155,10 +159,10 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
-                    // app-routing.module.ts
+                    // ✅ IMPORTANT: Les routes spécifiques DOIVENT être avant la route générique :id
                     {
-                        path: 'uab/parametres/import-medicaments',
-                        component: ImportMedicamentsComponent,
+                        path: 'uab/validation/examen',
+                        component: ValidationExamensComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
@@ -168,10 +172,9 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
-                    // app-routing.module.ts
                     {
-                        path: 'uab/validation/:id/:type',
-                        component: ValidationComponent,
+                        path: 'uab/parametres/import-medicaments',
+                        component: ImportMedicamentsComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
@@ -194,18 +197,6 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         data: { roles: ['UAB_ADMIN'] }
                     },
                     {
-                        path: 'uab/Validation/examen',
-                        component: ValidationExamensComponent,
-                        canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
-                    },
-                    {
-                        path: 'caisse-hopital/plafonnements',
-                        component: PlafonnementComponent,
-                        canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['CAISSIER_HOPITAL'] }
-                    },
-                    {
                         path: 'uab/parametres/utilisateurs',
                         component: UtilisateursComponent,
                         canActivate: [GuardsGuard, RoleGuard],
@@ -218,17 +209,22 @@ import {ValidationExamensComponent} from "./pages/components/uab/validation-exam
                         data: { roles: ['UAB_ADMIN'] }
                     },
 
-                    // Dashboard Structure (pour tous les rôles ayant une structure)
+                    // ==================== DASHBOARD STRUCTURE ====================
                     {
-                        path: 'dashboard',
+                        path: 'structure/dashboard',
                         component: StructureDashboardComponent,
                         canActivate: [GuardsGuard],
-                        data: { roles: ['CAISSIER_HOPITAL', 'MEDECIN', 'PHARMACIEN', 'BIOLOGISTE', 'CAISSIER_PHARMACIE', 'CAISSIER_LABORATOIRE'] }
+                        data: { roles: ['ADMIN_STRUCTURE', 'CAISSIER_HOPITAL', 'MEDECIN', 'PHARMACIEN', 'BIOLOGISTE', 'CAISSIER_PHARMACIE', 'CAISSIER_LABORATOIRE'] }
+                    },
+                    {
+                        path: 'structure/validation/:id',
+                        component: ValidationComponent,
+                        canActivate: [GuardsGuard],
+                        data: { roles: ['ADMIN_STRUCTURE', 'CAISSIER_HOPITAL', 'MEDECIN', 'PHARMACIEN', 'BIOLOGISTE', 'CAISSIER_PHARMACIE', 'CAISSIER_LABORATOIRE'] }
                     },
                 ]
             },
 
-            // Redirection si route non trouvée
             { path: '**', redirectTo: '/login' },
         ], { scrollPositionRestoration: 'enabled' })
     ],
