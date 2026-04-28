@@ -137,16 +137,21 @@
 
             <!-- ✅ Sélection multiple des rôles - CORRECTION : utilisation de formControlName -->
             <!-- Vérifiez que le template utilise correctement les attributs -->
+            <!-- utilisateurs.component.html - Remplacer la section des rôles -->
             <div class="field">
                 <label>Rôles *</label>
                 <div class="roles-checkbox-group">
                     <div *ngFor="let role of roles" class="role-checkbox">
                         <p-checkbox
+                                [name]="'role_' + role.value"
                                 [value]="role.value"
-                                [label]="role.label"
-                                (onChange)="toggleRole(role.value)"
-                                [checked]="isRoleSelected(role.value)">
+                                [(ngModel)]="selectedRoles"
+                                [ngModelOptions]="{standalone: true}"
+                                [binary]="false">
                         </p-checkbox>
+                        <label class="role-label">
+                            {{ role.label }}
+                        </label>
                     </div>
                 </div>
                 <small class="p-error" *ngIf="selectedRoles.length === 0 && displayDialog">

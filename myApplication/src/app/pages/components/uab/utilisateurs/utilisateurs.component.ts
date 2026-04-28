@@ -102,22 +102,39 @@ export class UtilisateursComponent implements OnInit {
         this.displayDialog = true;
     }
 
+    // utilisateurs.component.ts
     editUtilisateur(utilisateur: Utilisateur): void {
+        console.log('=== ÉDITION UTILISATEUR ===');
+        console.log('Utilisateur reçu:', utilisateur);
+        console.log('Rôles de l\'utilisateur:', utilisateur.roles);
+
         this.isEditMode = true;
         this.selectedUtilisateur = utilisateur;
+
         // ✅ Copier les rôles existants
-        this.selectedRoles = [...utilisateur.roles];
+        this.selectedRoles = utilisateur.roles && Array.isArray(utilisateur.roles)
+            ? [...utilisateur.roles]
+            : [];
+
+        console.log('selectedRoles après copie:', this.selectedRoles);
+
+        // ✅ Forcer la détection des changements
+        setTimeout(() => {
+            console.log('selectedRoles après timeout:', this.selectedRoles);
+        }, 100);
+
         this.utilisateurForm.patchValue({
             structureId: utilisateur.structureId,
             nom: utilisateur.nom,
             prenom: utilisateur.prenom,
             email: utilisateur.email,
-            password: '', // Ne pas afficher le mot de passe
-            telephone: utilisateur.telephone
+            password: '',
+            telephone: utilisateur.telephone || ''
         });
-        // En mode édition, le mot de passe n'est pas obligatoire
+
         this.utilisateurForm.get('password')?.clearValidators();
         this.utilisateurForm.get('password')?.updateValueAndValidity();
+
         this.displayDialog = true;
     }
 
