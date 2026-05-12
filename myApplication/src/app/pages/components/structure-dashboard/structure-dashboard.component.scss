@@ -903,3 +903,76 @@ $gray-900: #0f172a;
     background: $gray-400;
   }
 }
+// À ajouter dans le fichier structure-dashboard.component.scss
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .toggle-buttons {
+    display: flex;
+    gap: 0.75rem;
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 30px;
+      transition: all 0.2s;
+      white-space: nowrap;
+
+      &.p-button-outlined {
+        background: transparent;
+        border: 1px solid #cbd5e1;
+        color: #1e293b;
+
+        &:hover {
+          background: #f1f5f9;
+          border-color: #94a3b8;
+        }
+      }
+
+      &.p-button-primary {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+        box-shadow: 0 2px 6px rgba(59,130,246,0.2);
+      }
+
+      &.p-button-success {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+        box-shadow: 0 2px 6px rgba(16,185,129,0.2);
+      }
+    }
+  }
+}
+
+// Responsive : sur mobile, empiler les éléments
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .toggle-buttons {
+      width: 100%;
+      justify-content: stretch;
+
+      button {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  }
+}

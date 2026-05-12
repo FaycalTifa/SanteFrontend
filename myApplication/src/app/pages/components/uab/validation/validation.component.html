@@ -328,13 +328,13 @@
                         class="p-button-danger btn-reject"
                         (click)="rejeter()">
                 </button>
-                <!--<button pButton
-                        type="button"
-                        icon="pi pi-check"
-                        label="Valider et rembourser"
-                        class="p-button-success btn-validate"
-                        (click)="valider()">
-                </button>-->
+                <button *ngIf="dossierType !== 'CONSULTATION' || dossier.validationUab"
+                        pButton
+                        icon="pi pi-money-bill"
+                        label="Payer le dossier"
+                        class="p-button-success"
+                        (click)="payer()">
+                </button>
             </div>
         </div>
 

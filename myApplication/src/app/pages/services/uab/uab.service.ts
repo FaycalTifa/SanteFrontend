@@ -27,6 +27,11 @@ export class UabService {
         return this.http.get(`${this.baseUrl}/uab/dashboard`, { headers: this.getHeaders() });
     }
 
+    // uab.service.ts
+    getDashboardPayes(): Observable<any> {
+        return this.http.get(`${this.baseUrl}/uab/dashboard/payes`, { headers: this.getHeaders() });
+    }
+
     getAllDossiers(statut?: string, numeroPolice?: string): Observable<any[]> {
         let url = `${this.baseUrl}/uab/dossiers`;
         const params: string[] = [];
@@ -61,13 +66,24 @@ export class UabService {
         });
     }
 
+    payerDossier(id: number, type: string): Observable<any> {
+        const params = new HttpParams().set('type', type);
+        return this.http.put(`${this.baseUrl}/uab/dossiers/${id}/payer`, null, { headers: this.getHeaders(), params });
+    }
+
+    getDossiersPayes(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/uab/dossiers/payes`, { headers: this.getHeaders() });
+    }
+
     getAllDossiersPaginated(page: number = 0, size: number = 10,
-                            statut?: string, numeroPolice?: string): Observable<any> {
+                            statut?: string, numeroPolice?: string,
+                            payeParUab?: boolean): Observable<any> {
         let params = new HttpParams()
             .set('page', page.toString())
             .set('size', size.toString());
         if (statut) params = params.set('statut', statut);
         if (numeroPolice) params = params.set('numeroPolice', numeroPolice);
+        if (payeParUab !== undefined) params = params.set('payeParUab', payeParUab.toString());
 
         return this.http.get<any>(`${this.baseUrl}/uab/dossiers/paginated`, {
             headers: this.getHeaders(),

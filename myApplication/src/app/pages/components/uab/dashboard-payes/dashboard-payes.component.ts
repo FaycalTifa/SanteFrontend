@@ -1,14 +1,12 @@
-// pages/components/uab/dashboard/dashboard.component.ts - VERSION OPTIMISÉE
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import {NavigationEnd, Router} from '@angular/router';
+import { Router } from '@angular/router';
 import { UabService } from '../../../services/uab/uab.service';
 import { CacheService } from '../../../services/cache/cache.service';
-import {filter, takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import {DashboardRefreshService} from "../../../services/DashboardRefresh/dashboard-refresh.service";
 
-// ✅ Interfaces pour le typage
 interface StructureStat {
     structureId: number;
     structureNom: string;
@@ -66,31 +64,24 @@ interface StructureItem {
 }
 
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrls: ['./dashboard.component.scss']
+    selector: 'app-dashboard-payes',
+    templateUrl: './dashboard-payes.component.html',
+    styleUrls: ['./dashboard-payes.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardPayesComponent implements OnInit, OnDestroy {
 
     stats: any = null;
     loading = false;
 
-    // Niveaux d'expansion
     expandedType: string | null = null;
     expandedYear: number | null = null;
     expandedMonth: number | null = null;
 
     structuredData: GroupData[] = [];
-
-    chartData: any;
-    chartOptions: any;
-
-    dossiersDuMois: any[] = [];
-    displayDossiersDialog = false;
-    moisSelectionne: { annee: number, mois: number, nomMois: string, structure: StructureItem } | null = null;
-
     searchTerm = '';
     filteredStructuredData: GroupData[] = [];
+
+    private destroy$ = new Subject<void>();
 
     structureGroups = [
         { type: 'HOPITAL', label: '🏥 Hôpitaux', icon: 'pi pi-building', color: '#3b82f6', order: 1 },
@@ -99,10 +90,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         { type: 'LABORATOIRE', label: '🔬 Laboratoires', icon: 'pi pi-flask', color: '#8b5cf6', order: 4 },
         { type: 'AUTRE', label: '📋 Autres structures', icon: 'pi pi-building', color: '#6b7280', order: 5 }
     ];
-
-    // ✅ Cache
-    useCache = true;
-    private destroy$ = new Subject<void>();
 
     constructor(
         private uabService: UabService,
@@ -114,94 +101,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadDashboard();
-        this.initChartOptions();
-        this.refreshDashboard();
-
-        // Écoute les changements de route pour forcer un rafraîchissement
-        this.router.events.pipe(
-            filter(event => event instanceof NavigationEnd),
-            takeUntil(this.destroy$)
-        ).subscribe(() => {
-            // Ne recharge que si l'URL correspond au dashboard
-            if (this.router.url.includes('/uab/dashboard')) {
-                this.refreshDashboard();
-            }
-        });
-
-        // Écoute l'événement de paiement
-        this.dashboardRefreshService.refresh$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(() => this.refreshDashboard());
     }
 
 
-
-    // ✅ Version optimisée avec cache
     loadDashboard(): void {
         this.loading = true;
-        console.log('📥 Chargement dashboard, useCache =', this.useCache);
-        if (this.useCache) {
-            const cachedStats = this.cacheService.get('dashboard_stats');
-            if (cachedStats) {
-                console.log('📦 Utilisation du cache');
-                this.stats = cachedStats;
-                this.loading = false;
-                this.initChartData();
-                this.restructureData();
-                return;
-            }
-        }
-        console.log('🌐 Appel API');
-        this.uabService.getDashboard()
+        this.uabService.getDashboardPayes()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (data) => {
                     this.stats = data;
                     this.loading = false;
-                    this.initChartData();
                     this.restructureData();
-                    if (this.useCache) {
-                        this.cacheService.set('dashboard_stats', data, 5 * 60 * 1000);
-                    }
                 },
                 error: (error) => {
+                    console.error('Erreur chargement dashboard payés:', error);
                     this.loading = false;
-                    this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger le tableau de bord' });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erreur',
+                        detail: 'Impossible de charger le tableau de bord des paiements'
+                    });
                 }
             });
     }
 
-    refreshDashboard(): void {
-        this.cacheService.remove('dashboard_stats');
-        this.useCache = false;
-        this.loadDashboard();
-        this.messageService.add({
-            severity: 'success',
-            summary: 'Actualisation',
-            detail: 'Tableau de bord mis à jour'
-        });
-        setTimeout(() => { this.useCache = true; }, 2000);
-    }
     restructureData(): void {
-        if (!this.stats?.structures) { return; }
+        if (!this.stats?.structures) return;
 
         const result: GroupData[] = [];
 
         for (const groupConfig of this.structureGroups) {
-            // Filtrer les structures par type
             const structures = this.stats.structures.filter(
                 (s: StructureStat) => s.structureType === groupConfig.type
             );
+            if (structures.length === 0) continue;
 
-            if (structures.length === 0) { continue; }
-
-            // Map pour regrouper par année
             const yearsMap = new Map<number, YearData>();
 
             structures.forEach((structure: StructureStat) => {
                 if (structure.annees && structure.annees.length > 0) {
                     structure.annees.forEach((annee: AnneeStat) => {
-                        // Initialiser l'année si nécessaire
                         if (!yearsMap.has(annee.annee)) {
                             yearsMap.set(annee.annee, {
                                 annee: annee.annee,
@@ -210,15 +150,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
                                 mois: []
                             });
                         }
-
                         const yearData = yearsMap.get(annee.annee)!;
                         yearData.totalDossiers += annee.totalDossiers;
                         yearData.montantTotal += annee.montantTotal;
 
-                        // Traiter les mois
                         if (annee.mois && annee.mois.length > 0) {
                             annee.mois.forEach((mois: MoisStat) => {
-                                // Ne montrer que les mois avec des dossiers
                                 if (mois.totalDossiers > 0) {
                                     let monthData = yearData.mois.find(m => m.mois === mois.mois);
                                     if (!monthData) {
@@ -233,8 +170,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
                                     }
                                     monthData.totalDossiers += mois.totalDossiers;
                                     monthData.montantTotal += mois.montantTotal;
-
-                                    // Ajouter la structure avec ses données pour ce mois
                                     monthData.structures.push({
                                         id: structure.structureId,
                                         nom: structure.structureNom,
@@ -249,13 +184,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 }
             });
 
-            // Trier les années (décroissant) et les mois (croissant)
             const years = Array.from(yearsMap.values()).map(year => ({
                 ...year,
-                mois: year.mois.sort((a: MonthData, b: MonthData) => a.mois - b.mois)
+                mois: year.mois.sort((a, b) => a.mois - b.mois)
             })).sort((a, b) => b.annee - a.annee);
 
-            // Ajouter le groupe seulement s'il a des données
             if (years.length > 0) {
                 result.push({
                     type: groupConfig.type,
@@ -271,18 +204,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.structuredData = result.sort((a, b) => a.order - b.order);
         this.filteredStructuredData = [...this.structuredData];
-        console.log('Données restructurées:', JSON.stringify(this.structuredData, null, 2));
-    }
-
-    // Méthode utilitaire pour obtenir le libellé du type
-    private getTypeLabel(type: string): string {
-        const types: { [key: string]: string } = {
-            HOPITAL: 'Hôpital',
-            CLINIQUE: 'Clinique',
-            PHARMACIE: 'Pharmacie',
-            LABORATOIRE: 'Laboratoire'
-        };
-        return types[type] || type;
     }
 
     filterData(): void {
@@ -292,7 +213,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
 
         const searchLower = this.searchTerm.toLowerCase().trim();
-
         this.filteredStructuredData = this.structuredData
             .map(group => {
                 const filteredYears = group.years
@@ -308,7 +228,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
                             .filter(month => month.structures.length > 0)
                     }))
                     .filter(year => year.mois.length > 0);
-
                 return { ...group, years: filteredYears };
             })
             .filter(group => group.years.length > 0);
@@ -348,72 +267,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.expandedMonth = this.expandedMonth === month ? null : month;
     }
 
-    // dashboard.component.ts - Modifier cette méthode
-
     voirDossiersStructure(structure: StructureItem, moisData?: MonthData, annee?: number): void {
-        const queryParams: any = {
-            structureId: structure.id,
-            structureNom: structure.nom,
-            payeParUab: false   // ← pour le dashboard principal (non payés)
-        };
-        if (moisData && annee) {
-            queryParams.mois = moisData.mois;
-            queryParams.annee = annee;
-            queryParams.nomMois = moisData.nomMois;
+        if (structure && structure.id) {
+            const queryParams: any = {
+                structureId: structure.id,
+                structureNom: structure.nom,
+                payeParUab: true  // Permet de filtrer seulement les dossiers payés
+            };
+            if (moisData && annee) {
+                queryParams.mois = moisData.mois;
+                queryParams.annee = annee;
+                queryParams.nomMois = moisData.nomMois;
+            }
+            this.router.navigate(['/uab/dossiers'], { queryParams });
         }
-        this.router.navigate(['/uab/dossiers'], { queryParams });
-    }
-
-    voirDossiersEnAttente(): void {
-        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'COMPLET', payeParUab: false } });
-    }
-
-    voirDossiersValides(): void {
-        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'VALIDEE_UAB', payeParUab: false } });
-    }
-
-    voirDossiersRejetes(): void {
-        this.router.navigate(['/uab/dossiers'], { queryParams: { statut: 'REJETEE', payeParUab: false } });
-    }
-
-    // ========== MÉTHODES UTILITAIRES ==========
-
-    initChartOptions(): void {
-        this.chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'top' } },
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Nombre de dossiers' } },
-                x: { title: { display: true, text: 'Mois' } }
-            }
-        };
-    }
-
-    initChartData(): void {
-        if (!this.stats?.structures) { return; }
-
-        const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-        const datasets: any[] = [];
-
-        this.stats.structures.forEach((structure: StructureStat) => {
-            const data = new Array(12).fill(0);
-            if (structure.annees && structure.annees.length > 0) {
-                const moisData = structure.annees[0]?.mois || [];
-                moisData.forEach((m: MoisStat, index: number) => {
-                    data[index] = m.totalDossiers;
-                });
-            }
-            datasets.push({
-                label: structure.structureNom,
-                data,
-                borderWidth: 2,
-                tension: 0.4,
-                fill: false
-            });
-        });
-
-        this.chartData = { labels: mois, datasets };
     }
 
     getNomMois(mois: number): string {
@@ -424,34 +291,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return moisNoms[mois - 1] || '';
     }
 
+    getTypeLabel(type: string): string {
+        const types: { [key: string]: string } = {
+            HOPITAL: 'Hôpital',
+            CLINIQUE: 'Clinique',
+            PHARMACIE: 'Pharmacie',
+            LABORATOIRE: 'Laboratoire'
+        };
+        return types[type] || type;
+    }
+
     getTotalDossiers(): number {
-        if (this.useCache && this.cacheService.get('dashboard_stats')) {
-            // Si cache présent, utiliser la valeur calculée
-            return this.stats?.totalDossiers || 0;
-        }
         return this.stats?.totalDossiers || 0;
-    }
-
-    getEnAttente(): number {
-        return 0;
-    }
-
-    getValides(): number {
-        return this.stats?.totalDossiers || 0;
-    }
-
-    getRejetes(): number {
-        return 0;
     }
 
     getMontantTotal(): number {
-        if (this.useCache && this.cacheService.get('dashboard_stats')) {
-            return this.stats?.montantTotalPrisEnCharge || 0;
-        }
         return this.stats?.montantTotalPrisEnCharge || 0;
     }
 
-    // ✅ Nettoyage des subscriptions
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StructureDashboardService } from '../../services/StructureDashboard/structure-dashboard.service';
-import { Router } from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import { MessageService } from 'primeng/api';
 
 // ✅ Interfaces pour le typage
@@ -34,6 +34,7 @@ interface DossierItem {
     medicamentDosage?: string; // Dosage du médicament
     medicamentForme?: string;  // Forme du médicament
     quantite?: number;         // Quantité
+    payeParUab: boolean  ;   // par défaut : non payés
 }
 
 interface MonthData {
@@ -71,6 +72,8 @@ export class StructureDashboardComponent implements OnInit {
     // Tous les dossiers de la structure
     allDossiers: DossierItem[] = [];
 
+    payeParUab: boolean | null = null;
+
     // Données structurées par année et mois
     structuredData: YearData[] = [];
 
@@ -97,19 +100,27 @@ export class StructureDashboardComponent implements OnInit {
     constructor(
         private dashboardService: StructureDashboardService,
         private router: Router,
+        private route: ActivatedRoute,
         private messageService: MessageService
     ) {}
 
     ngOnInit(): void {
         this.loadDossiers();
+        this.route.queryParams.subscribe(params => {
+            if (params.payeParUab !== undefined) {
+                this.payeParUab = params.payeParUab === 'true';
+            } else {
+                this.payeParUab = null; // par défaut : tous les dossiers
+            }
+            this.loadDossiers();
+        });
     }
 
     loadDossiers(): void {
         this.loading = true;
-        // Appel à l'API pour récupérer tous les dossiers de la structure
-        this.dashboardService.getAllDossiersStructure().subscribe({
+        // ✅ Appeler le service avec le filtre (envoyer undefined si null)
+        this.dashboardService.getAllDossiersStructure(this.payeParUab ?? undefined).subscribe({
             next: (data) => {
-                console.log('=== DOSSIERS REÇUS ===', data);
                 this.allDossiers = data;
                 this.extractStructureInfo();
                 this.calculateStats();
@@ -118,12 +129,7 @@ export class StructureDashboardComponent implements OnInit {
             },
             error: (error) => {
                 this.loading = false;
-                console.error('Erreur:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Impossible de charger les dossiers'
-                });
+                this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger les dossiers' });
             }
         });
     }
@@ -155,6 +161,14 @@ export class StructureDashboardComponent implements OnInit {
                 }
             }
         }
+    }
+
+    voirDossiersNonPayes(): void {
+        this.router.navigate(['/structure/dashboard'], { queryParams: { payeParUab: false } });
+    }
+
+    voirDossiersPayes(): void {
+        this.router.navigate(['/structure/dashboard'], { queryParams: { payeParUab: true } });
     }
 
     calculateStats(): void {

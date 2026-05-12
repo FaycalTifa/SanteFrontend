@@ -1,0 +1,68 @@
+<div class="uab-container">
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="header-title">
+                <i class="pi pi-credit-card" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+                <div>
+                    <h2>Dossiers remboursés par l'UAB</h2>
+                    <p>Liste des consultations, médicaments et examens déjà payés par l'UAB</p>
+                </div>
+            </div>
+            <button pButton icon="pi pi-refresh" label="Rafraîchir" class="p-button-outlined"
+                    (click)="refresh()"></button>
+        </div>
+
+        <p-table
+                [value]="dossiers"
+                [loading]="loading"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5,10,20,50]"
+                responsiveLayout="scroll">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Date</th>
+                    <th>Patient</th>
+                    <th>N° Police</th>
+                    <th>Type</th>
+                    <th>Structure</th>
+                    <th>Montant UAB</th>
+                    <th>Statut</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-dossier>
+                <tr>
+                    <td>{{ dossier.dateCreation | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ dossier.patientPrenom }} {{ dossier.patientNom }}</td>
+                    <td>{{ dossier.patientPolice }}</td>
+                    <td>
+                        <span class="type-badge">
+                            <i [class]="getTypeIcon(dossier.type)"></i>
+                            {{ getTypeLabel(dossier.type) }}
+                        </span>
+                    </td>
+                    <td>{{ dossier.structureNom || '-' }}</td>
+                    <td class="montant-cell">{{ dossier.montantPrisEnCharge | number }} FCFA</td>
+                    <td>
+                        <span class="status-success">
+                            <i class="pi pi-check-circle"></i> Payé
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="empty-message">
+                        <i class="pi pi-inbox"></i>
+                        <p>Aucun dossier payé trouvé</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

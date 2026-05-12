@@ -1,0 +1,69 @@
+<div class="admin-validations-container">
+    <p-toast position="top-right"></p-toast>
+
+    <div class="card">
+        <h2><i class="pi pi-shield"></i> Validations UAB</h2>
+        <button pButton label="Rafraîchir" icon="pi pi-refresh" class="p-button-outlined p-button-sm"
+                (click)="refreshAll()"></button>
+        <p-tabView>
+            <!-- Onglet Médicaments -->
+            <p-tabPanel header="💊 Médicaments en attente">
+                <div *ngIf="loadingMedocs" class="loading">
+                    <p-progressSpinner></p-progressSpinner>
+                    <p>Chargement des médicaments...</p>
+                </div>
+
+                <div *ngIf="!loadingMedocs && medicaments.length === 0" class="empty">
+                    <i class="pi pi-check-circle"></i>
+                    <p>Aucun médicament en attente de validation</p>
+                </div>
+
+                <div class="pending-list" *ngIf="medicaments.length > 0">
+                    <div *ngFor="let m of medicaments" class="pending-item">
+                        <div class="item-info">
+                            <strong>{{ m.nom }}</strong>
+                            <span *ngIf="m.dosage"> - {{ m.dosage }}</span>
+                            <span *ngIf="m.forme"> ({{ m.forme }})</span>
+                            <span *ngIf="m.code" class="code-badge">Code: {{ m.code }}</span>
+                        </div>
+                        <div class="item-actions">
+                            <button pButton label="✅ Autoriser" icon="pi pi-check" class="p-button-success p-button-sm"
+                                    (click)="validerMedicament(m.id, 'NON')"></button>
+                            <button pButton label="🚫 Exclure" icon="pi pi-times" class="p-button-danger p-button-sm"
+                                    (click)="validerMedicament(m.id, 'OUI')"></button>
+                        </div>
+                    </div>
+                </div>
+            </p-tabPanel>
+
+            <!-- Onglet Examens -->
+            <p-tabPanel header="🔬 Examens en attente">
+                <div *ngIf="loadingExamens" class="loading">
+                    <p-progressSpinner></p-progressSpinner>
+                    <p>Chargement des examens...</p>
+                </div>
+
+                <div *ngIf="!loadingExamens && examens.length === 0" class="empty">
+                    <i class="pi pi-check-circle"></i>
+                    <p>Aucun examen en attente de validation</p>
+                </div>
+
+                <div class="pending-list" *ngIf="examens.length > 0">
+                    <div *ngFor="let e of examens" class="pending-item">
+                        <div class="item-info">
+                            <strong>{{ e.nom }}</strong>
+                            <span *ngIf="e.code"> - Code: {{ e.code }}</span>
+                            <span *ngIf="e.categorie" class="categorie-badge">Catégorie: {{ e.categorie }}</span>
+                        </div>
+                        <div class="item-actions">
+                            <button pButton label="🔓 Sans autorisation" icon="pi pi-lock-open" class="p-button-success p-button-sm"
+                                    (click)="validerExamen(e.id, 'NON')"></button>
+                            <button pButton label="🛡️ Autorisation requise" icon="pi pi-shield" class="p-button-warning p-button-sm"
+                                    (click)="validerExamen(e.id, 'OUI')"></button>
+                        </div>
+                    </div>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>

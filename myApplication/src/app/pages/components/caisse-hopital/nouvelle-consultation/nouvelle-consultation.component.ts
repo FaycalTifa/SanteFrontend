@@ -445,7 +445,7 @@ export class NouvelleConsultationComponent implements OnInit {
 
     calculerMontants(): void {
         const total = this.calculerTotal();
-        const montantPlafond = this.consultationForm.get('montantPlafond')?.value || total;
+        const montantPlafond = this.consultationForm.get('montantPlafond')?.value || 0;
         const taux = this.tauxSelectionne?.tauxPourcentage || 0;
 
         console.log('=== CALCUL REMBOURSEMENT ===');
@@ -453,16 +453,34 @@ export class NouvelleConsultationComponent implements OnInit {
         console.log('Montant plafond:', montantPlafond);
         console.log('Taux:', taux);
 
-        const montantRembourseUAB = Math.min(total, montantPlafond) * (taux / 100);
-        const ticketModerateur = Math.min(total, montantPlafond) - montantRembourseUAB;
-        const surplus = total > montantPlafond ? total - montantPlafond : 0;
+        let montantRembourseUAB = 0;
+        let surplus = 0;
+
+        if (montantPlafond > 0 && total > montantPlafond) {
+            // Cas dépassement : UAB paie le plafond entier, patient paie le reste
+            montantRembourseUAB = montantPlafond;
+            surplus = total - montantPlafond;
+            console.log('⚠️ Dépassement : UAB prend 100% du plafond', montantRembourseUAB);
+        } else if (montantPlafond > 0 && total <= montantPlafond) {
+            // Cas dans le plafond : application du taux
+            montantRembourseUAB = total * (taux / 100);
+            surplus = 0;
+            console.log('✅ Dans le plafond : application du taux', montantRembourseUAB);
+        } else {
+            // Pas de plafond défini
+            montantRembourseUAB = total * (taux / 100);
+            surplus = 0;
+        }
+
+        const ticketModerateur = total - montantRembourseUAB;
 
         this.montantPrisEnCharge = montantRembourseUAB;
-        this.montantTicketModerateur = ticketModerateur + surplus;
+        this.montantTicketModerateur = ticketModerateur;
         this.montantSurplus = surplus;
 
         console.log('Remboursement UAB:', this.montantPrisEnCharge);
-        console.log('Ticket modérateur + surplus:', this.montantTicketModerateur);
+        console.log('Ticket modérateur total:', this.montantTicketModerateur);
+        console.log('Dont surplus (dépassement non couvert):', this.montantSurplus);
     }
 
     // ========== FORMULAIRE ==========

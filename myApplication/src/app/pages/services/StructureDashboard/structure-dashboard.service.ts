@@ -27,8 +27,12 @@ export class StructureDashboardService {
     /**
      * Récupérer tous les dossiers de la structure
      */
-    getAllDossiersStructure(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.baseUrl}/structure/dossiers`, { headers: this.getHeaders() });
+    getAllDossiersStructure(payeParUab?: boolean): Observable<any[]> {
+        let url = `${this.baseUrl}/structure/dossiers`;
+        if (payeParUab !== undefined) {
+            url += `?payeParUab=${payeParUab}`;
+        }
+        return this.http.get<any[]>(url, { headers: this.getHeaders() });
     }
 
     /**

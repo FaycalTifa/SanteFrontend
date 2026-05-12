@@ -36,11 +36,13 @@ export class DemandesAttenteComponent implements OnInit {
     /**
      * Rechercher TOUS les examens ayant une demande de validation UAB
      */
+    // pages/components/medecin/demandes-attente/demandes-attente.component.ts
+
     rechercher(): void {
         const hasNumPolice = this.searchNumPolice?.trim() !== '';
         const hasCodeInte = this.searchCodeInte?.trim() !== '';
         const hasCodeRisq = this.searchCodeRisq?.trim() !== '';
-        const codeMembVal = this.searchCodeMemb?.trim() || '';  // ✅ Récupérer codeMemb
+        const codeMembVal = this.searchCodeMemb?.trim() || '';
 
         console.log('=== RECHERCHE DEMANDES VALIDATION ===');
         console.log('numPolice:', this.searchNumPolice);
@@ -48,7 +50,6 @@ export class DemandesAttenteComponent implements OnInit {
         console.log('codeRisq:', this.searchCodeRisq);
         console.log('codeMemb:', codeMembVal);
 
-        // ✅ Vérifier les champs obligatoires (codeMemb est optionnel)
         if (!hasNumPolice || !hasCodeInte || !hasCodeRisq) {
             this.messageService.add({
                 severity: 'warn',
@@ -61,18 +62,24 @@ export class DemandesAttenteComponent implements OnInit {
         this.loading = true;
         this.rechercheEnCours = true;
 
-        // ✅ Passer codeMemb (optionnel)
         this.medecinService.getDemandesValidation(
             this.searchNumPolice,
             this.searchCodeInte,
             this.searchCodeRisq,
-            codeMembVal || undefined  // ✅ Ajouter codeMemb
+            codeMembVal || undefined
         ).subscribe({
             next: (data) => {
                 console.log('=== DEMANDES DE VALIDATION REÇUES ===', data);
 
-                this.demandes = data;
-                this.filteredDemandes = data;
+                // ✅ TRIER DU PLUS RÉCENT AU PLUS VIEUX (datePrescription décroissante)
+                const sortedData = [...data].sort((a, b) => {
+                    const dateA = new Date(a.datePrescription).getTime();
+                    const dateB = new Date(b.datePrescription).getTime();
+                    return dateB - dateA; // Plus récent d'abord
+                });
+
+                this.demandes = sortedData;
+                this.filteredDemandes = sortedData;
                 this.loading = false;
                 this.rechercheEnCours = false;
 

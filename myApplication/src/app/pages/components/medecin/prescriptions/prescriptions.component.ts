@@ -224,7 +224,7 @@ export class PrescriptionsComponent implements OnInit, OnDestroy {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Médicament exclu',
-                detail: `Le médicament "${medicament.nom}" est exclu et ne peut pas être prescrit.`,
+                detail: `Le médicament "${medicament.nom}" est exclu de la prise en charge par UAB ASSURANCES.`,
                 life: 5000
             });
             // Réinitialiser le champ

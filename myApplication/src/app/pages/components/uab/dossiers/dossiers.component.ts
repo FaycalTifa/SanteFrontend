@@ -48,7 +48,7 @@ export class DossiersComponent implements OnInit, OnDestroy {
     // Dialog validation rapide
     displayValidationDialog = false;
     selectedDossier: any = null;
-
+    payeParUab: boolean | null = null;   // ✅ AJOUTER
     // ✅ PAGINATION
     totalRecords = 0;
     currentPage = 0;
@@ -76,7 +76,15 @@ export class DossiersComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadStructures();
-        this.loadDossiers();
+        this.route.queryParams.subscribe(params => {
+            if (params.structureId) this.selectedStructureId = +params.structureId;
+            if (params.statut) this.selectedStatut = params.statut;
+            if (params.mois) this.selectedMois = +params.mois;
+            if (params.annee) this.selectedAnnee = +params.annee;
+            if (params.nomMois) this.selectedNomMois = params.nomMois;
+            if (params.payeParUab !== undefined) this.payeParUab = params.payeParUab === 'true';
+            this.loadDossiers();
+        });
         this.setupDebounceSearch();
 
         // Récupérer les paramètres d'URL si présents
@@ -181,42 +189,34 @@ export class DossiersComponent implements OnInit, OnDestroy {
     loadDossiers(): void {
         this.loading = true;
 
-        // Construire les filtres
-        const filters: any = {};
-        if (this.selectedStatut) { filters.statut = this.selectedStatut; }
-        if (this.searchPolice) { filters.numeroPolice = this.searchPolice; }
-        if (this.selectedStructureId) { filters.structureId = this.selectedStructureId; }
-
-        // Appel API paginé
-        this.uabService.getAllDossiersPaginated(this.currentPage, this.pageSize, filters.statut, filters.numeroPolice)
-            .pipe(takeUntil(this.destroy$))
+        this.uabService.getAllDossiersPaginated(
+            this.currentPage,
+            this.pageSize,
+            this.selectedStatut,
+            this.searchPolice,
+            this.payeParUab !== null ? this.payeParUab : undefined
+        ).pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
                     this.dossiers = response.content;
-
-                    // ✅ APPLIQUER LE FILTRE MOIS IMMÉDIATEMENT
                     let filtered = [...this.dossiers];
 
-                    // ✅ Filtre par mois si présent
+                    // Filtre par mois
                     if (this.selectedMois && this.selectedAnnee) {
                         filtered = filtered.filter(d => {
                             const date = new Date(d.dateCreation || d.dateConsultation);
-                            const dossierMois = date.getMonth() + 1;
-                            const dossierAnnee = date.getFullYear();
-                            return dossierMois === this.selectedMois && dossierAnnee === this.selectedAnnee;
+                            return (date.getMonth() + 1) === this.selectedMois && date.getFullYear() === this.selectedAnnee;
                         });
-                        console.log(`✅ Filtre mois appliqué: ${this.selectedNomMois} ${this.selectedAnnee}, résultant: ${filtered.length} dossiers`);
                     }
-
-                    // ✅ Appliquer les autres filtres
+                    // Filtre par type de dossier
                     if (this.selectedTypeDossier) {
                         filtered = filtered.filter(d => d.type === this.selectedTypeDossier);
                     }
-
+                    // Filtre par structure
                     if (this.selectedStructureId) {
                         filtered = filtered.filter(d => d.structureId === this.selectedStructureId);
                     }
-
+                    // Filtre par statut (complémentaire)
                     if (this.selectedStatut) {
                         filtered = filtered.filter(d => this.getStatusValue(d) === this.selectedStatut);
                     }
@@ -224,7 +224,6 @@ export class DossiersComponent implements OnInit, OnDestroy {
                     this.filteredDossiers = filtered;
                     this.totalRecords = filtered.length;
                     this.loading = false;
-                    console.log(`Dossiers chargés: page ${this.currentPage}, total après filtres: ${this.totalRecords}`);
                 },
                 error: (error) => {
                     console.error('Erreur chargement paginé:', error);

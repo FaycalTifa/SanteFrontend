@@ -137,6 +137,9 @@ import { PlafonnementComponent } from './pages/components/uab/plafonnement/plafo
 import { ImportMedicamentsComponent } from './pages/components/uab/import-medicaments/import-medicaments.component';
 import { ValidationExamensComponent } from './pages/components/uab/validation-examens/validation-examens.component';
 import { DemandesAttenteComponent } from './pages/components/medecin/demandes-attente/demandes-attente.component';
+import { AdminValidationsComponent } from './pages/components/uab/admin-validations/admin-validations.component';
+import { DossiersPayesComponent } from './pages/components/uab/dossiers-payes/dossiers-payes.component';
+import { DashboardPayesComponent } from './pages/components/uab/dashboard-payes/dashboard-payes.component';
 
 FullCalendarModule.registerPlugins([
     dayGridPlugin,
@@ -269,6 +272,9 @@ FullCalendarModule.registerPlugins([
         ImportMedicamentsComponent,
         ValidationExamensComponent,
         DemandesAttenteComponent,
+        AdminValidationsComponent,
+        DossiersPayesComponent,
+        DashboardPayesComponent,
     ],
     providers: [
         {provide: LocationStrategy, useClass: HashLocationStrategy},

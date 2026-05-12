@@ -11,6 +11,19 @@
                 <p>{{ structureType }} - Tous les dossiers envoyés à l'UAB</p>
             </div>
         </div>
+
+        <div class="toggle-buttons">
+            <button pButton
+                    label="📋 Dossiers en attente de paiement"
+                    class="p-button-outlined"
+                    [class.p-button-primary]="payeParUab === false"
+                    (click)="voirDossiersNonPayes()"></button>
+            <button pButton
+                    label="✅ Dossiers déjà payés par l'UAB"
+                    class="p-button-outlined"
+                    [class.p-button-success]="payeParUab === true"
+                    (click)="voirDossiersPayes()"></button>
+        </div>
     </div>
 
     <!-- Cartes statistiques avec montants -->

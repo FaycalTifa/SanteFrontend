@@ -1,18 +1,10 @@
-<!-- pages/components/uab/dashboard/dashboard.component.html -->
-<!-- pages/components/uab/dashboard/dashboard.component.html -->
 <div class="uab-container">
     <p-toast position="top-right"></p-toast>
 
     <div class="dashboard-header">
-        <h1>Tableau de bord UAB</h1>
-        <p>Gestion des dossiers de tiers payant</p>
+        <h1>Tableau de bord des dossiers payés par l'UAB</h1>
+        <p>Consultations, médicaments et examens déjà remboursés aux structures</p>
     </div>
-    <button pButton
-            icon="pi pi-refresh"
-            label="Rafraîchir"
-            class="p-button-outlined p-button-sm"
-            (click)="refreshDashboard()"
-            [loading]="loading"></button>
 
     <div *ngIf="loading" class="loading-container">
         <p-progressSpinner></p-progressSpinner>
@@ -21,39 +13,18 @@
     <div *ngIf="!loading && stats" class="dashboard-content">
         <!-- Cartes statistiques générales -->
         <div class="stats-grid">
-            <div class="stat-card" (click)="voirDossiersStructure(null)">
+            <div class="stat-card">
                 <div class="stat-icon blue"><i class="pi pi-folder-open"></i></div>
                 <div class="stat-info">
                     <div class="stat-value">{{ getTotalDossiers() | number }}</div>
-                    <div class="stat-label">Total dossiers</div>
-                </div>
-            </div>
-            <div class="stat-card warning" (click)="voirDossiersEnAttente()">
-                <div class="stat-icon orange"><i class="pi pi-clock"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ getEnAttente() | number }}</div>
-                    <div class="stat-label">En attente</div>
-                </div>
-            </div>
-            <div class="stat-card success" (click)="voirDossiersValides()">
-                <div class="stat-icon green"><i class="pi pi-check-circle"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ getValides() | number }}</div>
-                    <div class="stat-label">Validés</div>
-                </div>
-            </div>
-            <div class="stat-card danger" (click)="voirDossiersRejetes()">
-                <div class="stat-icon red"><i class="pi pi-times-circle"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ getRejetes() | number }}</div>
-                    <div class="stat-label">Rejetés</div>
+                    <div class="stat-label">Total dossiers payés</div>
                 </div>
             </div>
             <div class="stat-card info">
                 <div class="stat-icon purple"><i class="pi pi-money-bill"></i></div>
                 <div class="stat-info">
                     <div class="stat-value">{{ getMontantTotal() | number }} FCFA</div>
-                    <div class="stat-label">Montant total pris en charge</div>
+                    <div class="stat-label">Montant total remboursé</div>
                 </div>
             </div>
         </div>
@@ -77,29 +48,15 @@
             </div>
         </div>
 
-        <!-- Graphique d'évolution mensuelle -->
-<!--
-        <div class="card chart-card">
-            <div class="card-header">
-                <h3>Évolution mensuelle des dossiers</h3>
-            </div>
-            <div class="chart-container">
-                <canvas *ngIf="chartData" baseChart [data]="chartData"
-                        [options]="chartOptions" type="line"></canvas>
-            </div>
-        </div>
--->
-
-        <!-- Structure hiérarchique : Type → Année → Mois → Structures -->
+        <!-- Structure hiérarchique -->
         <div class="card hierarchy-card">
             <div class="card-header">
-                <h3>Dossiers par structure</h3>
+                <h3>Dossiers payés par structure</h3>
                 <div class="header-actions">
                     <span class="total-badge">Total: {{ getTotalStructures() }} structures</span>
                 </div>
             </div>
 
-            <!-- Message aucun résultat -->
             <div *ngIf="filteredStructuredData.length === 0" class="no-results">
                 <i class="pi pi-inbox"></i>
                 <p>Aucune structure trouvée pour "{{ searchTerm }}"</p>
@@ -107,7 +64,6 @@
                         class="p-button-outlined" (click)="clearSearch()"></button>
             </div>
 
-            <!-- Niveau 1: Type de structure (Hôpital, Pharmacie, Laboratoire) -->
             <div *ngFor="let group of filteredStructuredData" class="type-section">
                 <div class="type-header" [style.border-left-color]="group.color"
                      (click)="toggleType(group.type)">
@@ -131,7 +87,6 @@
                     <i class="pi" [ngClass]="expandedType === group.type ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                 </div>
 
-                <!-- Niveau 2: Années -->
                 <div class="type-content" *ngIf="expandedType === group.type">
                     <div *ngFor="let year of group.years" class="year-section">
                         <div class="year-header" (click)="toggleYear(year.annee)">
@@ -145,7 +100,6 @@
                             <i class="pi" [ngClass]="expandedYear === year.annee ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                         </div>
 
-                        <!-- Niveau 3: Mois -->
                         <div class="year-content" *ngIf="expandedYear === year.annee">
                             <div class="months-grid">
                                 <div *ngFor="let month of year.mois" class="month-card">
@@ -160,10 +114,8 @@
                                         <i class="pi" [ngClass]="expandedMonth === month.mois ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                                     </div>
 
-                                    <!-- Niveau 4: Liste des structures du mois -->
                                     <div class="month-content" *ngIf="expandedMonth === month.mois">
                                         <div class="structures-list">
-                                            <!-- dashboard.component.html - Modifier la ligne de la structure -->
                                             <div *ngFor="let structure of month.structures"
                                                  class="structure-item"
                                                  (click)="voirDossiersStructure(structure, month, year.annee)">
@@ -192,13 +144,5 @@
                 </div>
             </div>
         </div>
-    </div>
-</div><!-- examens-attente.component.html - Ajouter au début -->
-<div class="laboratoire-container">
-    <!-- ✅ AJOUTER CETTE LIGNE POUR AFFICHER LES MESSAGES -->
-    <p-toast position="top-right"></p-toast>
-
-    <div class="card">
-        <!-- reste du template -->
     </div>
 </div>

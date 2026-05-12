@@ -29,10 +29,16 @@ export class CacheService {
     console.log('🗑️ Cache cleared');
   }
 
-  remove(key: string): void {
+  removeSS(key: string): void {
     this.cache.delete(key);
     console.log(`🗑️ Cache removed: ${key}`);
   }
+
+    remove(key: string): void {
+        console.log(`🗑️ Cache remove: ${key}`);
+        localStorage.removeItem(key);
+        // ou sessionStorage selon votre implémentation
+    }
 
   has(key: string): boolean {
     const cached = this.cache.get(key);

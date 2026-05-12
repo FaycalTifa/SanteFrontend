@@ -29,6 +29,9 @@ import { PlafonnementComponent } from "./pages/components/uab/plafonnement/plafo
 import { ImportMedicamentsComponent } from "./pages/components/uab/import-medicaments/import-medicaments.component";
 import { DemandesAttenteComponent } from "./pages/components/medecin/demandes-attente/demandes-attente.component";
 import { ValidationExamensComponent } from "./pages/components/uab/validation-examens/validation-examens.component";
+import {AdminValidationsComponent} from "./pages/components/uab/admin-validations/admin-validations.component";
+import {DossiersPayesComponent} from "./pages/components/uab/dossiers-payes/dossiers-payes.component";
+import {DashboardPayesComponent} from "./pages/components/uab/dashboard-payes/dashboard-payes.component";
 
 // app-routing.module.ts - Version corrigée
 
@@ -159,6 +162,12 @@ import { ValidationExamensComponent } from "./pages/components/uab/validation-ex
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },
+                {
+                        path: 'uab/admin-vaalidation-prescription',
+                        component: AdminValidationsComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
                     // ✅ IMPORTANT: Les routes spécifiques DOIVENT être avant la route générique :id
                     {
                         path: 'uab/validation/examen',
@@ -169,6 +178,18 @@ import { ValidationExamensComponent } from "./pages/components/uab/validation-ex
                     {
                         path: 'uab/validation/:id',
                         component: ValidationComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
+                   {
+                        path: 'uab/dossiers/payes',
+                        component: DossiersPayesComponent,
+                        canActivate: [GuardsGuard, RoleGuard],
+                        data: { roles: ['UAB_ADMIN'] }
+                    },
+                    {
+                        path: 'uab/dashboard/payes',
+                        component: DashboardPayesComponent,
                         canActivate: [GuardsGuard, RoleGuard],
                         data: { roles: ['UAB_ADMIN'] }
                     },

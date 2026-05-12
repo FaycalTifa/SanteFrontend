@@ -68,9 +68,12 @@ export class AppMenuComponent implements OnInit {
                 items: [
                     { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
                     { label: 'Gestion des dossiers', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers'] },
+                    { label: 'Dashboard payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dashboard/payes'] },
+                    { label: 'Dossiers payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers/payes'] },
                     { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Validation examen', icon: 'pi pi-building', routerLink: ['/uab/validation/examen'] },
                     { label: 'Import Medicament', icon: 'pi pi-upload', routerLink: ['/uab/parametres/import-medicaments'] },
+                    { label: 'Nouvelle Prescription', icon: 'pi pi-upload', routerLink: ['/uab/admin-vaalidation-prescription'] },
                     { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: ['/uab/parametres/utilisateurs'] },
                     { label: 'Taux Couverture', icon: 'pi pi-percentage', routerLink: ['/uab/parametres/taux-couverture'] },
                     { label: 'Structures', icon: 'pi pi-building', routerLink: ['/uab/parametres/structures'] },

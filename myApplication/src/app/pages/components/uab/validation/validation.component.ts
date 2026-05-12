@@ -5,6 +5,9 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { StructureDashboardService } from '../../../services/StructureDashboard/structure-dashboard.service';
 import { ConsultationService } from '../../../services/consultation/consultation.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import {UabService} from "../../../services/uab/uab.service";
+import {CacheService} from "../../../services/cache/cache.service";
+import {DashboardRefreshService} from "../../../services/DashboardRefresh/dashboard-refresh.service";
 
 @Component({
     selector: 'app-validation',
@@ -26,9 +29,11 @@ export class ValidationComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private cacheService: CacheService,
         private structureService: StructureDashboardService,
         private consultationService: ConsultationService,
-        private authService: AuthService,
+        private uabService: UabService,
+        private dashboardRefreshService: DashboardRefreshService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
     ) {
@@ -236,6 +241,35 @@ export class ValidationComponent implements OnInit {
             },
             reject: () => {
                 console.log('❌ Validation annulée');
+            }
+        });
+    }
+
+    payer(): void {
+        this.confirmationService.confirm({
+            message: `Confirmez-vous le paiement UAB de ${this.getMontantTotal().toLocaleString()} FCFA ?`,
+            accept: () => {
+                this.loading = true;
+                this.uabService.payerDossier(this.dossierId, this.dossierType).subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Paiement effectué',
+                            detail: 'Dossier marqué comme payé par l\'UAB'
+                        });
+                        // ✅ Notification au dashboard
+                        this.dashboardRefreshService.notifyRefresh();
+                        this.router.navigate(['/uab/dossiers'], { queryParams: { payeParUab: false } });
+                    },
+                    error: (error) => {
+                        this.loading = false;
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Erreur',
+                            detail: error.error?.message || 'Échec du paiement'
+                        });
+                    }
+                });
             }
         });
     }
