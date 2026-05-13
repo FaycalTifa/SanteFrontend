@@ -328,7 +328,7 @@
                         class="p-button-danger btn-reject"
                         (click)="rejeter()">
                 </button>
-                <button *ngIf="dossierType !== 'CONSULTATION' || dossier.validationUab"
+                <button *ngIf="dossierType !== 'CONSULTATION' || dossier.validationUab && isUABAdmin"
                         pButton
                         icon="pi pi-money-bill"
                         label="Payer le dossier"
