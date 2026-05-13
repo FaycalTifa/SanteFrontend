@@ -15,6 +15,7 @@ export interface LoginResponse {
     rolesLabels: string[];   // ✅ Ajouté
     structureId: number;
     structureNom: string;
+
 }
 
 

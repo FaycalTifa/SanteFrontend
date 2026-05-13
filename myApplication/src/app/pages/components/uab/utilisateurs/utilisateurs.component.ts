@@ -30,6 +30,8 @@ export class UtilisateursComponent implements OnInit {
         { label: 'Biologiste', value: 'BIOLOGISTE' },
         { label: 'Caissier Laboratoire', value: 'CAISSIER_LABORATOIRE' },
         { label: 'Admin Structure', value: 'ADMIN_STRUCTURE' },
+        { label: 'Medecin Conseil', value: 'MEDECIN_CONSEIL' },
+        { label: 'Operateur Saisie', value: 'UAB_OPERATEUR' },
         { label: 'Admin UAB', value: 'UAB_ADMIN' }
     ];
 

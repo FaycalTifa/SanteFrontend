@@ -9,12 +9,14 @@ import {AuthService} from '../../services/auth/auth.service';
 export class GuardsGuard implements CanActivate {
     constructor(private authService: AuthService, private router: Router) {}
 
+    // guards.guard.ts
     canActivate(): boolean {
         const token = this.authService.getToken();
-        if (token) {
+        if (token && !this.authService.isTokenExpired()) {
             return true;
         }
-        this.router.navigate(['/auth/login']);
+        this.authService.logout(); // Nettoie le stockage
+        this.router.navigate(['/login']);
         return false;
     }
 }

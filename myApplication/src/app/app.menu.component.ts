@@ -34,8 +34,73 @@ export class AppMenuComponent implements OnInit {
 
         const hasRole = (role: string) => roles.includes(role);
 
-        // ✅ Initialiser le menu vide
         const menuItems: any[] = [];
+
+        // ==================== SECTION POUR TOUS LES UTILISATEURS ====================
+        // ✅ Plafonnement accessible à TOUS
+        const commonItems: any[] = [];
+
+        if (hasRole('UAB_ADMIN') || hasRole('OPERATEUR_UAB') || hasRole('MEDECIN_CONSEIL') ||
+            hasRole('ADMIN_STRUCTURE') || hasRole('MEDECIN') || hasRole('PHARMACIEN') ||
+            hasRole('BIOLOGISTE') || hasRole('CAISSIER_HOPITAL') || hasRole('CAISSIER_PHARMACIE') ||
+            hasRole('CAISSIER_LABORATOIRE')) {
+            commonItems.push({ label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] });
+        }
+
+        if (commonItems.length > 0) {
+            menuItems.push({
+                label: 'COMMUN',
+                icon: 'pi pi-fw pi-globe',
+                items: commonItems
+            });
+        }
+
+        // ==================== OPERATEUR_UAB ====================
+        if (hasRole('OPERATEUR_UAB')) {
+            menuItems.push({
+                label: 'UAB - OPÉRATEUR',
+                icon: 'pi pi-fw pi-user',
+                items: [
+                    { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
+                    { label: 'Dashboard payés', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard/payes'] },
+                    { label: 'Dossiers payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers/payes'] },
+                    { label: 'Gestion des dossiers', icon: 'pi pi-folder', routerLink: ['/uab/dossiers'] },
+                    { label: 'Validation dossier', icon: 'pi pi-check-circle', routerLink: ['/uab/validation'] }
+                ]
+            });
+        }
+
+        // ==================== MEDECIN_CONSEIL ====================
+        if (hasRole('MEDECIN_CONSEIL')) {
+            menuItems.push({
+                label: 'MÉDECIN CONSEIL',
+                icon: 'pi pi-fw pi-user-md',
+                items: [
+                    { label: 'Validation des examens', icon: 'pi pi-shield', routerLink: ['/uab/validation/examen'] },
+                    { label: 'Nouvelle Prescription', icon: 'pi pi-shield', routerLink: ['/uab/admin-vaalidation-prescription'] }
+                ]
+            });
+        }
+
+        // ==================== UAB_ADMIN ====================
+        if (hasRole('UAB_ADMIN')) {
+            menuItems.push({
+                label: 'UAB - ADMINISTRATION',
+                icon: 'pi pi-fw pi-shield',
+                items: [
+                    { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
+                    { label: 'Gestion des dossiers', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers'] },
+                    { label: 'Dashboard payés', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard/payes'] },
+                    { label: 'Dossiers payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers/payes'] },
+                    { label: 'Validation examen', icon: 'pi pi-building', routerLink: ['/uab/validation/examen'] },
+                    { label: 'Import Medicament', icon: 'pi pi-upload', routerLink: ['/uab/parametres/import-medicaments'] },
+                    { label: 'Nouvelle Prescription', icon: 'pi pi-upload', routerLink: ['/uab/admin-vaalidation-prescription'] },
+                    { label: 'Structures', icon: 'pi pi-building', routerLink: ['/uab/parametres/structures'] },
+                    { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: ['/uab/parametres/utilisateurs'] },
+                    { label: 'Taux Couverture', icon: 'pi pi-percentage', routerLink: ['/uab/parametres/taux-couverture'] }
+                ]
+            });
+        }
 
         // ==================== ADMIN_STRUCTURE ====================
         if (hasRole('ADMIN_STRUCTURE')) {
@@ -44,39 +109,6 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-chart-line',
                 items: [
                     { label: 'Dashboard structure', icon: 'pi pi-chart-line', routerLink: ['/structure/dashboard'] }
-                ]
-            });
-
-            // ✅ Ajouter Plafonnements pour ADMIN_STRUCTURE
-            menuItems.push({
-                label: 'PARAMÈTRES',
-                icon: 'pi pi-fw pi-cog',
-                items: [
-                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] }
-                ]
-            });
-        }
-
-        // ==================== UAB_ADMIN (ADMIN) ====================
-        // app.menu.component.ts - Corriger la route pour Validation examen
-
-// ==================== UAB_ADMIN (ADMIN) ====================
-        if (hasRole('UAB_ADMIN')) {
-            menuItems.push({
-                label: 'ADMINISTRATION',
-                icon: 'pi pi-fw pi-shield',
-                items: [
-                    { label: 'Dashboard', icon: 'pi pi-chart-line', routerLink: ['/uab/dashboard'] },
-                    { label: 'Gestion des dossiers', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers'] },
-                    { label: 'Dashboard payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dashboard/payes'] },
-                    { label: 'Dossiers payés', icon: 'pi pi-folder-open', routerLink: ['/uab/dossiers/payes'] },
-                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
-                    { label: 'Validation examen', icon: 'pi pi-building', routerLink: ['/uab/validation/examen'] },
-                    { label: 'Import Medicament', icon: 'pi pi-upload', routerLink: ['/uab/parametres/import-medicaments'] },
-                    { label: 'Nouvelle Prescription', icon: 'pi pi-upload', routerLink: ['/uab/admin-vaalidation-prescription'] },
-                    { label: 'Utilisateurs', icon: 'pi pi-users', routerLink: ['/uab/parametres/utilisateurs'] },
-                    { label: 'Taux Couverture', icon: 'pi pi-percentage', routerLink: ['/uab/parametres/taux-couverture'] },
-                    { label: 'Structures', icon: 'pi pi-building', routerLink: ['/uab/parametres/structures'] },
                 ]
             });
         }
@@ -100,7 +132,6 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-money-bill',
                 items: [
                     { label: 'Nouvelle consultation', icon: 'pi pi-plus', routerLink: ['/caisse-hopital'] },
-                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/caisse-hopital/historique'] },
                 ]
             });
@@ -137,7 +168,6 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-flask',
                 items: [
                     { label: 'Examens en attente', icon: 'pi pi-clock', routerLink: ['/laboratoire/examens-attente'] },
-                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/laboratoire/historique'] },
                 ]
             });
@@ -150,7 +180,6 @@ export class AppMenuComponent implements OnInit {
                 icon: 'pi pi-fw pi-money-bill',
                 items: [
                     { label: 'Examens en attente', icon: 'pi pi-clock', routerLink: ['/laboratoire/examens-attente'] },
-                    { label: 'Plafonnements', icon: 'pi pi-chart-line', routerLink: ['/caisse-hopital/plafonnements'] },
                     { label: 'Historique', icon: 'pi pi-history', routerLink: ['/laboratoire/historique'] },
                 ]
             });

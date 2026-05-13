@@ -18,23 +18,30 @@ export class RoleGuard implements CanActivate {
             return false;
         }
 
-        // ✅ Vérifier si l'utilisateur a au moins un des rôles requis
         const userRoles = user.roles || [];
+
+        // Si aucune role n'est requis, autoriser l'accès
+        if (!requiredRoles || requiredRoles.length === 0) {
+            return true;
+        }
+
         const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
 
         if (hasRequiredRole) {
             return true;
         }
 
-        // ✅ Rediriger vers la première page disponible selon les rôles de l'utilisateur
         this.redirectByUserRoles(userRoles);
         return false;
     }
 
-    // ✅ Redirection basée sur tous les rôles de l'utilisateur
     private redirectByUserRoles(roles: string[]): void {
         if (roles.includes('UAB_ADMIN')) {
             this.router.navigate(['/uab/dashboard']);
+        } else if (roles.includes('OPERATEUR_UAB')) {
+            this.router.navigate(['/uab/dashboard/payes']);
+        } else if (roles.includes('MEDECIN_CONSEIL')) {
+            this.router.navigate(['/uab/validation/examen']);
         } else if (roles.includes('MEDECIN')) {
             this.router.navigate(['/medecin/consultations-attente']);
         } else if (roles.includes('PHARMACIEN')) {
@@ -47,6 +54,8 @@ export class RoleGuard implements CanActivate {
             this.router.navigate(['/laboratoire/examens-attente']);
         } else if (roles.includes('CAISSIER_PHARMACIE')) {
             this.router.navigate(['/pharmacie/prescriptions-attente']);
+        } else if (roles.includes('ADMIN_STRUCTURE')) {
+            this.router.navigate(['/structure/dashboard']);
         } else {
             this.router.navigate(['/login']);
         }

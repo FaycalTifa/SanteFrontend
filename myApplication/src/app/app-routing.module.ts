@@ -39,6 +39,7 @@ import {DashboardPayesComponent} from "./pages/components/uab/dashboard-payes/da
     imports: [
         RouterModule.forRoot([
             { path: 'login', component: LoginComponent },
+            { path: '', redirectTo: '/login', pathMatch: 'full' },
 
             {
                 path: '', component: AppMainComponent,
@@ -62,7 +63,7 @@ import {DashboardPayesComponent} from "./pages/components/uab/dashboard-payes/da
                         path: 'caisse-hopital/plafonnements',
                         component: PlafonnementComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['CAISSIER_HOPITAL', 'UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB', 'MEDECIN_CONSEIL', 'ADMIN_STRUCTURE', 'MEDECIN', 'PHARMACIEN', 'BIOLOGISTE', 'CAISSIER_HOPITAL', 'CAISSIER_PHARMACIE', 'CAISSIER_LABORATOIRE'] }
                     },
 
                     // ==================== MÉDECIN ====================
@@ -154,44 +155,44 @@ import {DashboardPayesComponent} from "./pages/components/uab/dashboard-payes/da
                         path: 'uab/dashboard',
                         component: DashboardComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB'] }
                     },
                     {
                         path: 'uab/dossiers',
                         component: DossiersComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB', 'ADMIN_STRUCTURE'] }
                     },
                 {
                         path: 'uab/admin-vaalidation-prescription',
                         component: AdminValidationsComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                    data: { roles: ['UAB_ADMIN', 'MEDECIN_CONSEIL'] }
                     },
                     // ✅ IMPORTANT: Les routes spécifiques DOIVENT être avant la route générique :id
                     {
                         path: 'uab/validation/examen',
                         component: ValidationExamensComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'MEDECIN_CONSEIL'] }
                     },
                     {
                         path: 'uab/validation/:id',
                         component: ValidationComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB', 'ADMIN_STRUCTURE'] }
                     },
                    {
                         path: 'uab/dossiers/payes',
                         component: DossiersPayesComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                       data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB', 'ADMIN_STRUCTURE'] }
                     },
                     {
                         path: 'uab/dashboard/payes',
                         component: DashboardPayesComponent,
                         canActivate: [GuardsGuard, RoleGuard],
-                        data: { roles: ['UAB_ADMIN'] }
+                        data: { roles: ['UAB_ADMIN', 'OPERATEUR_UAB', 'ADMIN_STRUCTURE'] }
                     },
                     {
                         path: 'uab/parametres/import-medicaments',
@@ -246,7 +247,7 @@ import {DashboardPayesComponent} from "./pages/components/uab/dashboard-payes/da
                 ]
             },
 
-            { path: '**', redirectTo: '/login' },
+            { path: '**', redirectTo: '/login' }
         ], { scrollPositionRestoration: 'enabled' })
     ],
     exports: [RouterModule]

@@ -64,18 +64,26 @@ export class LoginComponent implements OnInit {
     private redirectByRoles(roles: string[]): void {
         if (roles.includes('UAB_ADMIN')) {
             this.router.navigate(['/uab/dashboard']);
-        } else if (roles.includes('CAISSIER_HOPITAL')) {
-            this.router.navigate(['/caisse-hopital']);
+        } else if (roles.includes('OPERATEUR_UAB')) {
+            this.router.navigate(['/uab/dashboard/payes']);
+        } else if (roles.includes('MEDECIN_CONSEIL')) {
+            this.router.navigate(['/uab/validation/examen']);
         } else if (roles.includes('MEDECIN')) {
             this.router.navigate(['/medecin/consultations-attente']);
         } else if (roles.includes('PHARMACIEN')) {
             this.router.navigate(['/pharmacie/prescriptions-attente']);
         } else if (roles.includes('BIOLOGISTE')) {
             this.router.navigate(['/laboratoire/examens-attente']);
+        } else if (roles.includes('CAISSIER_HOPITAL')) {
+            this.router.navigate(['/caisse-hopital']);
         } else if (roles.includes('CAISSIER_LABORATOIRE')) {
             this.router.navigate(['/laboratoire/examens-attente']);
+        } else if (roles.includes('CAISSIER_PHARMACIE')) {
+            this.router.navigate(['/pharmacie/prescriptions-attente']);
+        } else if (roles.includes('ADMIN_STRUCTURE')) {
+            this.router.navigate(['/structure/dashboard']);
         } else {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/login']);
         }
     }
 }
